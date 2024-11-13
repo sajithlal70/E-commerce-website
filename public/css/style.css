@@ -9983,3 +9983,47 @@ form {
 .login-form .forgot-password:hover {
   text-decoration: underline;
 }
+/* PageNotFound Page Styles */
+
+.error-container {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-code {
+  font-size: 8rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.error-message {
+  font-size: 2rem;
+  color: #444;
+  margin: 1rem 0;
+}
+
+.error-description {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.back-home {
+  background: #ffd700;
+  color: #444;
+  padding: 1rem 2rem;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.back-home:hover {
+  background: #e6c200;
+}
+
+/* PageNotFound Page Styles end */
