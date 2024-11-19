@@ -1,0 +1,146 @@
+<%-include("../../views/partials/user/header")%>
+
+<div class="container">
+    <form class="signup-form" id="signupForm" method="post" action="/signup">
+        <h2 class="form-title">Create an Account</h2>
+        
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" name="name" id="fullName">
+            <div id="error1" class="error-message">Please enter your full name</div>
+        </div>
+  
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" name="email" id="email">
+            <div id="error2" class="error-message">Please enter a valid email address</div>
+        </div>
+  
+        <div class="form-group">
+            <label for="mobile">Mobile Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="Enter 10 digit mobile number">
+            <div id="error3" class="error-message">Please enter a valid 10-digit mobile number</div>
+        </div>
+  
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password">
+            <div id="error4" class="error-message">Password must be at least 8 characters long</div>
+        </div>
+  
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" name="confirmPassword" id="confirmPassword">
+            <div id="error5" class="error-message">Passwords do not match</div>
+        </div>
+  
+        <button type="submit" class="submit-btn">Sign Up</button>
+    </form>
+</div>
+
+<script>
+    const nameid = document.getElementById("fullName");
+    const emailid = document.getElementById("email");
+    const phoneid = document.getElementById("phone");
+    const passwordid = document.getElementById("password");
+    const confirmPasswordid = document.getElementById("confirmPassword");
+
+    const error1 = document.getElementById("error1");
+    const error2 = document.getElementById("error2");
+    const error3 = document.getElementById("error3");
+    const error4 = document.getElementById("error4");
+    const error5 = document.getElementById("error5");
+
+    const signupform = document.getElementById("signupForm");
+
+    function nameValidateChecking() {
+        const nameval = nameid.value.trim();
+        const namepattern = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+        if (nameval === "") {
+            error1.style.display = "block";
+            error1.innerHTML = "Please fill the field";
+        } else if (!namepattern.test(nameval)) {
+            error1.style.display = "block";
+            error1.innerHTML = "Name can only contain alphabets and spaces";
+        } else {
+            error1.style.display = "none";
+        }
+    }
+
+    function emailValidateChecking() {
+        const emailval = emailid.value.trim();
+        const emailpattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        if (emailval === "") {
+            error2.style.display = "block";
+            error2.innerHTML = "Please fill the field";
+        } else if (!emailpattern.test(emailval)) {
+            error2.style.display = "block";
+            error2.innerHTML = "Please enter a valid email";
+        } else {
+            error2.style.display = "none";
+        }
+    }
+
+    function phoneValidateChecking() {
+        const phoneval = phoneid.value.trim();
+        const phonepattern = /^[0-9]{10}$/;
+
+        if (phoneval === "") {
+            error3.style.display = "block";
+            error3.innerHTML = "Please fill the field";
+        } else if (!phonepattern.test(phoneval)) {
+            error3.style.display = "block";
+            error3.innerHTML = "Please enter a valid 10-digit phone number";
+        } else {
+            error3.style.display = "none";
+        }
+    }
+
+    function passValidateChecking() {
+        const passval = passwordid.value.trim();
+        const cpassval = confirmPasswordid.value.trim();
+        const passwordpattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (passval === "") {
+            error4.style.display = "block";
+            error4.innerHTML = "Please fill the field";
+        } else if (!passwordpattern.test(passval)) {
+            error4.style.display = "block";
+            error4.innerHTML =
+                "Password must be at least 8 characters with an uppercase, lowercase, digit, and special character";
+        } else {
+            error4.style.display = "none";
+        }
+
+        if (cpassval !== passval) {
+            error5.style.display = "block";
+            error5.innerHTML = "Passwords do not match";
+        } else {
+            error5.style.display = "none";
+        }
+    }
+
+    signupform.addEventListener("submit", (e) => {
+        nameValidateChecking();
+        emailValidateChecking();
+        phoneValidateChecking();
+        passValidateChecking();
+console.log("valid");
+
+        if (
+            error1.style.display === "block" ||
+            error2.style.display === "block" ||
+            error3.style.display === "block" ||
+            error4.style.display === "block" ||
+            error5.style.display === "block"
+        ) {
+            e.preventDefault();
+            console.log("prevented");
+            
+        }
+    });
+</script>
+
+<%-include("../../views/partials/user/footer")%>

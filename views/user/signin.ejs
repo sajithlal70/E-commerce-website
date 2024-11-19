@@ -1,0 +1,53 @@
+<%-include("../../views/partials/user/header")%>
+
+<div class="container">
+  <form class="login-form" method="post" action="/signin" id="loginForm">
+      <h2 class="form-title">Login to Your Account</h2>
+      <div>
+        <% if (errorMessage) { %>
+            <div class="error-message3" id="error-message">
+              <%= errorMessage%>
+            </div>
+          <% } %>
+      </div>
+      
+      <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" name="email" id="email" required>
+      </div>
+
+      <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" required>
+      </div>
+      <div id="error-message" class="error-message" style="color: red; display: none;"></div>
+
+      <div class="form-options">
+          <label>
+              <input type="checkbox" id="remember"> Remember me
+          </label>
+          <a href="forgot-password.html" class="forgot-password">Forgot Password?</a>
+      </div>
+      <button type="submit" class="submit-btn">Login</button>
+      <div class="form-footer">
+          <p>Don't have an account? <a href="/signup">Sign up</a></p>
+          <a href="<%= googleAuthUrl %>">Sign in with Google</a>
+
+      </div>
+  </form>
+</div>
+
+<script>
+      window.onload = function () {
+    const errorMessage = document.getElementById("error-message");
+    if (errorMessage) {
+      errorMessage.style.display = "block"; 
+      setTimeout(() => {
+        errorMessage.style.display = "none"; 
+      }, 5000);
+    }
+  };
+
+</script>
+
+<%-include("../../views/partials/user/footer")%>

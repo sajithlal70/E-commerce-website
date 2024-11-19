@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Shop - OTP Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        :root {
+            --primary-yellow: #FFD84D;
+            --dark-gray: #3C4349;
+            --light-gray: #F5F5F5;
+        }
+
+        .header {
+            background: var(--dark-gray);
+            padding: 1rem;
+        }
+
+        .logo {
+            color: var(--primary-yellow);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .container {
+            min-height: calc(100vh - 60px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--light-gray);
+            padding: 2rem;
+        }
+
+        .otp-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-title {
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .form-description {
+            color: var(--dark-gray);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            font-size: 2rem;
+            text-align: center;
+            margin: 0 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary-yellow);
+            border: none;
+            border-radius: 4px;
+            color: var(--dark-gray);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #FFE27A;
+        }
+
+        .form-footer {
+            margin-top: 1rem;
+            text-align: center;
+            color: var(--dark-gray);
+        }
+
+        .form-footer a {
+            color: var(--dark-gray);
+            text-decoration: underline;
+        }
+
+        .timer {
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="logo">DENTAL SHOP</a>
+    </header>
+
+    <div class="container">
+        <form class="otp-form" id="otpForm">
+            <h2 class="form-title">Enter OTP</h2>
+            <p class="form-description">We've sent a one-time password to your registered mobile number. Please enter it below.</p>
+
+            <div class="form-group">
+                <input type="text" maxlength="1" class="otp-input" id="otp1" required>
+                <input type="text" maxlength="1" class="otp-input" id="otp2" required>
+                <input type="text" maxlength="1" class="otp-input" id="otp3" required>
+                <input type="text" maxlength="1" class="otp-input" id="otp4" required>
+                <input type="text" maxlength="1" class="otp-input" id="otp5" required>
+                <input type="text" maxlength="1" class="otp-input" id="otp6" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Verify</button>
+
+            <div class="form-footer">
+                <p>Didn't receive the OTP? <a href="#">Resend</a></p>
+            </div>
+
+            <div class="timer" id="timer">00:60</div>
+        </form>
+    </div>
+
+    <script>
+        let timer;
+        let timeLeft = 60;
+
+        function startTimer() {
+            timer = setInterval(function() {
+                timeLeft--;
+                displayTimer();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    document.getElementById('timer').textContent = '00:00';
+                }
+            }, 1000);
+        }
+
+        function displayTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        document.getElementById('otpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const otp1 = document.getElementById('otp1').value;
+            const otp2 = document.getElementById('otp2').value;
+            const otp3 = document.getElementById('otp3').value;
+            const otp4 = document.getElementById('otp4').value;
+            const otp5 = document.getElementById('otp5').value;
+            const otp6 = document.getElementById('otp6').value;
+
+            const enteredOTP = otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
+
+            // Add your OTP verification logic here
+            console.log('Entered OTP:', enteredOTP);
+
+            // Example validation
+            if (enteredOTP.length === 6) {
+                alert('OTP verification successful!');
+                // Redirect to the next page
+                // window.location.href = '/dashboard';
+            } else {
+                alert('Invalid OTP. Please try again.');
+            }
+        });
+
+        startTimer();
+    </script>
+</body>
+</html>
