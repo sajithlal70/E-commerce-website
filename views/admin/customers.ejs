@@ -1,0 +1,74 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="bg-white rounded-lg shadow">
+  <div class="flex items-center justify-between p-4 border-b">
+    <div class="flex items-center space-x-4">
+      <input type="text" class="px-4 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Search customers...">
+      <button class="px-4 py-2 bg-yellow-400 text-gray-800 rounded hover:bg-yellow-500">Search</button>
+    </div>
+   
+  </div>
+  <table class="w-full">
+    <thead class="bg-gray-800 text-white">
+      <tr>
+        <th class="p-4 text-left">Name</th>
+        <th class="p-4 text-left">Email</th>
+        <th class="p-4 text-left">Phone</th>
+        <th class="p-4 text-left">Status</th>
+        <th class="p-4 text-left">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (data && data.length > 0) { %>
+        <% for (let i=0; i<data.length; i++) { %>
+          <tr class="border-b">
+            <td class="p-4"><%= data[i].name %></td>
+            <td class="p-4"><%= data[i].email %></td>
+            <td class="p-4"><%= data[i].phone %></td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded text-sm font-medium <%= data[i].IsBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %>">
+                <%= data[i].IsBlocked ? 'Blocked' : 'Active' %>
+              </span>
+            </td>
+            <td class="p-4 space-x-2">
+              <button class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                View
+              </button>
+              <% if (!data[i].IsBlocked) { %>
+                <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                  <a href="/admin/blockCustomer?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Block</a>
+                </button>
+              <% } else { %>
+                <button class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                  <a href="/admin/unblockCustomer?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Unblock</a>
+                </button>
+              <% } %>
+            </td>
+          </tr>
+        <% } %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="p-4 text-center text-gray-500">No customers found</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <div class="flex justify-end p-4">
+    <div class="flex items-center space-x-2">
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="?page=<%= i %>" 
+           class="px-4 py-2 rounded hover:bg-yellow-500 <%= (i === currentPages) ? 'bg-yellow-400 text-gray-800' : 'bg-gray-200 text-gray-600' %>">
+          <%= i %>
+        </a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  
+  
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

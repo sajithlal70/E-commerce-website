@@ -1,0 +1,140 @@
+<%- include("../../views/partials/admin/header") %>
+
+
+    <!-- Dashboard Content -->
+               <!-- Stats Cards -->
+               <div class="grid grid-cols-1 md:grid-cols-4 gap-6 p-6"> <!-- Added mt-24 to create space below the fixed header -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm">Total Sales</h3>
+                    <p class="text-3xl font-bold">$24,582</p>
+                    <p class="text-green-500 text-sm">↑ 12% from last month</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm">Orders</h3>
+                    <p class="text-3xl font-bold">142</p>
+                    <p class="text-green-500 text-sm">↑ 8% from last month</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm">Customers</h3>
+                    <p class="text-3xl font-bold">2,845</p>
+                    <p class="text-green-500 text-sm">↑ 5% from last month</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm">Products</h3>
+                    <p class="text-3xl font-bold">486</p>
+                    <p class="text-green-500 text-sm">↑ 3% from last month</p>
+                </div>
+            </div>
+
+            <!-- Recent Orders Table -->
+            <div class="p-6">
+                <h2 class="text-xl font-bold mb-4">Recent Orders</h2>
+                <div class="bg-white rounded-lg shadow">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-800 text-white">
+                            <tr>
+                                <th class="p-4 text-left">Order ID</th>
+                                <th class="p-4 text-left">Customer</th>
+                                <th class="p-4 text-left">Product</th>
+                                <th class="p-4 text-left">Amount</th>
+                                <th class="p-4 text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-4">#ORD001</td>
+                                <td class="p-4">John Smith</td>
+                                <td class="p-4">Dental Chair AJ12</td>
+                                <td class="p-4">$1,999</td>
+                                <td class="p-4"><span class="px-2 py-1 bg-green-100 text-green-800 rounded">completed</span></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-4">#ORD002</td>
+                                <td class="p-4">Sarah Johnson</td>
+                                <td class="p-4">Sterilizer X-Pro</td>
+                                <td class="p-4">$799</td>
+                                <td class="p-4"><span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Additional Sections -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+                <!-- Active Coupons -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4">Active Coupons</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-4 border rounded">
+                            <div>
+                                <h3 class="font-bold">NEWCUSTOMER</h3>
+                                <p class="text-sm text-gray-500">15% off first purchase</p>
+                            </div>
+                            <span class="text-green-500">Active</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 border rounded">
+                            <div>
+                                <h3 class="font-bold">SUMMER2024</h3>
+                                <p class="text-sm text-gray-500">20% off selected items</p>
+                            </div>
+                            <span class="text-green-500">Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Offers -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4">Current Offers</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-4 border rounded">
+                            <div>
+                                <h3 class="font-bold">Bundle Deal</h3>
+                                <p class="text-sm text-gray-500">Buy 2 Get 1 Free on Surgical Tools</p>
+                            </div>
+                            <span class="text-green-500">Active</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 border rounded">
+                            <div>
+                                <h3 class="font-bold">Flash Sale</h3>
+                                <p class="text-sm text-gray-500">30% off Sterilization Equipment</p>
+                            </div>
+                            <span class="text-yellow-500">Upcoming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Simulate fetching admin name
+        const adminName = "<%= adminName %>";
+        document.getElementById("adminName").textContent = adminName;
+
+        // Toggle dropdown visibility
+        const userMenuButton = document.getElementById("userMenuButton");
+        const userMenuDropdown = document.getElementById("userMenuDropdown");
+
+        userMenuButton.addEventListener("click", () => {
+            userMenuDropdown.classList.toggle("hidden");
+        });
+
+        // Close dropdown if clicked outside
+        window.addEventListener("click", (e) => {
+            if (!userMenuButton.contains(e.target)) {
+                userMenuDropdown.classList.add("hidden");
+            }
+        });
+
+        // Active navigation item
+        document.querySelectorAll("nav a").forEach(link => {
+            link.addEventListener("click", function () {
+                document.querySelector("nav a.bg-yellow-400")?.classList.remove("bg-yellow-400", "text-gray-800");
+                this.classList.add("bg-yellow-400", "text-gray-800");
+            });
+        });
+    });
+</script>
+<%- include("../../views/partials/admin/footer") %>

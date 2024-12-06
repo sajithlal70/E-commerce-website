@@ -10,10 +10,6 @@ const productSchema = new Schema({
     type:String,
     required:true
   },
-  brand :{
-    type:String,
-    required:true
-  },
   category : {
     type:String,
     ref: "Category",
@@ -43,10 +39,18 @@ const productSchema = new Schema({
     type:[String],
     required:true
   },
-  isBLOcked :{
+  isBlocked :{
     type:Boolean,
     default : false
   },
+  reviews: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
+      comment: { type: String, required: true },
+      rating: { type: Number, required: true, min: 1, max: 5 },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
   satatus :{
     type:String,
     enum :["Available","out of stock","Discontinued"],
@@ -55,7 +59,7 @@ const productSchema = new Schema({
   }
 },{timestamps:true});
 
-const Product = mongoose.madel("Product",productSchema);
+const Product = mongoose.model("Product",productSchema);
 
 
 module.exports = Product ; 

@@ -10017,6 +10017,11 @@ form {
   text-align: center;
   font-size: 14px;
 }
+.google-signin-btn-img{
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+}
 
 
 /* OTP verification page styles */
@@ -10149,3 +10154,252 @@ form {
 }
 
 /* PageNotFound Page Styles end */
+
+/* Home page after auth styles */
+
+.sign-in-link{
+  font-size: 15px;
+  color: black;
+}
+
+.dropdown-profile{
+  position:relative;
+  display:inline-block;
+}
+.user-img{
+  width: 20px;
+  height:20px;
+}
+.dropdown-content {
+  display:none;
+  position:absolute;
+  background-color: white;
+  min-width: 100px;
+  box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1000;
+  right:50;
+}
+.dropdown-content a {
+  color: black;
+  padding:12px 16px;
+  text-decoration: none;
+  display:block;
+  width: 100%;
+}
+.dropdown-content a:hover{
+  background-color: #f1f1f1;
+
+}
+.dropdown-profile:hover .dropdown-content{
+  display:block;
+}
+.container-fluid {
+  position: relative;
+  /* z-index: 500;  */
+}
+
+/* Category Management  styles*/
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  background: var(--bg-light);
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.search-box {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 300px;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background:#FFD333;
+  color: white;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.status-listed {
+  background: #dff9e3;
+  color: #2ecc71;
+}
+
+.status-unlisted {
+  background: #ffe9e9;
+  color: #e74c3c;
+}
+
+.action-btn {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.edit-btn {
+  background: #4834d4;
+  color: white;
+}
+
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background: white;
+  width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem;
+  border-radius: 4px;
+  color: white;
+  display: none;
+}
+.toast-success {
+  background: #2ecc71;
+}
+.toast-error {
+  background: #e74c3c;
+}
+.pagination {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.pagination button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+.pagination button.active {
+  background: #4834d4;
+  color: white;
+  border-color: #4834d4;
+}
+
+
+/* zoom  */
+
+
+.product-image-zoom-container {
+    position: relative;
+    overflow: hidden;
+    cursor: zoom-in;
+    width: 100%;
+    height: 500px; /* Adjust as needed */
+}
+
+.product-image-zoom {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.product-image-magnifier {
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.dropdown-item.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* star styles */
+
+.fa-star, .fa-star-half-alt, .far.fa-star {
+  color: #ffc107; /* Golden color for stars */
+  margin-right: 2px;
+}

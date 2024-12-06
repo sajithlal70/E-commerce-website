@@ -2,31 +2,31 @@ const mongoose = require("mongoose");
 const {Schema} = mongoose ; 
 
 const categorySchema = new mongoose.Schema({
-
-  name:{
-    type:String,
-    required:true,
-    unique:true
-  
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
   },
-  description : {
-    type:String,
-    required:true
-
+  description: {
+    type: String,
+    trim: true
   },
-  isListed: {
-    type:Boolean,
-    default:true
+  offerPrice: {
+    type: Number,
+    default: 0
   },
-  categoryOffer: {
-    type:Number,
-    default : 0
+  offer: {
+    type: String,
+    default: ''
   },
-  createdAt :{
-    type: Date,
-    defauult : Date.now
+  status: {
+    type: String,
+    enum: ['Listed', 'Unlisted'],
+    default: 'Listed'
   }
-})
+}, { timestamps: true });
+
 
 const Category = mongoose.model("Category",categorySchema);
 

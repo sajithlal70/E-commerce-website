@@ -25,7 +25,7 @@ const userSchema = new Schema ({
   },
   googleId:{
     type:String,
-    unique:true
+    sparse:true
   },
   IsBlocked: {
     type:Boolean,
@@ -79,7 +79,21 @@ const userSchema = new Schema ({
       type:Date,
       default: Date.now
     }
-  }]
+  }],
+    resetToken: {
+      type: String,
+      default: null
+    },
+    resetTokenExpiry: {
+      type: Date,
+      default: null
+    },
+    rememberedToken: {
+      type: String,
+      default: null
+    }
+  
+
 })
 
 

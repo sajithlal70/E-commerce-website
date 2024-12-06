@@ -1,0 +1,245 @@
+<%- include("../../views/partials/admin/header") %>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Product Management</h1>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <i class="fas fa-plus mr-2"></i><a href="/admin/addProducts">Add Product</a>
+            </button>
+        </div>
+        <!-- Search and Filter Section -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <div class="flex gap-4">
+                <input type="text" id="searchInput" placeholder="Search products..." 
+                       class="flex-1 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select class="px-4 py-2 border rounded">
+                    <option>All Categories</option>
+
+                    <% for(let i=0 ; i< cat.length;i++) {%>
+                        <option value="<%= cat[i].name %>"><%= cat[i].name %></option>
+                        <%}%>
+                </select>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="px-4 py-3 text-left">No.</th>
+                        <th class="px-4 py-3 text-left">Product ID</th>
+                        <th class="px-4 py-3 text-left">Image</th>
+                        <th class="px-4 py-3 text-left">Name</th>
+                        <th class="px-4 py-3 text-left">Category</th>
+                        <th class="px-4 py-3 text-right">Price</th>
+                        <th class="px-4 py-3 text-right">Stock</th>
+                        <th class="px-4 py-3 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% products.forEach((product,index) => { %>
+                    <tr class="border-b hover:bg-gray-100">
+                        <td class="px-4 py-3"><%= index + 1 %></td>
+                        <td class="px-4 py-3"><%= product._id %></td>
+                        <td class="px-4 py-3">
+                            <% if(product.productImage && product.productImage.length>0) { %>
+                               
+                                <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-12 h-12 rounded-full">
+                            <% } else { %>
+                                <% console.log('No product image found'); %>
+                                <img src="/images/placeholder.jpg" alt="No image" class="h-16 w-16 object-cover rounded-lg product-image" />
+                            <% } %>
+
+                               
+
+                        </td>
+                        <td class="px-4 py-3"><%= product.productName %></td>
+                        <td class="px-4 py-3"><%= product.category %></td>
+                        <td class="px-4 py-3 text-right"><%= product.reqularPrice %></td>
+                        <td class="px-4 py-3 text-right"><%= product.quantity %></td>
+                        <td class="px-4 py-3 text-center">
+                            <div  class="flex justify-center space-x-2">
+                                <a href="products/view/<%= product._id%>" class="text-blue-500 hover:text-blue-700" title="View">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                    <span class="sr-only">View</span>
+                                </a>
+                                <a href="products/<%= product._id%>" class="text-green-500 hover:text-green-700" title="Edit">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                    <span class="sr-only">Edit</span>
+                                </a>
+                                
+                                <form action="/admin/products/block/<%= product._id %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="text-yellow-500 hover:text-yellow-700" title="<%= product.isBlocked ? 'Unlock' : 'Lock' %>">
+                                        <% if (product.isBlocked) { %>
+                                            <i class="fas fa-lock" aria-hidden="true"></i>
+                                            <span class="sr-only">Unlock</span>
+                                        <% } else { %>
+                                            <i class="fas fa-lock-open" aria-hidden="true"></i>
+                                            <span class="sr-only">Lock</span>
+                                        <% } %>
+                                    </button>
+                                </form>
+                                
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Additional rows go here -->
+                     <% }) %>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </a>
+                    <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </a>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium"><%= (currentPage - 1) * limit + 1 %></span>
+                            to
+                            <span class="font-medium"> <%= Math.min(currentPage * limit, totalProducts) %></span>
+                            of
+                            <span class="font-medium"><%= totalProducts %></span>
+                            products
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <% if (currentPage > 1) { %>
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Previous</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                            <% } else { %>
+                                <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+
+                                <% } %>
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                            <a href="?page=<%= i %>&limit=<%= limit %>" aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                <%= i %>
+                            </a>
+                            <% } %>
+
+                            <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Next</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <% } else { %>
+                                <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400">
+                                    <span class="sr-only">Next</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                  </span>
+                                  <% } %>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Product Modal -->
+    <div id="viewProductModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl w-96 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Product Details</h2>
+                    <button class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="text-center mb-4">
+                    <img src="/api/placeholder/200/200" alt="Product Image" class="w-40 h-40 object-cover rounded-lg mx-auto">
+                </div>
+                <div class="space-y-2">
+                    <p><strong>Product ID:</strong> PRD001</p>
+                    <p><strong>Name:</strong> Dental Chair Pro X</p>
+                    <p><strong>Category:</strong> Medical Equipment</p>
+                    <p><strong>Price:</strong> $2,499.99</p>
+                    <p><strong>Stock:</strong> 15</p>
+                    <p><strong>Description:</strong> High-end dental chair with advanced ergonomic design and multiple positioning options.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const productTable = document.querySelector('table tbody');
+    const rows = productTable.querySelectorAll('tr');
+    const categorySelect = document.querySelector('select');
+
+    // Debounce function to prevent excessive searching
+    function debounce(func, delay) {
+        let timeoutId;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(context, args);
+            }, delay);
+        };
+    }
+
+    // Search and filter function
+    function searchAndFilterProducts() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const selectedCategory = categorySelect.value.toLowerCase();
+
+        rows.forEach(row => {
+            const productName = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+            const productCategory = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+            const productId = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+
+            // Check if the row matches both search term and category
+            const matchesSearch = searchTerm === '' || 
+                productName.includes(searchTerm) || 
+                productId.includes(searchTerm);
+
+            const matchesCategory = selectedCategory === 'all categories' || 
+                productCategory === selectedCategory;
+
+            // Show or hide row based on search and category
+            row.style.display = (matchesSearch && matchesCategory) ? '' : 'none';
+        });
+
+        // Update pagination or results count if needed
+        updateResultsCount();
+    }
+
+    // Update results count when filtered
+    function updateResultsCount() {
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+        const resultsCountElement = document.querySelector('.text-sm.text-gray-700');
+        
+        if (resultsCountElement) {
+            resultsCountElement.innerHTML = `Showing <span class="font-medium">${visibleRows.length}</span> of <span class="font-medium">${rows.length}</span> products`;
+        }
+    }
+
+    // Add event listeners with debounce
+    const debouncedSearch = debounce(searchAndFilterProducts, 300);
+    searchInput.addEventListener('input', debouncedSearch);
+    categorySelect.addEventListener('change', searchAndFilterProducts);
+});
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

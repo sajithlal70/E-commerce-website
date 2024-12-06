@@ -1,0 +1,310 @@
+<%- include("../../views/partials/admin/header") %>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Add Product</h1>
+
+        <!-- Add Product Form -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <form id="addProductForm" method="POST" action="/admin/productsadd" enctype="multipart/form-data">
+                <!-- Product Name -->
+                <div class="mb-4">
+                    <label for="productName" class="block text-sm font-medium text-gray-700">Product Name</label>
+                    <input type="text" id="productName" name="productName" 
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           <span id="productNameError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="productDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="productDescription" name="description"  rows="4"
+                              class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <span id="productDescriptionError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-4">
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select id="category" name="category" 
+                            class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Category</option>
+                            <% for(let i=0 ; i< cat.length;i++) {%>
+                            <option value="<%= cat[i].name %>"><%= cat[i].name %></option>
+                            <%}%>
+                    </select>
+                    <span id="categoryError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-4">
+                    <label for="regularPrice" class="block text-sm font-medium text-gray-700">Regular Price</label>
+                    <input type="number" id="regularPrice" name="regularPrice"  min="0" step="0.01"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="regularPriceError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Sale Price -->
+                <div class="mb-4">
+                    <label for="salePrice" class="block text-sm font-medium text-gray-700">Sale Price</label>
+                    <input type="number" id="salePrice" name="salePrice"  min="0" step="0.01"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="salePriceError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-4">
+                    <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                    <input type="number" id="quantity" name="quantity"  min="1"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="quantityError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Color -->
+                <div class="mb-4">
+                    <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
+                    <input type="text" id="color" name="color" 
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="colorError" class="error-message text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Product Images -->
+                <div class="mb-4">
+                    <label for="productImages" class="block text-sm font-medium text-gray-700">Product Images</label>
+                    <input type="file" id="productImages" name="productImages" 
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           multiple accept="image/*">
+                    <small class="text-gray-600">You can upload up to 4 images. Max file size: 5MB per image.</small>
+                    <div id="imagePreview" class="mt-4 flex flex-wrap gap-4"></div>
+                </div>
+
+                <!-- Image Crop Modal -->
+                <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                    <div class="bg-white p-6 rounded-lg max-w-2xl w-full">
+                        <h2 class="text-xl font-bold mb-4">Crop Image</h2>
+                        <div class="mb-4">
+                            <img id="cropperImage" class="max-w-full">
+                        </div>
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" id="cancelCrop" class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                            <button type="button" id="cropImage" class="bg-blue-600 text-white px-4 py-2 rounded">Crop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="status" name="status" 
+                            class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Available">Available</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                        <option value="Discontinued">Discontinued</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-6 text-center">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Add Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('addProductForm');
+            const productImagesInput = document.getElementById('productImages');
+            const imagePreview = document.getElementById('imagePreview');
+            const cropModal = document.getElementById('cropModal');
+            const cropperImage = document.getElementById('cropperImage');
+            let cropper;
+            let currentFileIndex = 0;
+            const croppedImages = [];
+
+            // Form Validation
+            function validateField(field, errorSpan, errorMessage) {
+                if (!field.value.trim()) {
+                    errorSpan.textContent = errorMessage;
+                    return false;
+                }
+                errorSpan.textContent = '';
+                return true;
+            }
+
+            function validateForm() {
+                let isValid = true;
+
+                // Validate each field
+                isValid &= validateField(
+                    document.getElementById('productName'), 
+                    document.getElementById('productNameError'), 
+                    'Product name is required'
+                );
+                isValid &= validateField(
+                    document.getElementById('productDescription'), 
+                    document.getElementById('productDescriptionError'), 
+                    'Description is required'
+                );
+                
+                isValid &= validateField(
+                    document.getElementById('category'), 
+                    document.getElementById('categoryError'), 
+                    'Please select a category'
+                );
+                
+                // Validate numeric fields
+                const regularPrice = document.getElementById('regularPrice');
+                const salePrice = document.getElementById('salePrice');
+                const quantity = document.getElementById('quantity');
+                
+                if (parseFloat(regularPrice.value) <= 0) {
+                    document.getElementById('regularPriceError').textContent = 'Price must be greater than 0';
+                    isValid = false;
+                }
+                
+                if (parseFloat(salePrice.value) <= 0) {
+                    document.getElementById('salePriceError').textContent = 'Sale price must be greater than 0';
+                    isValid = false;
+                }
+                
+                if (parseInt(quantity.value) < 1) {
+                    document.getElementById('quantityError').textContent = 'Quantity must be at least 1';
+                    isValid = false;
+                }
+                
+                // Validate images
+                if (croppedImages.length === 0) {
+                    alert('Please upload and crop at least one image');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            // Image Cropping Functionality
+            function openCropModal(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    cropperImage.src = e.target.result;
+                    cropModal.classList.remove('hidden');
+                    
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    
+                    cropper = new Cropper(cropperImage, {
+                        aspectRatio: 1, // Square crop
+                        viewMode: 1,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Event Listeners for Crop Modal
+            document.getElementById('cancelCrop').addEventListener('click', function() {
+                cropModal.classList.add('hidden');
+                cropper.destroy();
+            });
+
+            document.getElementById('cropImage').addEventListener('click', function() {
+                const croppedCanvas = cropper.getCroppedCanvas();
+                croppedCanvas.toBlob(function(blob) {
+                    // Create a new File object from the blob
+                    const croppedFile = new File([blob], 'cropped-image.png', {type: 'image/png'});
+                    
+                    // Store the cropped image
+                    croppedImages.push(croppedFile);
+                    
+                    // Create image preview
+                    const imgPreview = document.createElement('img');
+                    imgPreview.src = croppedCanvas.toDataURL();
+                    imgPreview.classList.add('w-24', 'h-24', 'object-cover', 'rounded');
+                    imagePreview.appendChild(imgPreview);
+                    
+                    // Close modal
+                    cropModal.classList.add('hidden');
+                    cropper.destroy();
+                    
+                    // Process next image if any
+                    processNextImage();
+                }, 'image/png');
+            });
+
+            // Image Processing
+            function processNextImage() {
+                if (currentFileIndex < productImagesInput.files.length) {
+                    openCropModal(productImagesInput.files[currentFileIndex]);
+                    currentFileIndex++;
+                } else {
+                    // All images processed
+                    currentFileIndex = 0;
+                }
+            }
+
+            // Handle file selection
+            productImagesInput.addEventListener('change', function() {
+                // Clear previous preview and cropped images
+                imagePreview.innerHTML = '';
+                croppedImages.length = 0;
+                
+                // Limit to 4 files
+                if (this.files.length > 4) {
+                    alert('You can only upload up to 4 images');
+                    this.value = '';
+                    return;
+                }
+                
+                // Start processing images
+                processNextImage();
+            });
+
+            // Form submit event
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                if (!validateForm()) {
+                    return;
+                }
+                
+                // Create FormData
+                const formData = new FormData(form);
+                
+                // Clear existing product images and add cropped images
+                formData.delete('productImages');
+                croppedImages.forEach((croppedImage, index) => {
+                    formData.append('productImages', croppedImage, `cropped-image-${index}.png`);
+                });
+                
+                // Send form data via fetch
+                fetch('/admin/productsadd', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Product added successfully!');
+                        form.reset();
+                        imagePreview.innerHTML = '';
+                        croppedImages.length = 0;
+                    } else {
+                        alert('Error adding product: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the product');
+                });
+            });
+        });
+    </script>
+</body>
+
+<%- include("../../views/partials/admin/footer") %>

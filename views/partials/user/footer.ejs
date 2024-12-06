@@ -90,6 +90,104 @@
      
     <script src="js/validation.js"></script>
 
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const zoomContainers = document.querySelectorAll('.product-image-zoom-container');
+        
+            zoomContainers.forEach(container => {
+                const image = container.querySelector('.product-image');
+                const magnifier = container.querySelector('.product-image-magnifier');
+        
+                container.addEventListener('mousemove', function(e) {
+                    // Enable magnifier
+                    magnifier.style.display = 'block';
+        
+                    // Get container dimensions and position
+                    const containerRect = container.getBoundingClientRect();
+                    const imageRect = image.getBoundingClientRect();
+        
+                    // Calculate mouse position relative to container
+                    const x = e.clientX - containerRect.left;
+                    const y = e.clientY - containerRect.top;
+        
+                    // Set magnifier size (adjust as needed)
+                    const magnifierWidth = 150;
+                    const magnifierHeight = 150;
+        
+                    // Position magnifier
+                    magnifier.style.width = `${magnifierWidth}px`;
+                    magnifier.style.height = `${magnifierHeight}px`;
+                    magnifier.style.top = `${y - magnifierHeight / 2}px`;
+                    magnifier.style.left = `${x - magnifierWidth / 2}px`;
+        
+                    // Calculate zoom image position
+                    const zoomImage = image.getAttribute('data-zoom-src');
+                    const zoomRatio = 2; // Adjust zoom level
+        
+                    const backgroundPositionX = -((x / containerRect.width) * (imageRect.width * zoomRatio - containerRect.width));
+                    const backgroundPositionY = -((y / containerRect.height) * (imageRect.height * zoomRatio - containerRect.height));
+        
+                    magnifier.style.backgroundImage = `url('${zoomImage}')`;
+                    magnifier.style.backgroundSize = `${imageRect.width * zoomRatio}px ${imageRect.height * zoomRatio}px`;
+                    magnifier.style.backgroundPosition = `${backgroundPositionX}px ${backgroundPositionY}px`;
+                });
+        
+                container.addEventListener('mouseleave', function() {
+                    // Disable magnifier
+                    magnifier.style.display = 'none';
+                });
+            });
+        });
+
+
+
+
+        
+        </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sortItems = document.querySelectorAll('.dropdown-item');
+      
+      sortItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = this.getAttribute('href');
+        });
+      });
+    });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const form = document.querySelector('.reset-form');
+          
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            
+            try {
+              const response = await fetch('/forgot-password', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+              });
+              
+              const result = await response.text();
+              
+              // You might want to update this to handle the response more elegantly
+              alert(result);
+            } catch (error) {
+              console.error('Error:', error);
+              alert('An error occurred. Please try again.');
+            }
+          });
+        });
+      </script>
+
 </body>
 
 </html>

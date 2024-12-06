@@ -52,7 +52,8 @@ function validateOTPForm(){
     $.ajax({
         type:"POST",
         url:"/verifyOtp",
-        data:{otp:otpInput},
+        data:{otp:otpInput, 
+        },
         success:function(response){
             
             console.log("response",response);

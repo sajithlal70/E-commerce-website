@@ -1,0 +1,45 @@
+<script>
+function setActive(element) {
+
+  const items = document.querySelectorAll('aside nav a');
+  items.forEach(item => item.classList.remove('bg-gray-700', 'text-white'));
+
+
+  element.classList.add('bg-gray-700', 'text-white');
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+        // Simulate fetching admin name
+        const adminName = "<%= adminName %>";
+        document.getElementById("adminName").textContent = adminName;
+
+        // Toggle dropdown visibility
+        const userMenuButton = document.getElementById("userMenuButton");
+        const userMenuDropdown = document.getElementById("userMenuDropdown");
+
+        userMenuButton.addEventListener("click", () => {
+            userMenuDropdown.classList.toggle("hidden");
+        });
+
+        // Close dropdown if clicked outside
+        window.addEventListener("click", (e) => {
+            if (!userMenuButton.contains(e.target)) {
+                userMenuDropdown.classList.add("hidden");
+            }
+        });
+
+        // Active navigation item
+        document.querySelectorAll("nav a").forEach(link => {
+            link.addEventListener("click", function () {
+                document.querySelector("nav a.bg-yellow-400")?.classList.remove("bg-yellow-400", "text-gray-800");
+                this.classList.add("bg-yellow-400", "text-gray-800");
+            });
+        });
+    });
+</script>
+
+</main>
+</div>
+</body>
+</html>
