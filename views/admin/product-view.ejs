@@ -1,0 +1,45 @@
+<%- include("../../views/partials/admin/header") %>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">View Product</h1>
+
+        <!-- Single Product View -->
+         
+        <div class="bg-white p-6 rounded-lg shadow">
+            <!-- Product Details -->
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Product Name : <%= product.productName %></h2>
+                <p class="mt-2 text-gray-600">Description : <%= product.description %></p>
+                <p class="mt-2 text-gray-600">Category : <%= product.category.name %></p>
+                <p class="mt-2 text-gray-600">Regular Price : <%= product.reqularPrice %></p>
+                <p class="mt-2 text-gray-600">Selling Price : <%= product.salePrice %></p>
+                <p class="mt-2 text-gray-600">Product Offer : <%= product.productOffer %></p>
+                <p class="mt-2 text-gray-600">Product color : <%= product.color%></p>
+                <p class="mt-2 text-gray-600">Stock Quantity : <%= product.quantity %></p>
+                <p class="mt-2 text-gray-600">Status : <%= product.satatus %></p>
+            </div>
+
+            <!-- Product Images (displaying image URLs) -->
+            <div class="mb-6">
+                <p class="text-lg font-semibold text-gray-700">Product Images:</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <% product.productImage.forEach(function(image) { %>
+                        <img src="/uploads/products/<%= image %>" alt="Product Image" class="w-full h-40 object-fit rounded-md">
+                        <% }); %>
+                </div>
+            </div>
+
+            <!-- Edit Button -->
+            <div class="mt-4 text-center">
+                <a href="/admin/products/<%= product._id %>"
+                   class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    Edit Product
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+<%- include("../../views/partials/admin/footer") %>

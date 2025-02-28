@@ -1,0 +1,1172 @@
+<%- include("../../views/partials/admin/header") %>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Category Management</h1>
+    </div>
+
+    <!-- Search and Add Category Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="flex flex-col md:flex-row justify-between gap-4">
+            <!-- Search -->
+            <div class="flex-1">
+                <input type="text" id="categorySearch" oninput="filterCategories()" placeholder="Search categories..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <!-- Add Category Button -->
+            <button onclick="toggleAddModal()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                Add Category
+            </button>
+        </div>
+    </div>
+
+    <!-- Category Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Offer Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Offer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <% cat.forEach(function(category) { %>
+                <tr data-category-id="<%= category._id %>">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <% if (category.image) { %>
+                            <img src="<%= category.image %>" alt="<%= category.name %>" class="w-16 h-16 object-cover rounded-md">
+                        <% } else { %>
+                            <div class="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">No Image</div>
+                        <% } %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap"><%= category.name %></td>
+                    <td class="px-6 py-4"><%= category.description %></td>
+                    <td class="px-6 py-4"><%= category.offerPrice %></td>
+                    <td class="px-6 py-4"><%= category.offer %></td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= category.status === 'Listed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                            <%= category.status %>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 space-x-2">
+                        <button onclick="confirmToggleStatus('<%= category._id %>', '<%= category.status %>')" 
+                            class="text-<%= category.status === 'Listed' ? 'red' : 'green' %>-600 
+                                   hover:text-<%= category.status === 'Listed' ? 'red' : 'green' %>-900">
+                            <%= category.status === 'Listed' ? 'Unlist' : 'List' %>
+                        </button>
+                        <button onclick="openEditModal('<%= category._id %>', '<%= category.name %>', '<%= category.description %>', '<%= category.offerPrice %>', '<%= category.offer %>', '<%= category.image %>')" 
+                            class="text-blue-600 hover:text-blue-900">
+                            Edit
+                        </button>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium"><%= ((currentPage-1) * 4) + 1 %></span> to <span class="font-medium"><%= Math.min(currentPage * 4, totalCategories) %></span> of <span class="font-medium"><%= totalCategories %></span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <% if (currentPage > 1) { %>
+                        <a href="/admin/category?page=<%= currentPage - 1 %>" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Previous
+                        </a>
+                        <% } %>
+
+                        <% for(let i = 1; i <= totalPages; i++) { %>
+                        <a href="/admin/category?page=<%= i %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <%= currentPage === i ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50' %>">
+                            <%= i %>
+                        </a>
+                        <% } %>
+
+                        <% if (currentPage < totalPages) { %>
+                        <a href="/admin/category?page=<%= currentPage + 1 %>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Next
+                        </a>
+                        <% } %>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="addCategoryModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Category</h3>
+                <form id="addCategoryForm" class="space-y-4" method="post" action="/admin/addCategory" enctype="multipart/form-data">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Offer Price</label>
+                        <input type="number" 
+                               name="offerPrice" 
+                               min="0" 
+                               step="0.01" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Offer</label>
+                        <input type="text" 
+                               name="offer" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category Image</label>
+                        <input type="file" 
+                               name="image" 
+                               id="addImageInput" 
+                               accept="image/*" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <div class="mt-2">
+                            <div id="addImagePreviewContainer" class="hidden relative">
+                                <img id="addImagePreview" class="max-w-full h-auto" style="max-height: 300px;">
+                                <div class="mt-2 flex justify-end">
+                                    <button type="button" 
+                                            id="confirmCropBtn" 
+                                            class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 hidden">
+                                        Confirm Crop
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="croppedImage" id="addCroppedImageData">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="toggleAddModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Add Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div id="editCategoryModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Category</h3>
+                <form id="editCategoryForm" class="space-y-4" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="id" id="editCategoryId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" 
+                               name="name" 
+                               id="editCategoryName" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" 
+                                  id="editCategoryDescription" 
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Offer Price</label>
+                        <input type="number" 
+                               name="offerPrice" 
+                               id="editCategoryOfferPrice" 
+                               min="0" 
+                               step="0.01" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Offer</label>
+                        <input type="text" 
+                               name="offer" 
+                               id="editCategoryOffer" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category Image</label>
+                        <div class="mt-2 mb-4 relative">
+                            <img id="currentCategoryImage" src="" alt="Current Category Image" 
+                                 class="w-32 h-32 object-cover rounded-md">
+                            <button type="button" 
+                                    id="removeImageBtn" 
+                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hidden"
+                                    onclick="removeCurrentImage()">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <input type="file" 
+                               name="image" 
+                               id="editImageInput" 
+                               accept="image/*" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <div class="mt-2">
+                            <div id="editImagePreviewContainer" class="hidden relative">
+                                <img id="editImagePreview" class="max-w-full h-auto" style="max-height: 300px;">
+                                <div class="mt-2 flex justify-end">
+                                    <button type="button" 
+                                            id="editConfirmCropBtn" 
+                                            class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 hidden">
+                                        Confirm Crop
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="croppedImage" id="editCroppedImageData">
+                        <input type="hidden" name="existingImage" id="existingImagePath">
+                        <input type="hidden" name="removeImage" id="removeImageFlag" value="false">
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" 
+                                onclick="document.getElementById('editCategoryModal').classList.add('hidden')" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                            Update Category
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update the removeCurrentImage function
+window.removeCurrentImage = function() {
+    try {
+        const currentImageEl = document.getElementById('currentCategoryImage');
+        const existingImageInput = document.getElementById('existingImagePath');
+        const removeImageFlag = document.getElementById('removeImageFlag');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const imagePreviewContainer = document.getElementById('editImagePreviewContainer');
+        const editImageInput = document.getElementById('editImageInput');
+        const editCroppedImageData = document.getElementById('editCroppedImageData');
+        
+        if (currentImageEl && existingImageInput && removeImageFlag && removeImageBtn) {
+            // Hide current image
+            currentImageEl.src = '';
+            currentImageEl.classList.add('hidden');
+            
+            // Reset image related inputs
+            existingImageInput.value = '';
+            removeImageFlag.value = 'true';
+            removeImageBtn.classList.add('hidden');
+            
+            // Reset file input
+            if (editImageInput) {
+                editImageInput.value = '';
+            }
+
+            // Reset cropped data
+            if (editCroppedImageData) {
+                editCroppedImageData.value = '';
+            }
+            
+            // Reset cropper if exists
+            if (window.editCropper) {
+                window.editCropper.destroy();
+                window.editCropper = null;
+            }
+            
+            // Hide preview container
+            if (imagePreviewContainer) {
+                imagePreviewContainer.classList.add('hidden');
+            }
+
+            // Show confirmation message
+            Swal.fire({
+                title: 'Image Removed',
+                text: 'Please select a new image',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    } catch (error) {
+        console.error('Error removing image:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to remove image',
+            icon: 'error',
+            confirmButtonColor: '#3085d6'
+        });
+    }
+};
+
+// Your existing DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal Toggle Functions
+    function toggleModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.toggle('hidden');
+        
+        // Reset forms when closing
+        if (modal.classList.contains('hidden')) {
+            const form = modal.querySelector('form');
+            if (form) {
+                form.reset();
+                // Reset cropping and previews
+                resetImageCropping(form);
+            }
+        }
+    }
+
+    function toggleAddModal() {
+        toggleModal('addCategoryModal');
+    }
+
+    function toggleEditModal() {
+        toggleModal('editCategoryModal');
+    }
+
+    // Reset Image Cropping
+    function resetImageCropping(form) {
+        const cropperContainer = form.querySelector('.cropper-container');
+        const fileInput = form.querySelector('input[type="file"]');
+        const previewImg = form.querySelector('.cropper-image');
+        const croppedImageDataInput = form.querySelector('input[name="croppedImageData"]');
+        
+        if (cropperContainer && fileInput.cropper) {
+            fileInput.cropper.destroy();
+            fileInput.cropper = null;
+            cropperContainer.classList.add('hidden');
+        }
+
+        if (previewImg) {
+            previewImg.src = '';
+        }
+
+        if (croppedImageDataInput) {
+            croppedImageDataInput.value = '';
+        }
+    }
+
+    // Advanced form validation
+    function validateInput(input, errorMsg) {
+        const existingError = input.parentNode.querySelector('.validation-error');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        if (!input.value.trim()) {
+            input.classList.add('border-red-500');
+            const errorEl = document.createElement('p');
+            errorEl.textContent = errorMsg;
+            errorEl.classList.add('text-red-500', 'text-sm', 'mt-1', 'validation-error');
+            input.parentNode.appendChild(errorEl);
+            return false;
+        }
+        input.classList.remove('border-red-500');
+        return true;
+    }
+
+    function validatePrice(input, errorMsg) {
+        const existingError = input.parentNode.querySelector('.validation-error');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        const value = input.value.trim();
+        if (value === '' || isNaN(parseFloat(value)) || parseFloat(value) < 0) {
+            input.classList.add('border-red-500');
+            const errorEl = document.createElement('p');
+            errorEl.textContent = errorMsg;
+            errorEl.classList.add('text-red-500', 'text-sm', 'mt-1', 'validation-error');
+            input.parentNode.appendChild(errorEl);
+            return false;
+        }
+        input.classList.remove('border-red-500');
+        return true;
+    }
+
+    function validateImageUpload(fileInput, maxSizeMB = 5) {
+        const file = fileInput.files[0];
+        const existingError = fileInput.parentNode.querySelector('.validation-error');
+        
+        if (existingError) {
+            existingError.remove();
+        }
+
+        if (file) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = maxSizeMB * 1024 * 1024;
+
+            if (!allowedTypes.includes(file.type)) {
+                const errorEl = document.createElement('p');
+                errorEl.textContent = 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.';
+                errorEl.classList.add('text-red-500', 'text-sm', 'mt-1', 'validation-error');
+                fileInput.parentNode.appendChild(errorEl);
+                return false;
+            }
+
+            if (file.size > maxSize) {
+                const errorEl = document.createElement('p');
+                errorEl.textContent = `File size exceeds ${maxSizeMB}MB limit.`;
+                errorEl.classList.add('text-red-500', 'text-sm', 'mt-1', 'validation-error');
+                fileInput.parentNode.appendChild(errorEl);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Image Cropping Setup
+    function setupImageCropping(fileInput, previewImg, cropperContainer, croppedImageDataInput, options = {}) {
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Destroy existing cropper if any
+                    if (fileInput.cropper) {
+                        fileInput.cropper.destroy();
+                    }
+
+                    // Show cropper container and set image
+                    cropperContainer.classList.remove('hidden');
+                    previewImg.src = e.target.result;
+
+                    // Initialize Cropper.js
+                    const cropper = new Cropper(previewImg, {
+                        aspectRatio: 1, // Square crop
+                        viewMode: 1,
+                        crop(event) {
+                            const croppedCanvas = cropper.getCroppedCanvas({
+                                width: 300,
+                                height: 300
+                            });
+                            // Set the cropped image data as a base64 string
+                            croppedImageDataInput.value = croppedCanvas.toDataURL('image/jpeg');
+                        },
+                        ...options
+                    });
+
+                    // Store cropper instance on input for later access
+                    fileInput.cropper = cropper;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Form Submissions
+    const addCategoryForm = document.getElementById('addCategoryForm');
+    const editCategoryForm = document.getElementById('editCategoryForm');
+
+    addCategoryForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+            // Basic validation
+            if (!validateForm(this)) {
+                return;
+            }
+
+            // Check if image is selected and cropped
+            const croppedImageData = document.getElementById('addCroppedImageData').value;
+            if (!croppedImageData) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please select and crop an image',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            // Create form data object
+            const formData = new FormData(this);
+            
+            // Convert form data to JSON object
+            const jsonData = {};
+            formData.forEach((value, key) => {
+                jsonData[key] = value;
+            });
+            // Add the cropped image data
+            jsonData.croppedImage = croppedImageData;
+
+            const response = await fetch('/admin/addCategory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Category added successfully',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
+                window.location.reload();
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.message || 'Failed to add category',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Something went wrong',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    });
+
+    // Update the editCategoryForm submit handler
+    editCategoryForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+            // Basic validation
+            if (!validateForm(this)) {
+                return;
+            }
+
+            // Create form data object
+            const formData = new FormData(this);
+            
+            // Get all image-related values
+            const removeImage = formData.get('removeImage') === 'true';
+            const croppedImageData = document.getElementById('editCroppedImageData').value;
+            const existingImage = document.getElementById('existingImagePath').value;
+            
+            // Check if we have any valid image source
+            const hasValidImage = (!removeImage && existingImage) || croppedImageData;
+            
+            if (!hasValidImage) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Category must have an image',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            // Convert form data to JSON object
+            const jsonData = {};
+            formData.forEach((value, key) => {
+                jsonData[key] = value;
+            });
+
+            // Add the cropped image data if exists
+            if (croppedImageData) {
+                jsonData.croppedImage = croppedImageData;
+            }
+
+            // Add existing image if keeping it
+            if (!removeImage && existingImage) {
+                jsonData.existingImage = existingImage;
+            }
+
+            // Ensure removeImage flag is included
+            jsonData.removeImage = removeImage;
+
+            const response = await fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update the table row with new data
+                updateCategoryRow(result.category);
+                
+                // Close the modal
+                document.getElementById('editCategoryModal').classList.add('hidden');
+
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Category updated successfully',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
+
+                // Optionally reload the page to show updated data
+                window.location.reload();
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.message || 'Failed to update category',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Something went wrong',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    });
+
+    // Update status toggle handling
+    async function confirmToggleStatus(categoryId, currentStatus) {
+        try {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: `Do you want to ${currentStatus === 'Listed' ? 'unlist' : 'list'} this category?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, change it!'
+            });
+
+            if (result.isConfirmed) {
+                const response = await fetch(`/admin/toggleCategoryStatus/${categoryId}`, {
+                    method: 'POST', // Changed from GET to POST to match router
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Success!',
+                        text: 'Category status updated successfully',
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to update status',
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Something went wrong',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    }
+
+    // Form validation function
+    function validateForm(form) {
+        const nameInput = form.querySelector('input[name="name"]');
+        const descriptionInput = form.querySelector('textarea[name="description"]');
+        const offerPriceInput = form.querySelector('input[name="offerPrice"]');
+        
+        if (!nameInput.value.trim()) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Category name is required',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+
+        if (!descriptionInput.value.trim()) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Description is required',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+
+        // Validate offer price if provided
+        if (offerPriceInput.value) {
+            const price = parseFloat(offerPriceInput.value);
+            if (isNaN(price) || price < 0) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Offer price must be a positive number',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Modal Interaction
+    const modals = {
+        'addCategoryModal': document.getElementById('addCategoryModal'),
+        'editCategoryModal': document.getElementById('editCategoryModal')
+    };
+
+    Object.keys(modals).forEach(modalId => {
+        const modal = modals[modalId];
+        const modalContent = modal.querySelector('.relative');
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                toggleModal(modalId);
+            }
+        });
+
+        modalContent.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    });
+
+    // Keyboard Events
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            Object.keys(modals).forEach(modalId => {
+                const modal = modals[modalId];
+                if (!modal.classList.contains('hidden')) {
+                    toggleModal(modalId);
+                }
+            });
+        }
+    });
+
+    // Search Functionality
+    function filterCategories() {
+        const searchValue = document.getElementById('categorySearch').value.trim().toLowerCase();
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        tableRows.forEach(row => {
+            const name = row.cells[1].textContent.trim().toLowerCase();
+            const description = row.cells[2].textContent.trim().toLowerCase();
+            const offerPrice = row.cells[3].textContent.trim().toLowerCase();
+            const offer = row.cells[4].textContent.trim().toLowerCase();
+            
+            const imageAlt = row.cells[0].querySelector('img') 
+                ? row.cells[0].querySelector('img').alt.trim().toLowerCase() 
+                : '';
+
+            if (
+                name.includes(searchValue) || 
+                description.includes(searchValue) || 
+                offerPrice.includes(searchValue) || 
+                offer.includes(searchValue) ||
+                imageAlt.includes(searchValue)
+            ) {
+                row.style.display = ''; 
+            } else {
+                row.style.display = 'none'; 
+            }
+        });
+    }
+
+    // Setup Image Cropping for Add and Edit Modals
+    const addImageInput = document.getElementById('addImageInput');
+    const addImagePreview = document.getElementById('addImagePreview');
+    const addImageCropperContainer = document.getElementById('addImageCropperContainer');
+    const addCroppedImageData = document.getElementById('addCroppedImageData');
+
+    const editImageInput = document.getElementById('editImageInput');
+    const editImagePreview = document.getElementById('editImagePreview');
+    const editImageCropperContainer = document.getElementById('editImageCropperContainer');
+    const editCroppedImageData = document.getElementById('editCroppedImageData');
+
+    // Setup cropping for both modals
+    if (addImageInput && addImagePreview && addImageCropperContainer && addCroppedImageData) {
+        setupImageCropping(
+            addImageInput, 
+            addImagePreview, 
+            addImageCropperContainer, 
+            addCroppedImageData
+        );
+    }
+
+    if (editImageInput && editImagePreview && editImageCropperContainer && editCroppedImageData) {
+        setupImageCropping(
+            editImageInput, 
+            editImagePreview, 
+            editImageCropperContainer, 
+            editCroppedImageData
+        );
+    }
+
+    // Update the openEditModal function
+    window.openEditModal = function(id, name, description, offerPrice, offer, image) {
+        try {
+            const modal = document.getElementById('editCategoryModal');
+            const form = document.getElementById('editCategoryForm');
+            
+            if (!modal || !form) {
+                console.error('Required modal elements not found');
+                return;
+            }
+
+            // Reset form and cropper
+            form.reset();
+            if (window.editCropper) {
+                window.editCropper.destroy();
+                window.editCropper = null;
+            }
+
+            // Reset preview container and cropped data
+            const previewContainer = document.getElementById('editImagePreviewContainer');
+            const croppedData = document.getElementById('editCroppedImageData');
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+            }
+            if (croppedData) {
+                croppedData.value = '';
+            }
+
+            // Set form values
+            document.getElementById('editCategoryId').value = id;
+            document.getElementById('editCategoryName').value = name;
+            document.getElementById('editCategoryDescription').value = description;
+            document.getElementById('editCategoryOfferPrice').value = offerPrice || '';
+            document.getElementById('editCategoryOffer').value = offer || '';
+            
+            // Handle image
+            const currentImage = document.getElementById('currentCategoryImage');
+            const existingImagePath = document.getElementById('existingImagePath');
+            const removeImageFlag = document.getElementById('removeImageFlag');
+            const removeImageBtn = document.getElementById('removeImageBtn');
+            
+            if (image) {
+                currentImage.src = image;
+                currentImage.classList.remove('hidden');
+                existingImagePath.value = image;
+                removeImageBtn.classList.remove('hidden');
+                removeImageFlag.value = 'false';
+            } else {
+                currentImage.src = '';
+                currentImage.classList.add('hidden');
+                existingImagePath.value = '';
+                removeImageBtn.classList.add('hidden');
+                removeImageFlag.value = 'false';
+            }
+
+            // Update form action
+            form.action = `/admin/editCategory/${id}`;
+            
+            // Show modal
+            modal.classList.remove('hidden');
+        } catch (error) {
+            console.error('Error in openEditModal:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to open edit modal',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    };
+
+    // Expose functions globally
+    window.toggleAddModal = toggleAddModal;
+    window.toggleEditModal = toggleEditModal;
+    window.filterCategories = filterCategories;
+    window.confirmToggleStatus = confirmToggleStatus;
+
+    // Initialize image croppers
+    initImageCropper('addImageInput', 'addImagePreview', 'addImagePreviewContainer', 'addCroppedImageData');
+    initEditImageCropper();
+
+    // Add this helper function to update the category row
+    function updateCategoryRow(category) {
+        const row = document.querySelector(`tr[data-category-id="${category._id}"]`);
+        if (!row) return;
+
+        // Update image
+        const imageCell = row.querySelector('td:first-child');
+        if (imageCell) {
+            if (category.image) {
+                imageCell.innerHTML = `
+                    <img src="${category.image}" 
+                         alt="${category.name}" 
+                         class="w-16 h-16 object-cover rounded-md">
+                `;
+            } else {
+                imageCell.innerHTML = `
+                    <div class="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
+                        No Image
+                    </div>
+                `;
+            }
+        }
+
+        // Update other cells
+        const cells = row.getElementsByTagName('td');
+        cells[1].textContent = category.name;
+        cells[2].textContent = category.description;
+        cells[3].textContent = category.offerPrice || '';
+        cells[4].textContent = category.offer || '';
+    }
+});
+
+let addCropper = null;
+let editCropper = null;
+
+function initImageCropper(inputId, previewId, previewContainerId, croppedDataId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const previewContainer = document.getElementById(previewContainerId);
+    const croppedData = document.getElementById(croppedDataId);
+    const confirmBtn = document.getElementById('confirmCropBtn');
+
+    if (!input || !preview || !previewContainer || !croppedData) {
+        console.error('Required elements not found for image cropping');
+        return;
+    }
+
+    input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type and size
+        if (!file.type.startsWith('image/')) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please select a valid image file',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+            input.value = '';
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Image size should be less than 5MB',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+            input.value = '';
+            return;
+        }
+
+        // Destroy existing cropper if any
+        if (window[inputId + 'Cropper']) {
+            window[inputId + 'Cropper'].destroy();
+            window[inputId + 'Cropper'] = null;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            preview.src = event.target.result;
+            previewContainer.classList.remove('hidden');
+            if (confirmBtn) confirmBtn.classList.remove('hidden');
+
+            const cropper = new Cropper(preview, {
+                aspectRatio: 1,
+                viewMode: 2,
+                dragMode: 'move',
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+                ready: function() {
+                    // Generate initial crop data
+                    const canvas = this.getCroppedCanvas({
+                        width: 400,
+                        height: 400
+                    });
+                    croppedData.value = canvas.toDataURL('image/jpeg', 0.8);
+                },
+                crop: function(event) {
+                    const canvas = this.getCroppedCanvas({
+                        width: 400,
+                        height: 400
+                    });
+                    croppedData.value = canvas.toDataURL('image/jpeg', 0.8);
+                }
+            });
+
+            window[inputId + 'Cropper'] = cropper;
+
+            // Add confirm crop button handler
+            if (confirmBtn) {
+                confirmBtn.onclick = function() {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 400,
+                        height: 400
+                    });
+                    croppedData.value = canvas.toDataURL('image/jpeg', 0.8);
+                    
+                    // Show preview of cropped image
+                    preview.src = croppedData.value;
+                    cropper.destroy();
+                    window[inputId + 'Cropper'] = null;
+                    confirmBtn.classList.add('hidden');
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Image cropped successfully',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                };
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function initEditImageCropper() {
+    const input = document.getElementById('editImageInput');
+    const preview = document.getElementById('editImagePreview');
+    const previewContainer = document.getElementById('editImagePreviewContainer');
+    const croppedData = document.getElementById('editCroppedImageData');
+    const confirmBtn = document.getElementById('editConfirmCropBtn');
+
+    if (!input || !preview || !previewContainer || !croppedData || !confirmBtn) {
+        console.error('Required elements not found for edit image cropping');
+        return;
+    }
+
+    input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type and size
+        if (!file.type.startsWith('image/')) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please select a valid image file',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+            input.value = '';
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Image size should be less than 5MB',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+            input.value = '';
+            return;
+        }
+
+        // Hide current image and show preview container
+        document.getElementById('currentCategoryImage').classList.add('hidden');
+        document.getElementById('removeImageBtn').classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+        confirmBtn.classList.remove('hidden');
+
+        // Destroy existing cropper if any
+        if (window.editCropper) {
+            window.editCropper.destroy();
+            window.editCropper = null;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            preview.src = event.target.result;
+            
+            window.editCropper = new Cropper(preview, {
+                aspectRatio: 1,
+                viewMode: 2,
+                dragMode: 'move',
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+                ready: function() {
+                    const canvas = this.getCroppedCanvas({
+                        width: 400,
+                        height: 400
+                    });
+                    croppedData.value = canvas.toDataURL('image/jpeg', 0.8);
+                }
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Add confirm crop button handler
+    confirmBtn.onclick = function() {
+        if (!window.editCropper) return;
+
+        const canvas = window.editCropper.getCroppedCanvas({
+            width: 400,
+            height: 400
+        });
+        croppedData.value = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Show preview of cropped image
+        preview.src = croppedData.value;
+        window.editCropper.destroy();
+        window.editCropper = null;
+        confirmBtn.classList.add('hidden');
+        
+        // Show success message
+        Swal.fire({
+            title: 'Success!',
+            text: 'Image cropped successfully',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    };
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<%- include("../../views/partials/admin/footer") %>

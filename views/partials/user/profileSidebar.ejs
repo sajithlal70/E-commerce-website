@@ -1,0 +1,123 @@
+<!-- Navigation Sidebar -->
+<div class="col-span-3 bg-gradient-to-br from-white to-[#fff5d6] rounded-2xl shadow-2xl p-6 space-y-4 border border-[#FFD333] backdrop-blur-sm transition-all duration-300 hover:shadow-[#FFD333]">
+    <div class="flex items-center space-x-4 mb-8 group">
+        <div class="relative">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FFD333] to-[#ffc107] flex items-center justify-center text-white text-2xl border-4 border-[#ffe066] transform transition-all duration-500 hover:scale-110 hover:rotate-12 group-hover:shadow-lg">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#FFD333] rounded-full border-2 border-white"></div>
+        </div>
+        <div class="transform transition-all duration-300 group-hover:translate-x-2">
+            <h3 class="font-bold text-xl text-[#b38a00] mb-1"><%= user.name %></h3>
+            <p class="text-sm text-[#FFD333] opacity-75"><%= user.email %></p>
+        </div>
+    </div>
+
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 w-1 bg-[#FFD333] rounded-full transition-transform origin-left scale-y-0 transform group-hover:scale-y-100"></div>
+        <nav class="space-y-2">
+            <a href="/profile" class="nav-item <%= currentPage === 'profile' ? 'active bg-[#fff5d6] text-[#b38a00]' : 'text-gray-600' %> flex items-center p-3 rounded-xl space-x-3 group transition-all duration-300 hover:bg-[#fff5d6] hover:translate-x-2">
+                <div class="relative">
+                    <i class="fas fa-home w-6 text-[#FFD333] group-hover:text-[#b38a00] transition-all duration-300 group-hover:scale-110"></i>
+                    <div class="absolute inset-0 bg-[#FFD333] rounded-full transform scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-20 transition-transform duration-300"></div>
+                </div>
+                <span class="font-medium">Dashboard</span>
+            </a>
+
+            <a href="/orders" class="nav-item <%= currentPage === 'orders' ? 'active bg-[#fff5d6] text-[#b38a00]' : 'text-gray-600' %> flex items-center p-3 rounded-xl space-x-3 group transition-all duration-300 hover:bg-[#fff5d6] hover:translate-x-2">
+                <div class="relative">
+                    <i class="fas fa-shopping-basket w-6 text-[#FFD333] group-hover:text-[#b38a00] transition-all duration-300 group-hover:scale-110 hover:rotate-6"></i>
+                    <div class="absolute inset-0 bg-[#FFD333] rounded-full transform scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-20 transition-transform duration-300"></div>
+                </div>
+                <span class="font-medium">Orders</span>
+            </a>
+
+            <a href="/wishlist" class="nav-item <%= currentPage === 'wishlist' ? 'active bg-[#fff5d6] text-[#b38a00]' : 'text-gray-600' %> flex items-center p-3 rounded-xl space-x-3 group transition-all duration-300 hover:bg-[#fff5d6] hover:translate-x-2">
+                <div class="relative">
+                    <i class="fas fa-heart w-6 text-[#FFD333] group-hover:text-[#b38a00] transition-all duration-300 group-hover:scale-110 hover:rotate-6"></i>
+                    <div class="absolute inset-0 bg-[#FFD333] rounded-full transform scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-20 transition-transform duration-300"></div>
+                </div>
+                <span class="font-medium">Wishlist</span>
+            </a>
+
+            <a href="/wallet" class="nav-item <%= currentPage === 'wallet' ? 'active bg-[#fff5d6] text-[#b38a00]' : 'text-gray-600' %> flex items-center p-3 rounded-xl space-x-3 group transition-all duration-300 hover:bg-[#fff5d6] hover:translate-x-2">
+                <div class="relative">
+                    <i class="fas fa-wallet w-6 text-[#FFD333] group-hover:text-[#b38a00] transition-all duration-300 group-hover:scale-110"></i>
+                    <span class="absolute -top-1 -right-1 bg-[#FFD333] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">$</span>
+                </div>
+                <span class="font-medium">Wallet</span>
+            </a>
+
+            <a href="/address" class="nav-item <%= currentPage === 'address' ? 'active bg-[#fff5d6] text-[#b38a00]' : 'text-gray-600' %> flex items-center p-3 rounded-xl space-x-3 group transition-all duration-300 hover:bg-[#fff5d6] hover:translate-x-2">
+                <div class="relative">
+                    <i class="fas fa-map-marker-alt w-6 text-[#FFD333] group-hover:text-[#b38a00] transition-all duration-300 group-hover:scale-110 hover:rotate-6"></i>
+                    <div class="absolute inset-0 bg-[#FFD333] rounded-full transform scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-20 transition-transform duration-300"></div>
+                </div>
+                <span class="font-medium">Address</span>
+            </a>
+
+            <a href="/logout" class="nav-item flex items-center p-3 rounded-xl space-x-3 group transition-all duration-300 hover:bg-red-50 hover:translate-x-2">
+                <div class="relative">
+                    <i class="fas fa-sign-out-alt w-6 text-red-400 group-hover:text-red-600 transition-all duration-300 group-hover:scale-110 hover:rotate-6"></i>
+                    <div class="absolute inset-0 bg-red-200 rounded-full transform scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-20 transition-transform duration-300"></div>
+                </div>
+                <span class="font-medium text-red-400 group-hover:text-red-600">Log Out</span>
+            </a>
+        </nav>
+    </div>
+</div>
+
+<style>
+    .nav-item.active {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(to bottom, #FFD333, #ffc107);
+        border-radius: 0 4px 4px 0;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(-100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    .nav-item:hover i {
+        transform: scale(1.1);
+    }
+
+    .nav-item {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-item::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #FFD333;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .nav-item:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+</style>

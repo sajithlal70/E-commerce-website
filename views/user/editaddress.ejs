@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Address</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Custom Styles -->
+    <style type="text/css">
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-slideIn { animation: slideIn 0.5s ease-out forwards; }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .input-group input {
+            transition: all 0.3s ease;
+            padding-right: 3rem;
+        }
+        .input-group input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 211, 51, 0.2);
+        }
+        .input-group label {
+            transition: all 0.3s ease;
+            z-index: 10;
+            background-color: white;
+            padding: 0 0.5rem;
+        }
+        .input-group input:focus + label {
+            color: #ffd333;
+            font-weight: 600;
+        }
+        .validation-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 5;
+            pointer-events: none;
+        }
+        .address-type-card {
+            transition: all 0.3s ease;
+        }
+        .address-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            height: 4px;
+            background: #ffd333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #ffd333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+    </style>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ffd333',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Address Validation -->
+    <script src="/js/addressValidation.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="progress-bar" id="progressBar"></div>
+    <%- include("../partials/user/header") %>
+
+    <div class="px-4 py-8 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <!-- Sidebar -->
+            <div class="md:col-span-3" data-aos="fade-right">
+                <%- include("../partials/user/profileSidebar", { currentPage: 'address' }) %>
+            </div>
+
+            <!-- Form Container -->
+            <div class="md:col-span-9" data-aos="fade-up">
+                <div class="bg-white rounded-2xl shadow-xl p-8 relative overflow-hidden">
+                    <!-- Decorative Elements -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full -mr-20 -mt-20"></div>
+                    <div class="absolute bottom-0 left-0 w-32 h-32 bg-primary/5 rounded-full -ml-16 -mb-16"></div>
+
+                    <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center animate-slideIn">
+                        <i class="fas fa-map-marker-alt text-primary mr-4 text-4xl"></i>
+                        Edit Address
+                        <span class="ml-4 text-sm font-normal text-gray-500">Update your address details</span>
+                    </h2>
+
+                    <form id="editAddressForm" class="space-y-8 max-w-4xl mx-auto" method="POST" onsubmit="return false;">
+                        <!-- Add a hidden field for default status -->
+                        <input type="hidden" name="default" value="<%= address.default ? 'true' : 'false' %>">
+                        
+                        <!-- Address Type -->
+                        <div class="grid grid-cols-3 gap-6 mb-12" data-aos="fade-up" data-aos-delay="100">
+                            <% ['Home', 'Office', 'Other'].forEach((type, index) => { %>
+                                <label class="relative cursor-pointer address-type-card" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                                    <input type="radio" name="addressType" value="<%= type %>" class="sr-only peer" <%= address.addressType === type ? 'checked' : '' %>>
+                                    <div class="p-6 rounded-xl border-2 text-center peer-checked:border-primary peer-checked:bg-primary/10 hover:border-primary/50 transition-all duration-300">
+                                        <i class="fas <%= type === 'Home' ? 'fa-home' : type === 'Office' ? 'fa-building' : 'fa-archway' %> text-3xl mb-3 text-primary"></i>
+                                        <p class="font-medium"><%= type %></p>
+                                    </div>
+                                </label>
+                            <% }); %>
+                        </div>
+
+                        <!-- Personal Information Section -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-gray-700 flex items-center border-b pb-2">
+                                <i class="fas fa-user-circle text-primary mr-2"></i>
+                                Personal Information
+                            </h3>
+                            <div class="grid grid-cols-1 gap-6">
+                                <div class="input-group" data-aos="fade-up">
+                                    <input type="text" name="name" required placeholder="Enter your full name" value="<%= address.name %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                    <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                        <i class="fas fa-user text-primary mr-2"></i>Full Name
+                                    </label>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="input-group" data-aos="fade-up" data-aos-delay="100">
+                                        <input type="tel" name="phone" required pattern="[0-9]{10}" placeholder="Enter 10-digit phone number" value="<%= address.phone %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                        <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                            <i class="fas fa-phone text-primary mr-2"></i>Phone Number
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="input-group" data-aos="fade-up" data-aos-delay="200">
+                                        <input type="text" name="postalCode" required pattern="[0-9]{6}" placeholder="Enter 6-digit postal code" value="<%= address.postalCode %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                        <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                            <i class="fas fa-map-pin text-primary mr-2"></i>Postal Code
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Details Section -->
+                        <div class="space-y-6 mt-8">
+                            <h3 class="text-lg font-semibold text-gray-700 flex items-center border-b pb-2">
+                                <i class="fas fa-map-marked-alt text-primary mr-2"></i>
+                                Address Details
+                            </h3>
+                            <div class="grid grid-cols-1 gap-6">
+                                <div class="input-group" data-aos="fade-up" data-aos-delay="300">
+                                    <input type="text" name="street" required placeholder="Enter street address" value="<%= address.street %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                    <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                        <i class="fas fa-road text-primary mr-2"></i>Street Address
+                                    </label>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="input-group" data-aos="fade-up" data-aos-delay="400">
+                                        <input type="text" name="apartment" placeholder="Apartment, suite, unit, etc." value="<%= address.apartment %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                        <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                            <i class="fas fa-building text-primary mr-2"></i>Apartment/Suite
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="input-group" data-aos="fade-up" data-aos-delay="500">
+                                        <input type="text" name="landMark" placeholder="Enter nearby landmark" value="<%= address.landMark %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                        <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                            <i class="fas fa-landmark text-primary mr-2"></i>Landmark
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-group" data-aos="fade-up" data-aos-delay="600">
+                                    <input type="text" name="city" required placeholder="Enter city name" value="<%= address.city %>" class="w-full px-6 py-4 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300">
+                                    <label class="absolute -top-7 left-0 text-sm font-medium text-gray-700">
+                                        <i class="fas fa-city text-primary mr-2"></i>City
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-4 pt-12 border-t border-gray-100 mt-8" data-aos="fade-up" data-aos-delay="700">
+                            <a href="/address" class="px-8 py-4 rounded-xl text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300 flex items-center">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancel
+                            </a>
+                            <button type="submit" class="px-8 py-4 rounded-xl text-gray-800 bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:-translate-y-1 flex items-center">
+                                <i class="fas fa-save mr-2"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // Initialize AOS with custom settings
+        document.addEventListener('DOMContentLoaded', () => {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 50
+            });
+        });
+
+        // Form validation function
+        function validateForm(formData) {
+            const errors = [];
+            
+            if (!formData.addressType) {
+                errors.push('Please select an address type');
+            }
+            
+            if (!formData.name || formData.name.trim().length < 3) {
+                errors.push('Name must be at least 3 characters long');
+            }
+            
+            if (!formData.phone || !/^\d{10}$/.test(formData.phone)) {
+                errors.push('Phone number must be exactly 10 digits');
+            }
+            
+            if (!formData.postalCode || !/^\d{6}$/.test(formData.postalCode)) {
+                errors.push('Postal code must be exactly 6 digits');
+            }
+            
+            if (!formData.street || formData.street.trim().length < 5) {
+                errors.push('Street address must be at least 5 characters long');
+            }
+            
+            if (!formData.city || formData.city.trim().length < 2) {
+                errors.push('City name must be at least 2 characters long');
+            }
+            
+            return errors;
+        }
+
+        // Input validation functions
+        function validateInput(input, parent) {
+            const value = input.value.trim();
+            const existingIcon = parent.querySelector('.validation-icon');
+            if (existingIcon) existingIcon.remove();
+            
+            if (!value) {
+                showError(input, parent, 'This field is required');
+                return;
+            }
+            
+            switch (input.name) {
+                case 'name':
+                    if (value.length < 3) {
+                        showError(input, parent, 'Name must be at least 3 characters');
+                    } else {
+                        showSuccess(input, parent);
+                    }
+                    break;
+                    
+                case 'phone':
+                    if (!/^\d{10}$/.test(value)) {
+                        showError(input, parent, 'Phone must be exactly 10 digits');
+                    } else {
+                        showSuccess(input, parent);
+                    }
+                    break;
+                    
+                case 'postalCode':
+                    if (!/^\d{6}$/.test(value)) {
+                        showError(input, parent, 'Postal code must be exactly 6 digits');
+                    } else {
+                        showSuccess(input, parent);
+                    }
+                    break;
+                    
+                default:
+                    if (value) {
+                        showSuccess(input, parent);
+                    }
+            }
+        }
+
+        function showError(input, parent, message) {
+            input.classList.add('border-red-500');
+            input.classList.remove('border-green-500');
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-times-circle text-red-500 validation-icon';
+            parent.appendChild(icon);
+            icon.title = message;
+        }
+
+        function showSuccess(input, parent) {
+            input.classList.remove('border-red-500');
+            input.classList.add('border-green-500');
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-check-circle text-green-500 validation-icon';
+            parent.appendChild(icon);
+        }
+
+        function clearValidation(input, parent) {
+            const existingIcon = parent.querySelector('.validation-icon');
+            if (existingIcon) existingIcon.remove();
+            input.classList.remove('border-red-500', 'border-green-500');
+        }
+
+        // Progress bar function
+        function updateProgressBar() {
+            const form = document.getElementById('editAddressForm');
+            const requiredInputs = form.querySelectorAll('input[required]');
+            const filledInputs = Array.from(requiredInputs).filter(input => input.value.trim() !== '');
+            const progress = (filledInputs.length / requiredInputs.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editAddressForm');
+            const inputs = form.querySelectorAll('input[required]');
+            
+            // Real-time validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    const validation = addressValidation.validateField(input.name, input.value);
+                    if (!validation.isValid) {
+                        addressValidation.showFieldError(input, validation.message);
+                    } else {
+                        addressValidation.showFieldSuccess(input);
+                    }
+                    updateProgressBar();
+                });
+                
+                input.addEventListener('focus', () => {
+                    addressValidation.clearFieldValidation(input);
+                });
+                
+                input.addEventListener('input', updateProgressBar);
+            });
+
+            // Form submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const addressId = window.location.pathname.split('/').pop();
+                const formData = new FormData(form);
+                const errors = addressValidation.validateForm(formData);
+                
+                if (errors.length > 0) {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Failed',
+                        html: `
+                            <div class="text-left">
+                                <p class="font-semibold mb-2">Please fix the following errors:</p>
+                                <ul class="list-disc pl-5">
+                                    ${errors.map(err => `<li class="text-red-500">${err}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `,
+                        confirmButtonColor: '#ffd333'
+                    });
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/editAddress/${addressId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData))
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Address Updated!',
+                            text: 'Your address has been updated successfully.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        window.location.href = '/address';
+                    } else {
+                        throw new Error(data.message || 'Failed to update address');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Something went wrong',
+                        confirmButtonColor: '#ffd333'
+                    });
+                }
+            });
+
+            // Initial progress bar update
+            updateProgressBar();
+        });
+    </script>
+</body>
+</html>

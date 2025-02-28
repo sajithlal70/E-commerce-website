@@ -1,0 +1,262 @@
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slideIn {
+        animation: slideIn 0.5s ease-out forwards;
+    }
+</style>
+
+<%- include('../../views/partials/user/header') %>
+
+<!-- Breadcrumb Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="/">Home</a>
+                <a class="breadcrumb-item text-dark" href="/shop">Shop</a>
+                <a class="breadcrumb-item text-dark" href="/orders">Orders</a>
+                <span class="breadcrumb-item active">Order Confirmation</span>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Order Confirmation Content -->
+<div class="mx-auto px-10 py-8 max-w-5xl">
+    <!-- Order Success Message -->
+    <div class="text-center mb-8 animate-slideIn">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+            <i class="fas fa-check text-2xl text-green-500"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Order Placed Successfully!</h2>
+        <p class="text-gray-600">Order #<%= order._id %></p>
+    </div>
+
+    <!-- Order Details -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">Order Details</h3>
+            <button onclick="printOrder()" class="flex items-center text-yellow-600 hover:text-yellow-700">
+                <i class="fas fa-print mr-2"></i>
+                Print Order
+            </button>
+        </div>
+
+        <!-- Order Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="space-y-2">
+                <p class="text-gray-600">Order Date</p>
+                <p class="font-medium"><%= new Date(order.createdAt).toLocaleDateString() %></p>
+            </div>
+            <div class="space-y-2">
+                <p class="text-gray-600">Payment Method</p>
+                <p class="font-medium"><%= order.paymentMethod %></p>
+            </div>
+            <div class="space-y-2">
+                <p class="text-gray-600">Email</p>
+                <p class="font-medium"><%= user.email %></p>
+            </div>
+            <div class="space-y-2">
+                <p class="text-gray-600">Order Status</p>
+                <p class="font-medium"><%= order.orderStatus %></p>
+            </div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="border-t pt-6 mb-6">
+            <h4 class="font-semibold mb-4">Delivery Address</h4>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <% if (order && order.shippingAddress && order.shippingAddress.name) { %>
+                    <p class="font-medium mb-1"><%= order.shippingAddress.name %></p>
+                    <% if (order.shippingAddress.street) { %>
+                        <p class="text-gray-600"><%= order.shippingAddress.street %></p>
+                    <% } %>
+                    <% if (order.shippingAddress.apartment) { %>
+                        <p class="text-gray-600"><%= order.shippingAddress.apartment %></p>
+                    <% } %>
+                    <% if (order.shippingAddress.landMark) { %>
+                        <p class="text-gray-600"><%= order.shippingAddress.landMark %></p>
+                    <% } %>
+                    <p class="text-gray-600">
+                        <%= order.shippingAddress.city || '' %>
+                        <%= order.shippingAddress.city && order.shippingAddress.state ? ',' : '' %>
+                        <%= order.shippingAddress.state || '' %>
+                        <%= order.shippingAddress.postalCode || '' %>
+                    </p>
+                    <% if (order.shippingAddress.phone) { %>
+                        <p class="text-gray-600">Phone: <%= order.shippingAddress.phone %></p>
+                    <% } %>
+                <% } else { %>
+                    <p class="text-gray-600">No delivery address available. Please contact support.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">Order Summary</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>₹<%= order.subtotal.toFixed(2) %></span>
+                </div>
+                
+                <% if (order.discountAmount && order.discountAmount > 0) { %>
+                    <div class="flex justify-between text-green-600">
+                        <span>Discount
+                            <% if (order.couponCode) { %>
+                                (Coupon: <%= order.couponCode %>)
+                            <% } %>
+                        </span>
+                        <span>-₹<%= order.discountAmount.toFixed(2) %></span>
+                    </div>
+                <% } %>
+
+                <div class="flex justify-between">
+                    <span>Shipping</span>
+                    <span>₹<%= order.shippingCost.toFixed(2) %></span>
+                </div>
+
+                <div class="flex justify-between font-semibold border-t pt-3">
+                    <span>Total</span>
+                    <span>₹<%= order.total.toFixed(2) %></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+        <button onclick="location.href='/orders'" class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center justify-center">
+            <i class="fas fa-shopping-bag mr-2"></i>
+           Orders
+        </button>
+        <button onclick="trackOrder('<%= order._id %>')" class="px-6 py-3 border border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-50 flex items-center justify-center">
+            <i class="fas fa-truck mr-2"></i>
+            Track Order
+        </button>
+    </div>
+</div>
+
+<script>
+    function printOrder() {
+        window.print();
+    }
+
+    function trackOrder(orderId) {
+        fetch(`/orders/${orderId}/status`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const timeline = data.timeline;
+                    Swal.fire({
+                        title: 'Track Your Order',
+                        html: `
+                            <div class="space-y-4">
+                                <!-- Order Placed -->
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 ${timeline.ordered.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="ml-4 text-left">
+                                        <p class="font-medium">Order Placed</p>
+                                        <p class="text-sm text-gray-600">
+                                            ${timeline.ordered.date ? new Date(timeline.ordered.date).toLocaleString() : 'Pending'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Processing -->
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 ${timeline.processing.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                    <div class="ml-4 text-left">
+                                        <p class="font-medium">Processing</p>
+                                        <p class="text-sm text-gray-600">
+                                            ${timeline.processing.date ? new Date(timeline.processing.date).toLocaleString() : 'Pending'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Shipped -->
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 ${timeline.shipped.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                        <i class="fas fa-shipping-fast"></i>
+                                    </div>
+                                    <div class="ml-4 text-left">
+                                        <p class="font-medium">In Transit</p>
+                                        <p class="text-sm text-gray-600">
+                                            ${timeline.shipped.date ? new Date(timeline.shipped.date).toLocaleString() : 'Pending'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Delivered -->
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 ${timeline.delivered.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <div class="ml-4 text-left">
+                                        <p class="font-medium">Delivered</p>
+                                        <p class="text-sm text-gray-600">
+                                            ${timeline.delivered.date ? new Date(timeline.delivered.date).toLocaleString() : 'Expected by ' + estimateDeliveryDate()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `,
+                        width: '32rem',
+                        confirmButtonColor: '#EAB308',
+                        confirmButtonText: 'Close'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to fetch order status',
+                        confirmButtonColor: '#EAB308'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                    confirmButtonColor: '#EAB308'
+                });
+            });
+    }
+
+    function estimateDeliveryDate() {
+        const deliveryDate = new Date();
+        deliveryDate.setDate(deliveryDate.getDate() + 3);
+        return deliveryDate.toLocaleDateString();
+    }
+
+    // Store order details in session storage
+    const orderDetails = {
+        orderId: '<%= order._id %>',
+        status: '<%= order.orderStatus %>',
+        paymentMethod: '<%= order.paymentMethod %>',
+        orderDate: '<%= new Date(order.createdAt).toLocaleDateString() %>',
+        total: '₹<%= order.total.toFixed(2) %>',
+        couponApplied: <%= order.couponCode ? 'true' : 'false' %>,
+        couponCode: '<%= order.couponCode || "" %>',
+        discountAmount: '<%= order.discountAmount ? order.discountAmount.toFixed(2) : "0.00" %>'
+    };
+    sessionStorage.setItem('lastOrder', JSON.stringify(orderDetails));
+</script>
+
+<%- include('../../views/partials/user/footer') %>

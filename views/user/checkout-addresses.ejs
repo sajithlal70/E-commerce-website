@@ -1,0 +1,254 @@
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<%- include('../../views/partials/user/header') %>
+
+<!-- Breadcrumb Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="/">Home</a>
+                <a class="breadcrumb-item text-dark" href="/checkout">Checkout</a>
+                <span class="breadcrumb-item active">Manage Addresses</span>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Addresses Content -->
+<div class="mx-auto max-w-6xl px-4 py-8">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <a href="/checkout" class="text-gray-600 hover:text-yellow-600 transition-colors">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </a>
+                <h1 class="text-2xl font-semibold">Delivery Addresses</h1>
+            </div>
+            <a href="/checkout/address/add" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                Add New Address
+            </a>
+        </div>
+
+        <% if (!addresses || addresses.length === 0) { %>
+            <div class="text-center py-8">
+                <i class="fas fa-map-marker-alt text-4xl text-gray-400 mb-4"></i>
+                <p class="text-gray-600">No addresses found. Add your first address to continue.</p>
+            </div>
+        <% } else { %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <% addresses.forEach(addr => { %>
+                    <div class="border-2 <%= addr.isDefault ? 'border-yellow-500' : 'border-gray-200' %> p-4 rounded-lg relative group hover:border-yellow-300 transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <h6 class="font-medium text-lg"><%= addr.addressType %></h6>
+                                <% if (addr.isDefault) { %>
+                                    <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Default</span>
+                                <% } %>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <a href="/checkout/address/edit/<%= addr._id %>" 
+                                   class="text-yellow-600 hover:text-yellow-700">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <% if (!addr.isDefault) { %>
+                                    <button 
+                                        data-set-default 
+                                        data-address-id="<%= addr._id %>"
+                                        class="text-gray-600 hover:text-yellow-600 transition-colors"
+                                        title="Set as default address">
+                                        <i class="far fa-star"></i>
+                                    </button>
+                                <% } else { %>
+                                    <i class="fas fa-star text-yellow-500" title="Default address"></i>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p class="font-medium"><%= addr.name %></p>
+                            <p><%= addr.phone %></p>
+                            <p><%= addr.street %></p>
+                            <p><%= addr.city %> - <%= addr.postalCode %></p>
+                            <% if (addr.landMark) { %>
+                                <p>Landmark: <%= addr.landMark %></p>
+                            <% } %>
+                        </div>
+                        <button onclick="selectAddress('<%= addr._id %>')" 
+                                class="mt-4 w-full py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors">
+                            Deliver Here
+                        </button>
+                    </div>
+                <% }); %>
+            </div>
+
+            <!-- Pagination (only show if pagination data is provided) -->
+            <% if (locals.pagination && pagination.totalPages > 1) { %>
+                <div class="mt-8 flex justify-center items-center space-x-2">
+                    <% if (pagination.hasPrevPage) { %>
+                        <a href="/checkout/addresses?page=<%= pagination.prevPage %>" 
+                           class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    <% } %>
+
+                    <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+                        <a href="/checkout/addresses?page=<%= i %>" 
+                           class="px-3 py-1 <%= pagination.currentPage === i ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700' %> rounded-md hover:bg-yellow-400">
+                            <%= i %>
+                        </a>
+                    <% } %>
+
+                    <% if (pagination.hasNextPage) { %>
+                        <a href="/checkout/addresses?page=<%= pagination.nextPage %>" 
+                           class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+</div>
+
+<script>
+async function handleSetDefault(addressId) {
+    try {
+        if (!addressId) {
+            throw new Error('Invalid address ID');
+        }
+
+        const result = await Swal.fire({
+            title: 'Set as Default Address?',
+            text: 'This will be used as your default delivery address',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#EAB308',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, set as default',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Updating...',
+                text: 'Setting as default address',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await fetch(`/checkout/address/set-default/${addressId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || `Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Show success message
+            await Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Default address updated successfully',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // Reload the page to show updated default status
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error setting default address:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.message || 'Failed to set default address',
+            confirmButtonColor: '#EAB308'
+        });
+    }
+}
+
+function selectAddress(addressId) {
+    Swal.fire({
+        title: 'Selecting Address...',
+        html: '<i class="fas fa-spinner fa-spin text-yellow-500"></i> Please wait',
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
+
+    fetch(`/checkout/address/select/${addressId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '/checkout';
+        } else {
+            throw new Error(data.message || 'Failed to select address');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.message || 'Failed to select address. Please try again.',
+            confirmButtonColor: '#EAB308'
+        });
+    });
+}
+
+// Add click event listeners to the "Set as default" buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const defaultButtons = document.querySelectorAll('[data-set-default]');
+    defaultButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const addressId = button.getAttribute('data-address-id');
+            handleSetDefault(addressId);
+        });
+    });
+});
+</script>
+
+<style>
+    /* Update styles */
+    .far.fa-star {
+        transition: all 0.3s ease;
+    }
+
+    button:hover .far.fa-star {
+        transform: scale(1.1);
+        color: #EAB308;
+    }
+
+    .fas.fa-star {
+        filter: drop-shadow(0 0 2px rgba(234, 179, 8, 0.3));
+    }
+
+    .border-yellow-500 {
+        box-shadow: 0 0 0 1px #EAB308;
+    }
+</style>
+
+<%- include('../../views/partials/user/footer') %> 

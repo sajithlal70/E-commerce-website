@@ -1,0 +1,329 @@
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- Razorpay Checkout -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<% 
+// Set default values if not provided
+let categoriesList = typeof categories !== 'undefined' ? categories : [];
+let userData = typeof user !== 'undefined' ? user : null;
+%>
+
+<%- include('../../views/partials/user/header', { categories: categoriesList, user: userData }) %>
+
+<!-- Breadcrumb with enhanced styling -->
+<div class="bg-gray-50 border-b">
+    <div class="max-w-7xl mx-auto py-3 px-4">
+        <nav class="flex items-center space-x-2 text-sm">
+            <a href="/" class="text-gray-600 hover:text-yellow-500 transition-colors">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            <a href="/shop" class="text-gray-600 hover:text-yellow-500 transition-colors">Shop</a>
+            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            <span class="text-red-500">Payment Failed</span>
+        </nav>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-4xl mx-auto px-4" data-aos="fade-up" data-aos-duration="1000">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <!-- Top Pattern -->
+            <div class="h-3 bg-gradient-to-r from-red-500 via-red-400 to-red-500"></div>
+            
+            <div class="p-8">
+                <!-- Animated Failure Icon -->
+                <div class="mb-8 animate-bounce">
+                    <div class="mx-auto w-24 h-24 bg-red-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-circle text-5xl text-red-500"></i>
+                    </div>
+                </div>
+
+                <!-- Main Message -->
+                <div class="text-center mb-8" data-aos="fade-up" data-aos-delay="200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Payment Failed</h2>
+                    <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                        Don't worry! We've saved your order and you can retry the payment anytime.
+                    </p>
+                </div>
+
+                <!-- Order Details Card -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-8" data-aos="fade-up" data-aos-delay="400">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <% if (orderId && orderId !== 'Not Available') { %>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-hashtag text-yellow-500"></i>
+                                <div>
+                                    <p class="text-sm text-gray-500">Razorpay Order ID</p>
+                                    <p class="font-mono font-medium"><%= orderId %></p>
+                                </div>
+                            </div>
+                        <% } %>
+                        
+                        <% if (locals.mongoOrderId) { %>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-shopping-cart text-yellow-500"></i>
+                                <div>
+                                    <p class="text-sm text-gray-500">Order ID</p>
+                                    <p class="font-mono font-medium"><%= mongoOrderId %></p>
+                                </div>
+                            </div>
+                        <% } %>
+                        
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-clock text-red-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500">Status</p>
+                                <p class="font-medium text-red-500">Failed</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-info-circle text-red-500"></i>
+                            <div>
+                                <p class="text-sm text-gray-500">Reason</p>
+                                <p class="font-medium text-red-500">
+                                    <%= failureReason || 'Payment processing error' %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-8" data-aos="fade-up" data-aos-delay="600">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                        <div class="ml-3">
+                            <p class="text-blue-700">Any deducted amount will be automatically refunded within 5-7 business days.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Countdown -->
+                <div class="text-center mb-8" data-aos="fade-up" data-aos-delay="800">
+                    <div class="inline-flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-full">
+                        <i class="fas fa-hourglass-half text-yellow-500 animate-spin"></i>
+                        <p class="text-gray-600">Redirecting in <span id="countdown" class="font-bold text-yellow-500">25</span>s</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-aos="fade-up" data-aos-delay="1000">
+                    <% if (locals.mongoOrderId) { %>
+                        <button onclick="handleRetryPayment('<%= mongoOrderId %>')" 
+                                class="flex items-center justify-center px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all transform hover:scale-105">
+                            <i class="fas fa-redo-alt mr-2 animate-spin"></i>
+                            Retry Payment
+                        </button>
+                        <button onclick="handleAbortOrder('<%= mongoOrderId %>')" 
+                                class="flex items-center justify-center px-6 py-3 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-all transform hover:scale-105">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel Order
+                        </button>
+                    <% } %>
+                    <button onclick="location.href='/orders'" 
+                            class="flex items-center justify-center px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-all transform hover:scale-105">
+                        <i class="fas fa-shopping-bag mr-2"></i>
+                        View Orders
+                    </button>
+                    <button onclick="location.href='/shop'" 
+                            class="flex items-center justify-center px-6 py-3 border-2 border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-50 transition-all transform hover:scale-105">
+                        <i class="fas fa-store mr-2"></i>
+                        Continue Shopping
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    AOS.init();
+    let timeLeft = 25;
+    let countdownInterval;
+    
+    function startCountdown() {
+        const countdownElement = document.getElementById('countdown');
+        clearInterval(countdownInterval); // Clear any existing interval
+        
+        countdownInterval = setInterval(() => {
+            countdownElement.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = '/orders';
+            }
+            timeLeft--;
+        }, 1000);
+    }
+
+    function stopCountdown() {
+        clearInterval(countdownInterval);
+    }
+
+    // Start countdown when page loads
+    document.addEventListener('DOMContentLoaded', startCountdown);
+
+    async function handleRetryPayment(orderId) {
+        try {
+            stopCountdown();
+            
+            const loadingAlert = Swal.fire({
+                title: 'Initializing Payment',
+                text: 'Please wait...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await fetch(`/orders/${orderId}/retry-payment`);
+            const data = await response.json();
+            
+            loadingAlert.close();
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to initiate payment retry');
+            }
+
+            // Initialize Razorpay
+            const options = {
+                key: data.key,
+                amount: data.order.amount,
+                currency: data.order.currency,
+                name: "Your Store Name",
+                description: "Order Payment Retry",
+                order_id: data.order.id,
+                handler: async function (response) {
+                    try {
+                        const verifyResponse = await fetch(`/orders/${orderId}/verify-retry-payment`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(response)
+                        });
+                        
+                        const verifyData = await verifyResponse.json();
+                        
+                        if (verifyData.success) {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Payment Successful',
+                                text: 'Your order has been confirmed!',
+                                confirmButtonColor: '#EAB308'
+                            });
+                            window.location.href = '/orders';
+                        } else {
+                            throw new Error(verifyData.message);
+                        }
+                    } catch (error) {
+                        console.error('Payment verification failed:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Failed',
+                            text: error.message || 'Payment verification failed',
+                            confirmButtonColor: '#EAB308'
+                        });
+                        startCountdown();
+                    }
+                }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.open();
+            
+        } catch (error) {
+            console.error('Error retrying payment:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to initiate payment retry',
+                confirmButtonColor: '#EAB308'
+            });
+            startCountdown();
+        }
+    }
+
+    async function handleAbortOrder(orderId) {
+        try {
+            stopCountdown();
+            
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "This will permanently cancel the order. You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EAB308',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, cancel order',
+                cancelButtonText: 'No, keep it'
+            });
+            
+            if (result.isConfirmed) {
+                const loadingAlert = Swal.fire({
+                    title: 'Cancelling Order',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                console.log('Attempting to cancel order:', orderId);
+
+                const response = await fetch(`/orders/${orderId}/abort`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                loadingAlert.close();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `Server error: ${response.status}`);
+                }
+                
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Order Cancelled',
+                        text: 'Your order has been successfully cancelled',
+                        confirmButtonColor: '#EAB308'
+                    });
+                    window.location.href = '/orders';
+                } else {
+                    throw new Error(data.message || 'Failed to cancel order');
+                }
+            } else {
+                startCountdown();
+            }
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to cancel order. Please try again.',
+                confirmButtonColor: '#EAB308'
+            });
+            startCountdown();
+        }
+    }
+</script>
+
+<%- include('../../views/partials/user/footer') %> 

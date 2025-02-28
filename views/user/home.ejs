@@ -1,0 +1,571 @@
+<%-include("../../views/partials/user/header")%>
+    <!-- Navbar End -->
+
+    <!-- Add this CSS after your header include -->
+    <style>
+        .out-of-stock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .out-of-stock-overlay .badge {
+            font-size: 1rem;
+            padding: 8px 16px;
+            background-color: #dc3545 !important;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+            opacity: 0.9;
+        }
+
+        .product-action .disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            pointer-events: none;
+            background-color: #f8f9fa;
+        }
+
+        .stock-status {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 8px 0;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .stock-status.text-success {
+            color: #28a745 !important;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .stock-status.text-danger {
+            color: #dc3545 !important;
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .product-item {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .product-item.out-of-stock {
+            opacity: 0.9;
+        }
+
+        .product-item.out-of-stock .product-img img {
+            filter: grayscale(15%);
+        }
+
+        .product-item.out-of-stock:hover {
+            opacity: 1;
+        }
+
+        .product-item.out-of-stock:hover .product-img img {
+            filter: grayscale(10%);
+        }
+    </style>
+
+    <!-- Carousel Start -->
+    <div class="container-fluid mb-3">
+        <div class="row px-xl-5">
+            <div class="col-lg-8">
+                <div id="header-carousel" class="carousel slide carousel-fade mb-30 mb-lg-0" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        <li data-target="#header-carousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#header-carousel" data-slide-to="1"></li>
+                        <li data-target="#header-carousel" data-slide-to="2"></li>
+                    </ol>
+                    <div class="carousel-inner">
+                        <div class="carousel-item position-relative active" style="height: 430px;">
+                            <img class="position-absolute w-100 h-100" src="img/carousel-1.jpg" style="object-fit: cover;">
+                            <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                                <div class="p-3" style="max-width: 700px;">
+                                    <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">Dental Handpieces</h1>
+                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn"><b> Affordable | Quality | Stable | Durable </b><br> Available for most of the popular models </p>
+                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="#">Shop Now</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item position-relative" style="height: 430px;">
+                            <img class="position-absolute w-100 h-100" src="img/carousel-2.jpg" style="object-fit: cover;">
+                            <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                                <div class="p-3" style="max-width: 700px;">
+                                    <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">ADS AJ12 Dental Chair</h1>
+                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn"> Steel Base | Steel Backrest | Integrated Foot Switch </p>
+                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="#">Shop Now</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item position-relative" style="height: 430px;">
+                            <img class="position-absolute w-100 h-100" src="img/carousel-3.jpg" style="object-fit: cover;">
+                            <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                                <div class="p-3" style="max-width: 700px;">
+                                    <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown"> ADS Dental System </h1>
+                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn">The aerosol and droplet eliminators of the EOS system have been specially designed and manufactured to reduce the droplets and aerosol spray inherent in dental care</p>
+                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="#">Shop Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="product-offer mb-30" style="height: 200px;">
+                    <img class="img-fluid" src="img/offer-1.jpg" alt="">
+                    <div class="offer-text">
+                        <h6 class="text-white text-uppercase">Save 20%</h6>
+                        <h3 class="text-white mb-3">Special Offer</h3>
+                        <a href="" class="btn btn-primary">Shop Now</a>
+                    </div>
+                </div>
+                <div class="product-offer mb-30" style="height: 200px;">
+                    <img class="img-fluid" src="img/offer-2.jpg" alt="">
+                    <div class="offer-text">
+                        <h6 class="text-white text-uppercase">Save 20%</h6>
+                        <h3 class="text-white mb-3">Special Offer</h3>
+                        <a href="" class="btn btn-primary">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Carousel End -->
+
+
+    <!-- Featured Start -->
+    <div class="container-fluid pt-5">
+        <div class="row px-xl-5 pb-3">
+            <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
+                    <h1 class="fa fa-check text-primary m-0 mr-3"></h1>
+                    <h5 class="font-weight-semi-bold m-0">Quality Product</h5>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
+                    <h1 class="fa fa-shipping-fast text-primary m-0 mr-2"></h1>
+                    <h5 class="font-weight-semi-bold m-0">Free Shipping</h5>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
+                    <h1 class="fas fa-exchange-alt text-primary m-0 mr-3"></h1>
+                    <h5 class="font-weight-semi-bold m-0">14-Day Return</h5>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
+                    <h1 class="fa fa-phone-volume text-primary m-0 mr-3"></h1>
+                    <h5 class="font-weight-semi-bold m-0">24/7 Support</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Featured End -->
+
+
+    <!-- Categories Start -->
+    <div class="container-fluid pt-5">
+        <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4"><span class="bg-secondary pr-3">Categories</span></h2>
+        <div class="row px-xl-5 pb-3">
+            
+            <% categories.forEach((cat) => { %>
+                <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
+                    <a class="text-decoration-none" href="/shop?category=<%= cat._id %>">
+                        <div class="cat-item d-flex align-items-center mb-4">
+                            <div class="overflow-hidden" style="width: 100px; height: 100px;">
+                                <img class="img-fluid" src="<%= cat.image %>" alt="<%= cat.name %>">
+                            </div>
+                            <div class="flex-fill pl-3">
+                                <h6><%= cat.name %></h6>
+                                <small class="text-body"><%= cat.productCount %> Products</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+    <!-- Categories End -->
+
+
+    <!-- Products Start -->
+    <div class="container-fluid pt-5 pb-3">
+        <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4"><span class="bg-secondary pr-3">Featured Products</span></h2>
+        <div class="row px-xl-5">
+            <% products.forEach((product) => { %>
+                <% if (!product.isBlocked) { %>
+                    <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
+                        <% 
+                        const stockValue = product.stock !== undefined ? product.stock : (product.quantity || 0);
+                        const isOutOfStock = stockValue <= 0;
+                        %>
+                        <div class="product-item bg-light mb-4 <%= isOutOfStock ? 'out-of-stock' : '' %>">
+                            <div class="product-img position-relative overflow-hidden">
+                              <% if(product.productImage && product.productImage.length > 0) { %>
+                                <img class="img-fluid w-100" src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                                <% } else { %>
+                                  <img src="/images/placeholder.jpg" alt="No image" class="img-fluid w-100">
+                               <% } %>
+
+                                <% if (isOutOfStock) { %>
+                                    <div class="out-of-stock-overlay">
+                                        <span class="badge bg-danger text-white px-3 py-2">Out of Stock</span>
+                                    </div>
+                                <% } %>
+
+                                <div class="product-action">
+                                    <% if (!isOutOfStock) { %>
+                                        <a class="btn btn-outline-dark btn-square add-to-cart-link" 
+                                           href="#" 
+                                           data-product-id="<%= product._id %>"
+                                           data-stock-status="instock"
+                                           data-stock-quantity="<%= stockValue %>">
+                                            <i class="fa fa-shopping-cart"></i>
+                                        </a>
+                                    <% } else { %>
+                                        <button class="btn btn-outline-dark btn-square disabled" disabled>
+                                            <i class="fa fa-shopping-cart"></i>
+                                        </button>
+                                    <% } %>
+                                    
+                                    <a class="btn btn-outline-dark btn-square wishlist-toggle" 
+                                       href="#" 
+                                       data-product-id="<%= product._id %>">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                    <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-sync-alt"></i></a>
+                                    <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-search"></i></a>
+                                </div>
+                            </div>
+                            <div class="text-center py-4 px-4">
+                                <a class="product-name h6 text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id%>">  <strong><%= product.productName %></strong></a>
+                                <div class="d-flex align-items-center justify-content-center mt-2">
+                                    <h6>&#8377;<%= product.salePrice %></h6><h6 class="text-muted ml-2"><del>&#8377;<%= product.reqularPrice%></del></h6>
+                                </div>
+                                <div  class="bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small w-25 mx-auto">
+                                    <%= categories.offer %>
+                                 </div>
+                                <div class="d-flex align-items-center justify-content-center mb-1">
+        
+                                </div>
+                                <div class="stock-status <%= isOutOfStock ? 'text-danger' : 'text-success' %> small mt-2">
+                                    <%= isOutOfStock ? 'Out of Stock' : `In Stock (${stockValue} available)` %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% }) %>
+        </div>
+    </div>
+    <!-- Products End -->
+
+
+    <!-- Offer Start -->
+    <div class="container-fluid pt-5 pb-3">
+        <div class="row px-xl-5">
+            <div class="col-md-6">
+                <div class="product-offer mb-30" style="height: 300px;">
+                    <img class="img-fluid" src="img/offer-1.jpg" alt="">
+                    <div class="offer-text">
+                        <h6 class="text-white text-uppercase">Save 20%</h6>
+                        <h3 class="text-white mb-3">Special Offer</h3>
+                        <a href="" class="btn btn-primary">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="product-offer mb-30" style="height: 300px;">
+                    <img class="img-fluid" src="img/offer-2.jpg" alt="">
+                    <div class="offer-text">
+                        <h6 class="text-white text-uppercase">Save 20%</h6>
+                        <h3 class="text-white mb-3">Special Offer</h3>
+                        <a href="" class="btn btn-primary">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Offer End -->
+
+
+    <!-- Recent Products Section -->
+    <div class="container-fluid pt-5 pb-3">
+        <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4"><span class="bg-secondary pr-3">Recent Products</span></h2>
+        <div class="row px-xl-5">
+            <% recentProducts.forEach((product) => { %>
+                <% if (!product.isBlocked) { %>
+                    <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
+                        <% 
+                        const stockValue = product.stock !== undefined ? product.stock : (product.quantity || 0);
+                        const isOutOfStock = stockValue <= 0;
+                        %>
+                        <div class="product-item bg-light mb-4 <%= isOutOfStock ? 'out-of-stock' : '' %>">
+                            <div class="product-img position-relative overflow-hidden">
+                                <% if(product.productImage && product.productImage.length > 0) { %>
+                                    <img class="img-fluid w-100" src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                                <% } else { %>
+                                    <img src="/images/placeholder.jpg" alt="No image" class="img-fluid w-100">
+                                <% } %>
+
+                                <% if (isOutOfStock) { %>
+                                    <div class="out-of-stock-overlay">
+                                        <span class="badge bg-danger text-white px-3 py-2">Out of Stock</span>
+                                    </div>
+                                <% } %>
+
+                                <div class="product-action">
+                                    <% if (!isOutOfStock) { %>
+                                        <a class="btn btn-outline-dark btn-square add-to-cart-link" 
+                                           href="#" 
+                                           data-product-id="<%= product._id %>"
+                                           data-stock-status="instock"
+                                           data-stock-quantity="<%= stockValue %>">
+                                            <i class="fa fa-shopping-cart"></i>
+                                        </a>
+                                    <% } else { %>
+                                        <button class="btn btn-outline-dark btn-square disabled" disabled>
+                                            <i class="fa fa-shopping-cart"></i>
+                                        </button>
+                                    <% } %>
+                                    
+                                    <a class="btn btn-outline-dark btn-square wishlist-toggle" 
+                                       href="#" 
+                                       data-product-id="<%= product._id %>">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                    <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-sync-alt"></i></a>
+                                    <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-search"></i></a>
+                                </div>
+                            </div>
+                            <div class="text-center py-4 px-4">
+                                <a class="product-name h6 text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id%>">
+                                    <strong><%= product.productName %></strong>
+                                </a>
+                                <div class="d-flex align-items-center justify-content-center mt-2">
+                                    <h6>&#8377;<%= product.salePrice %></h6>
+                                    <h6 class="text-muted ml-2"><del>&#8377;<%= product.reqularPrice%></del></h6>
+                                </div>
+                                <div class="bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small w-25 mx-auto">
+                                    <%= product.offer || 'Sale' %>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center mb-1">
+                                </div>
+                                <div class="stock-status <%= isOutOfStock ? 'text-danger' : 'text-success' %> small mt-2">
+                                    <%= isOutOfStock ? 'Out of Stock' : `In Stock (${stockValue} available)` %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% }) %>
+        </div>
+    </div>
+    <!-- Products End -->
+
+
+    <!-- Vendor Start -->
+    <div class="container-fluid py-5">
+        <div class="row px-xl-5">
+            <div class="col">
+                <div class="owl-carousel vendor-carousel">
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-1.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-2.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-3.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-4.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-5.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-6.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-7.jpg" alt="">
+                    </div>
+                    <div class="bg-light p-4">
+                        <img src="img/vendor-8.jpg" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vendor End -->
+<script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cart functionality
+        const addToCartLinks = document.querySelectorAll('.add-to-cart-link');
+    
+        addToCartLinks.forEach(link => {
+            link.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const productId = link.getAttribute('data-product-id');
+                const stockStatus = link.getAttribute('data-stock-status');
+                
+                if (stockStatus === 'outofstock') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Out of Stock',
+                        text: 'Sorry, this product is currently unavailable',
+                        position: 'center',
+                        showConfirmButton: true
+                    });
+                    return;
+                }
+    
+                try {
+                    const response = await fetch('/add-to-cart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            productId,
+                            quantity: 1
+                        })
+                    });
+    
+                    const data = await response.json();
+    
+                    if (response.status === 401) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Please Sign In',
+                            text: 'You need to sign in to add items to cart',
+                            confirmButtonText: 'Sign In',
+                            showCancelButton: true,
+                            position: 'center'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/signin';
+                            }
+                        });
+                        return;
+                    }
+    
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Product added to cart successfully.',
+                            position: 'center',
+                            showConfirmButton: true,
+                            timer: 3000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.message || 'Failed to add product to cart',
+                            position: 'center',
+                            showConfirmButton: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Add to cart error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while adding to cart',
+                        position: 'center',
+                        showConfirmButton: true
+                    });
+                }
+            });
+        });
+
+        // Wishlist functionality 
+        const wishlistButtons = document.querySelectorAll('.wishlist-toggle');
+    
+        wishlistButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const productId = button.getAttribute('data-product-id');
+    
+                try {
+                    const response = await fetch('/toggle-wishlist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ productId })
+                    });
+    
+                    const data = await response.json();
+    
+                    if (response.status === 401) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Please Sign In',
+                            text: 'You need to sign in to manage your wishlist',
+                            confirmButtonText: 'Sign In',
+                            showCancelButton: true,
+                            position: 'center'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/signin';
+                            }
+                        });
+                        return;
+                    }
+    
+                    if (response.ok) {
+                        // Toggle button state
+                        const icon = button.querySelector('i');
+                        icon.classList.toggle('fas');
+                        icon.classList.toggle('far');
+    
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            position: 'center',
+                            showConfirmButton: true,
+                            timer: 3000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.message || 'Failed to update wishlist',
+                            position: 'center',
+                            showConfirmButton: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Wishlist toggle error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating wishlist',
+                        position: 'center',
+                        showConfirmButton: true
+                    });
+                }
+            });
+        });
+    });
+
+    </script>
+    
+
+     <%-include("../../views/partials/user/footer")%>
+ 
+   

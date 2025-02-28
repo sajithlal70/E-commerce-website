@@ -1,0 +1,136 @@
+<script>
+function setActive(element) {
+    // Remove active class from all items
+    const items = document.querySelectorAll('aside nav a');
+    items.forEach(item => {
+        item.classList.remove('bg-gray-700', 'text-white', 'active-link');
+        item.classList.add('text-gray-300');
+    });
+
+    // Add active class to clicked item
+    element.classList.remove('text-gray-300');
+    element.classList.add('bg-gray-700', 'text-white', 'active-link');
+    
+    // Animate the icon
+    const icon = element.querySelector('.menu-icon');
+    icon.style.transform = 'scale(1.2)';
+    icon.style.color = '#FCD34D';
+    
+    // Reset other icons
+    document.querySelectorAll('.menu-icon').forEach(icon => {
+        if (!icon.closest('a').classList.contains('active-link')) {
+            icon.style.transform = 'scale(1)';
+            icon.style.color = '';
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Set active menu item based on current URL
+    const currentPath = window.location.pathname;
+    const menuItems = document.querySelectorAll('aside nav a');
+    menuItems.forEach(item => {
+        if (item.getAttribute('href') === currentPath) {
+            setActive(item);
+        }
+    });
+
+    // Add hover animations to menu icons
+    const menuIcons = document.querySelectorAll('.menu-icon');
+    menuIcons.forEach(icon => {
+        icon.parentElement.addEventListener('mouseover', () => {
+            if (!icon.closest('a').classList.contains('active-link')) {
+                icon.style.transform = 'scale(1.2)';
+                icon.style.color = '#FCD34D';
+            }
+        });
+        
+        icon.parentElement.addEventListener('mouseout', () => {
+            if (!icon.closest('a').classList.contains('active-link')) {
+                icon.style.transform = 'scale(1)';
+                icon.style.color = '';
+            }
+        });
+    });
+
+    // Add smooth transition for sidebar links
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('mouseover', () => {
+            if (!link.classList.contains('active-link')) {
+                link.style.backgroundColor = 'rgba(55, 65, 81, 0.5)';
+            }
+        });
+        
+        link.addEventListener('mouseout', () => {
+            if (!link.classList.contains('active-link')) {
+                link.style.backgroundColor = 'transparent';
+            }
+        });
+    });
+
+    // Add animation to admin icon
+    const adminIcon = document.querySelector('.admin-icon');
+    if (adminIcon) {
+        adminIcon.addEventListener('mouseover', () => {
+            adminIcon.style.transform = 'scale(1.05) rotate(5deg)';
+        });
+        
+        adminIcon.addEventListener('mouseout', () => {
+            adminIcon.style.transform = 'scale(1) rotate(0deg)';
+        });
+    }
+
+    // Add ripple effect to buttons
+    const buttons = document.querySelectorAll('button, .sidebar-link');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('ripple');
+            this.appendChild(ripple);
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size/2;
+            const y = e.clientY - rect.top - size/2;
+            
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+
+    // Simulate fetching admin name
+    document.getElementById("adminName").textContent = adminName;
+
+    // Toggle dropdown visibility
+    const userMenuButton = document.getElementById("userMenuButton");
+    const userMenuDropdown = document.getElementById("userMenuDropdown");
+
+    userMenuButton.addEventListener("click", () => {
+        userMenuDropdown.classList.toggle("hidden");
+    });
+
+    // Close dropdown if clicked outside
+    window.addEventListener("click", (e) => {
+        if (!userMenuButton.contains(e.target)) {
+            userMenuDropdown.classList.add("hidden");
+        }
+    });
+
+    // Active navigation item
+    document.querySelectorAll("nav a").forEach(link => {
+        link.addEventListener("click", function () {
+            document.querySelector("nav a.bg-yellow-400")?.classList.remove("bg-yellow-400", "text-gray-800");
+            this.classList.add("bg-yellow-400", "text-gray-800");
+        });
+    });
+});
+</script>
+
+</main>
+</div>
+</body>
+</html>

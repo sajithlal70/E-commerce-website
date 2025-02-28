@@ -1,0 +1,72 @@
+<%- include("../../views/partials/user/header") %>
+
+<div class="container">
+  <form class="login-form" method="post" action="/signin" id="loginForm">
+    <h2 class="form-title">Login to Your Account</h2>
+    
+    <% if (errorMessage && errorMessage.length > 0) { %>
+      <div class="error-message3" id="error-message">
+        <%= errorMessage %>
+      </div>
+    <% } %>
+    
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" name="email" id="email">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password">
+    </div>
+    
+    <div id="error-message" class="error-message" style="color: red; display: none;"></div>
+
+    <div class="form-options">
+      <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+    </div>
+    
+    <button type="submit" class="submit-btn">Login</button>
+    
+    <div class="form-footer">
+      <p>Don't have an account? <a href="/signup">Sign up</a></p>
+      <a href="<%= googleAuthUrl %>">
+        <img class="google-signin-btn-img" src="img/google_icon.png" alt="">Sign in with Google
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Add SweetAlert2 CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+   
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBlocked = urlParams.get('blocked');
+    const blockMessage = urlParams.get('message');
+    
+    if (isBlocked === 'true' && blockMessage) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Account Blocked',
+        text: decodeURIComponent(blockMessage),
+        confirmButtonColor: '#3085d6',
+        allowOutsideClick: false
+      }).then(() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      });
+    }
+
+    const errorMessage = document.getElementById("error-message");
+    if (errorMessage && errorMessage.style.display !== 'none') {
+      setTimeout(() => {
+        errorMessage.style.display = "none";
+      }, 5000);
+    }
+  });
+</script>
+
+<%- include("../../views/partials/user/footer") %>

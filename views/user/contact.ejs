@@ -1,0 +1,739 @@
+<%- include('../partials/user/header.ejs') %>
+
+<!-- Enhanced Contact Page Start -->
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+    <!-- Animated Hero Section -->
+    <div class="text-center mb-5 position-relative">
+        <div class="hero-badge position-absolute">
+            <span class="badge bg-primary p-3 rounded-pill animate__animated animate__bounce animate__infinite">
+                <i class="fas fa-headset fa-lg"></i> 24/7 Support
+            </span>
+        </div>
+        <h1 class="display-4 text-uppercase position-relative mb-4">
+            <span class="bg-secondary pr-3 transform hover:scale-105 transition-transform duration-300">
+                Let's Connect
+            </span>
+        </h1>
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <p class="text-muted animate__animated animate__fadeIn">
+                    Have questions about our products or services? We're here to help! Our dedicated team is ready to assist you with any inquiries.
+                </p>
+                <div class="d-flex justify-content-center gap-3 mt-3 animate__animated animate__fadeInUp">
+                    <span class="badge bg-success p-2">
+                        <i class="fas fa-check-circle"></i> Quick Response
+                    </span>
+                    <span class="badge bg-info p-2">
+                        <i class="fas fa-shield-alt"></i> Secure Communication
+                    </span>
+                    <span class="badge bg-warning p-2">
+                        <i class="fas fa-star"></i> Expert Support
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row px-xl-5">
+        <!-- Contact Form Section -->
+        <div class="col-lg-7 mb-5 wow fadeInLeft" data-wow-delay="0.2s">
+            <div class="contact-form bg-light p-30 shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <div id="success" class="alert alert-success alert-dismissible fade show d-none" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span class="message"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div class="form-header mb-4 text-center">
+                    <div class="form-icon mb-3 position-relative">
+                        <div class="icon-circle bg-primary rounded-circle d-inline-block p-4">
+                            <i class="fas fa-envelope-open-text fa-2x text-white animate__animated animate__pulse animate__infinite"></i>
+                        </div>
+                        <div class="floating-badges">
+                            <span class="badge bg-success position-absolute top-0 start-100 animate__animated animate__fadeInRight">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span class="badge bg-info position-absolute bottom-0 start-0 animate__animated animate__fadeInLeft">
+                                <i class="fas fa-shield-alt"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <h4 class="text-uppercase mb-2 text-primary fw-bold">Send us a Message</h4>
+                    <p class="text-muted">We'll get back to you within 24 hours</p>
+                    <div class="typing-animation">
+                        <span class="typing-text text-primary"></span>
+                    </div>
+                </div>
+                <form name="sentMessage" id="contactForm" class="needs-validation" novalidate>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control border-0 bg-white shadow-sm" 
+                                       name="name" id="name" placeholder="Your Name" required />
+                                <label for="name">
+                                    <i class="fas fa-user text-primary me-2"></i>Your Name
+                                </label>
+                                <div class="invalid-feedback">
+                                    <i class="fas fa-exclamation-circle me-2"></i>Please enter your name
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control border-0 bg-white shadow-sm" 
+                                       name="email" id="email" placeholder="Your Email" required />
+                                <label for="email">
+                                    <i class="fas fa-envelope text-primary me-2"></i>Your Email
+                                </label>
+                                <div class="invalid-feedback">
+                                    <i class="fas fa-exclamation-circle me-2"></i>Please enter a valid email
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control border-0 bg-white shadow-sm" 
+                                       name="subject" id="subject" placeholder="Subject" required />
+                                <label for="subject">
+                                    <i class="fas fa-tag text-primary me-2"></i>Subject
+                                </label>
+                                <div class="invalid-feedback">
+                                    <i class="fas fa-exclamation-circle me-2"></i>Please enter a subject
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control border-0 bg-white shadow-sm" style="height: 150px" 
+                                          name="message" id="message" placeholder="Your Message" required></textarea>
+                                <label for="message">
+                                    <i class="fas fa-comment-alt text-primary me-2"></i>Your Message
+                                </label>
+                                <div class="invalid-feedback">
+                                    <i class="fas fa-exclamation-circle me-2"></i>Please enter your message
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg hover:shadow-xl 
+                                     transition-all duration-300 position-relative overflow-hidden submit-btn" 
+                                type="submit" id="sendMessageButton">
+                            <span class="btn-content">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </span>
+                            <span class="btn-loader d-none">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                            </span>
+                        </button>
+                        <!-- Inline Message Container -->
+                        <div class="form-message mt-3">
+                            <div class="alert alert-success alert-dismissible fade d-none" role="alert" id="inlineSuccess">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span class="message">Message sent successfully!</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <div class="alert alert-danger alert-dismissible fade d-none" role="alert" id="inlineError">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <span class="message">Something went wrong! Please try again.</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Enhanced Form Features -->
+                <div class="form-features mt-5">
+                    <div class="row g-4 text-center">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-card p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all">
+                                <i class="fas fa-lock text-primary fa-2x mb-2"></i>
+                                <h6 class="mb-1">Secure Form</h6>
+                                <p class="small text-muted mb-0">SSL Protected</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-card p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all">
+                                <i class="fas fa-bolt text-primary fa-2x mb-2"></i>
+                                <h6 class="mb-1">Quick Response</h6>
+                                <p class="small text-muted mb-0">Within 24 Hours</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-card p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all">
+                                <i class="fas fa-headset text-primary fa-2x mb-2"></i>
+                                <h6 class="mb-1">24/7 Support</h6>
+                                <p class="small text-muted mb-0">Always Available</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-card p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all">
+                                <i class="fas fa-heart text-primary fa-2x mb-2"></i>
+                                <h6 class="mb-1">User Friendly</h6>
+                                <p class="small text-muted mb-0">Easy to Use</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information Section -->
+        <div class="col-lg-5 mb-5 wow fadeInRight" data-wow-delay="0.3s">
+            <!-- Map Section -->
+            <div class="bg-light p-30 mb-30 shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <iframe class="w-100 rounded-lg" style="height: 300px;"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.7725435876387!2d77.64857799999999!3d12.901163!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae15376b8c95cf%3A0xcb4c1526029a60d3!2sHustlehub%20Tech%20Park!5e0!3m2!1sen!2sin!4v1708750844949!5m2!1sen!2sin"
+                    frameborder="0" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+            </div>
+
+            <!-- Enhanced Contact Details -->
+            <div class="bg-light p-30 shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <div class="contact-info">
+                    <div class="section-title position-relative mb-4">
+                        <h4 class="text-uppercase">Contact Details</h4>
+                        <div class="title-line"></div>
+                    </div>
+                    
+                    <div class="contact-item mb-4 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon bg-gradient-primary text-white rounded-circle p-3 mr-3 animate__animated animate__bounce">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Our Location</h5>
+                                <p class="mb-0">Hustlehub Tech Park</p>
+                                <p class="mb-0 text-muted small">HSR Layout, Bengaluru, Karnataka, India</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item mb-4 wow fadeInUp" data-wow-delay="0.2s">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon bg-gradient-primary text-white rounded-circle p-3 mr-3 animate__animated animate__bounce">
+                                <i class="fas fa-envelope-open"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Email Us</h5>
+                                <p class="mb-0">support@dentkart.com</p>
+                                <p class="mb-0 text-muted small">24/7 online support</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item mb-4 wow fadeInUp" data-wow-delay="0.3s">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon bg-gradient-primary text-white rounded-circle p-3 mr-3 animate__animated animate__bounce">
+                                <i class="fas fa-phone-volume"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Call Us</h5>
+                                <p class="mb-0">+91 9876543210</p>
+                                <p class="mb-0 text-muted small">Mon-Sat: 9AM to 9PM</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- New Features Section -->
+                    <div class="features-section mt-5">
+                        <h5 class="text-center mb-4">Why Choose Us?</h5>
+                        <div class="row g-4">
+                            <div class="col-6">
+                                <div class="feature-item text-center p-3 rounded bg-white shadow-sm hover:shadow-md transition-shadow">
+                                    <i class="fas fa-clock text-primary mb-2"></i>
+                                    <p class="small mb-0">Quick Response</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="feature-item text-center p-3 rounded bg-white shadow-sm hover:shadow-md transition-shadow">
+                                    <i class="fas fa-certificate text-primary mb-2"></i>
+                                    <p class="small mb-0">Certified Team</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="feature-item text-center p-3 rounded bg-white shadow-sm hover:shadow-md transition-shadow">
+                                    <i class="fas fa-headset text-primary mb-2"></i>
+                                    <p class="small mb-0">24/7 Support</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="feature-item text-center p-3 rounded bg-white shadow-sm hover:shadow-md transition-shadow">
+                                    <i class="fas fa-shield-alt text-primary mb-2"></i>
+                                    <p class="small mb-0">Secure Process</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Social Media Section -->
+                    <div class="social-section mt-5 text-center wow fadeInUp" data-wow-delay="0.5s">
+                        <h5 class="mb-4">Connect With Us</h5>
+                        <div class="social-icons d-flex justify-content-center gap-3">
+                            <a class="social-icon facebook" href="#" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a class="social-icon twitter" href="#" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a class="social-icon instagram" href="#" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a class="social-icon linkedin" href="#" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Styles -->
+<style>
+    /* Hero Badge */
+    .hero-badge {
+        top: -20px;
+        right: 20px;
+        z-index: 10;
+    }
+
+    /* Gradient Backgrounds */
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #007bff, #00bcd4);
+    }
+
+    /* Title Line */
+    .title-line {
+        width: 50px;
+        height: 2px;
+        background: #007bff;
+        margin-top: 10px;
+    }
+
+    /* Contact Icons Animation */
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .contact-icon:hover {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Social Icons */
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        transition: all 0.3s ease;
+        background: #007bff;
+    }
+
+    .social-icon:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .social-icon.facebook { background: #3b5998; }
+    .social-icon.twitter { background: #1da1f2; }
+    .social-icon.instagram { background: #e1306c; }
+    .social-icon.linkedin { background: #0077b5; }
+
+    /* Feature Items */
+    .feature-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Form Animations */
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+
+    /* Custom Animations */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .floating {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .hero-badge {
+            position: relative !important;
+            top: 0;
+            right: 0;
+            margin-bottom: 20px;
+        }
+        
+        .contact-info > div {
+            margin-bottom: 20px;
+        }
+    }
+
+    /* Enhanced Form Styles */
+    .form-floating > .form-control {
+        height: 60px;
+        line-height: 1.5;
+        padding: 1rem 1rem;
+    }
+
+    .form-floating > label {
+        padding: 1rem 1rem;
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
+        color: #0d6efd;
+    }
+
+    /* Icon Circle Animation */
+    .icon-circle {
+        transition: all 0.3s ease;
+    }
+
+    .form-icon:hover .icon-circle {
+        transform: rotate(15deg) scale(1.1);
+    }
+
+    /* Floating Badges */
+    .floating-badges .badge {
+        transform: translate(-50%, -50%);
+        transition: all 0.3s ease;
+    }
+
+    .form-icon:hover .floating-badges .badge {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    /* Submit Button Animation */
+    .submit-btn {
+        background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+        border: none;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4) !important;
+    }
+
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            120deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+        );
+        transition: all 0.6s;
+    }
+
+    .submit-btn:hover::before {
+        left: 100%;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        transform: translateY(0);
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .feature-card i {
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover i {
+        transform: scale(1.2);
+    }
+
+    /* Typing Animation */
+    .typing-animation {
+        height: 24px;
+        overflow: hidden;
+    }
+
+    .typing-text::after {
+        content: '|';
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(-50%, -50%); }
+        50% { transform: translate(-50%, -60%); }
+    }
+
+    /* Form Validation Styles */
+    .was-validated .form-control:valid {
+        border-color: #198754;
+        background-image: none;
+    }
+
+    .was-validated .form-control:invalid {
+        border-color: #dc3545;
+        background-image: none;
+    }
+
+    /* Loading State */
+    .btn-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .loading .btn-content {
+        visibility: hidden;
+    }
+
+    .loading .btn-loader {
+        display: block !important;
+    }
+
+    /* Inline Message Styles */
+    .form-message {
+        min-height: 60px;
+    }
+
+    .form-message .alert {
+        max-width: 100%;
+        margin: 0 auto;
+        position: relative;
+        border: none;
+        border-radius: 10px;
+    }
+
+    .form-message .alert.show {
+        animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .form-message .alert.hide {
+        animation: slideOut 0.3s ease-in forwards;
+    }
+
+    .form-message .alert-success {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-left: 4px solid #198754;
+    }
+
+    .form-message .alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+</style>
+
+<!-- Enhanced Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Typing Animation
+        const typingText = document.querySelector('.typing-text');
+        if (typingText) {  // Add null check
+            const texts = ['We value your feedback!', 'Questions? Ask away!', 'We\'re here to help!'];
+            let textIndex = 0;
+            let charIndex = 0;
+            
+            function type() {
+                if (charIndex < texts[textIndex].length) {
+                    typingText.textContent += texts[textIndex].charAt(charIndex);
+                    charIndex++;
+                    setTimeout(type, 100);
+                } else {
+                    setTimeout(erase, 2000);
+                }
+            }
+            
+            function erase() {
+                if (charIndex > 0) {
+                    typingText.textContent = texts[textIndex].substring(0, charIndex - 1);
+                    charIndex--;
+                    setTimeout(erase, 50);
+                } else {
+                    textIndex = (textIndex + 1) % texts.length;
+                    setTimeout(type, 500);
+                }
+            }
+            
+            setTimeout(type, 1000);
+        }
+
+        // Form Submission Enhancement
+        const form = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('sendMessageButton');
+        const successAlert = document.getElementById('inlineSuccess');
+        const errorAlert = document.getElementById('inlineError');
+        
+        function showMessage(element, message) {
+            // Hide both messages first
+            successAlert.classList.add('d-none');
+            successAlert.classList.remove('show');
+            errorAlert.classList.add('d-none');
+            errorAlert.classList.remove('show');
+            
+            // Show the requested message
+            element.querySelector('.message').textContent = message;
+            element.classList.remove('d-none');
+            element.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                element.classList.add('hide');
+                setTimeout(() => {
+                    element.classList.add('d-none');
+                    element.classList.remove('show', 'hide');
+                }, 300);
+            }, 5000);
+        }
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                if (!form.checkValidity()) {
+                    event.stopPropagation();
+                    form.classList.add('was-validated');
+                    return;
+                }
+                
+                // Add loading state
+                submitBtn.classList.add('loading');
+                
+                try {
+                    const formData = {
+                        name: document.getElementById('name')?.value || '',
+                        email: document.getElementById('email')?.value || '',
+                        subject: document.getElementById('subject')?.value || '',
+                        message: document.getElementById('message')?.value || ''
+                    };
+                    
+                    const response = await fetch('/contact/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showMessage(successAlert, result.message || 'Message sent successfully!');
+                        form.reset();
+                        form.classList.remove('was-validated');
+                    } else {
+                        throw new Error(result.message || 'Failed to send message');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage(errorAlert, error.message || 'Something went wrong! Please try again later.');
+                } finally {
+                    submitBtn.classList.remove('loading');
+                }
+            });
+        }
+
+        // Input Focus Effects
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            if (input) {  // Add null check
+                input.addEventListener('focus', function() {
+                    const floatingParent = this.closest('.form-floating');
+                    if (floatingParent) {
+                        floatingParent.classList.add('shadow');
+                    }
+                });
+                
+                input.addEventListener('blur', function() {
+                    const floatingParent = this.closest('.form-floating');
+                    if (floatingParent) {
+                        floatingParent.classList.remove('shadow');
+                    }
+                });
+            }
+        });
+
+        // Feature Cards Animation
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => {
+            if (card) {  // Add null check
+                card.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('animate__animated', 'animate__rubberBand');
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('animate__animated', 'animate__rubberBand');
+                    }
+                });
+            }
+        });
+    });
+    
+    // Initialize WOW.js for animations if available
+    if (typeof WOW !== 'undefined') {
+        new WOW().init();
+    }
+</script>
+
+<%- include('../partials/user/footer.ejs') %> 

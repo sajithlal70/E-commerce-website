@@ -1,0 +1,27 @@
+<%- include('./partials/user/header.ejs', { categories: locals.categories || [], user: locals.user || null }) %>
+
+<div class="min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full text-center px-4">
+        <div class="mb-8">
+            <h1 class="text-9xl font-bold text-yellow-500">404</h1>
+            <p class="text-2xl font-semibold text-gray-700 mt-4">
+                <%= typeof message !== 'undefined' ? message : 'Page Not Found' %>
+            </p>
+            <p class="text-gray-500 mt-2">
+                <%= typeof message !== 'undefined' ? 'Please check the URL and try again.' : "The page you're looking for doesn't exist or has been moved." %>
+            </p>
+        </div>
+        
+        <div class="space-y-4">
+            <a href="/" class="inline-block bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-colors">
+                Go Back Home
+            </a>
+            
+            <p class="text-sm text-gray-500">
+                If you believe this is a mistake, please contact support
+            </p>
+        </div>
+    </div>
+</div>
+
+<%- include('./partials/user/footer.ejs') %> 

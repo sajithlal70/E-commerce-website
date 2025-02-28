@@ -1,0 +1,1162 @@
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slideIn { animation: slideIn 0.5s ease-out forwards; }
+    .hover-pulse:hover { animation: pulse 0.5s ease-in-out; }
+    
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .shadow-hover {
+        transition: all 0.3s ease;
+    }
+    
+    .shadow-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar {
+        position: relative;
+        height: 4px;
+        background: #f3f4f6;
+        overflow: hidden;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 30%;
+        background: #EAB308;
+        animation: progress 2s ease-in-out infinite;
+    }
+    
+    @keyframes progress {
+        0% { left: -30%; }
+        100% { left: 100%; }
+    }
+</style>
+
+<%- include('../../views/partials/user/header') %>
+
+
+
+<!-- Breadcrumb Start -->
+<div class="container-fluid animate-slideIn">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30 p-4 rounded-lg shadow-sm">
+                <a class="breadcrumb-item text-dark hover:text-yellow-500 transition-colors" href="/">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <a class="breadcrumb-item text-dark hover:text-yellow-500 transition-colors" href="/cart">
+                    <i class="fas fa-shopping-cart mr-2"></i>Cart
+                </a>
+                <span class="breadcrumb-item active">
+                    <i class="fas fa-check-circle mr-2 text-yellow-500"></i>Checkout
+                </span>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Checkout Content -->
+<div class="mx-auto px-10 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Column - Address Section -->
+        <div class="lg:w-2/3">
+            <div class="glass-effect rounded-lg shadow-lg p-6 animate-fadeIn">
+                <!-- Address Section -->
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-6 hover:shadow-md transition-shadow duration-300">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-map-marker-alt text-yellow-500 mr-2"></i>
+                            Delivery Address
+                        </h2>
+                        <div class="flex gap-2">
+                            <a href="/checkout/addresses" class="px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors duration-300 flex items-center shadow-hover">
+                                <i class="fas fa-list mr-2"></i>
+                                Manage Addresses
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <% if (defaultAddress) { %>
+                            <!-- Default Address -->
+                            <div class="border-2 border-yellow-500 p-6 rounded-lg relative group shadow-hover animate-fadeIn" data-address-id="<%= defaultAddress._id %>">
+                                <input type="radio" name="address" id="addressIdd" checked class="absolute top-4 left-4 w-4 h-4 text-yellow-500 focus:ring-yellow-500">
+                                <div class="ml-8">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center">
+                                            <h6 class="font-medium text-lg flex items-center">
+                                                <i class="<%= defaultAddress.addressType === 'Home' ? 'fas fa-home' : 'fas fa-building' %> text-yellow-500 mr-2"></i>
+                                                <%= defaultAddress.addressType %>
+                                            </h6>
+                                            <span class="ml-2 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full animate-pulse">Default</span>
+                                        </div>
+                                        <a href="/checkout/addresses" class="text-yellow-600 hover:text-yellow-700 transition-colors">
+                                            <i class="fas fa-edit"></i> Change
+                                        </a>
+                                    </div>
+                                    <div class="space-y-2 text-gray-600">
+                                        <p class="flex items-center">
+                                            <i class="fas fa-user mr-2 text-gray-400"></i>
+                                            <%= defaultAddress.name %>
+                                        </p>
+                                        <p class="flex items-center">
+                                            <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                            <%= defaultAddress.phone %>
+                                        </p>
+                                        <p class="flex items-center">
+                                            <i class="fas fa-map-pin mr-2 text-gray-400"></i>
+                                            <%= defaultAddress.street %>, <%= defaultAddress.city %>, <%= defaultAddress.postalCode %>
+                                        </p>
+                                        <% if (defaultAddress.landMark) { %>
+                                            <p class="flex items-center">
+                                                <i class="fas fa-landmark mr-2 text-gray-400"></i>
+                                                <%= defaultAddress.landMark %>
+                                            </p>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="text-center py-8 animate-fadeIn">
+                                <i class="fas fa-map-marker-alt text-6xl text-gray-400 mb-4 animate-bounce"></i>
+                                <p class="text-gray-600 mb-4">No delivery address selected</p>
+                                <a href="/checkout/address/add" class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-300 inline-flex items-center shadow-hover">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Add New Address
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Order Summary & Payment -->
+        <div class="lg:w-1/3">
+            <!-- Order Summary -->
+            <div class="glass-effect p-6 rounded-lg shadow-lg mb-6 animate-fadeIn">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-receipt text-yellow-500 mr-2"></i>
+                    Order Summary
+                </h2>
+                <div class="space-y-3">
+                    <% cart.items.forEach(item => { %>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors shadow-hover">
+                            <div class="flex items-center">
+                                <i class="fas fa-box text-yellow-500 mr-2"></i>
+                                <p><%= item.product.productName %> <span class="text-sm text-gray-500">(x<%= item.quantity %>)</span></p>
+                            </div>
+                            <p class="font-medium">₹<%= (item.product.salePrice * item.quantity).toFixed(2) %></p>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <!-- Coupon Section -->
+                <div class="mt-6 mb-6">
+                    <form id="couponForm" class="space-y-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="relative flex-1">
+                                <i class="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" 
+                                    name="couponCode" 
+                                    value="<%= locals.appliedCoupon ? appliedCoupon.code : '' %>"
+                                    placeholder="Enter coupon code" 
+                                    class="w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
+                                    <%= locals.appliedCoupon ? 'readonly' : '' %>>
+                            </div>
+                            <button type="submit" 
+                                class="px-4 py-2 text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center <%= locals.appliedCoupon ? 'bg-red-500 hover:bg-red-600' : 'bg-yellow-500 hover:bg-yellow-600' %>">
+                                <i class="<%= locals.appliedCoupon ? 'fas fa-times' : 'fas fa-check' %> mr-2"></i>
+                                <%= locals.appliedCoupon ? 'Remove' : 'Apply' %>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- View Coupons Button -->
+                    <button id="viewCouponsBtn" class="mt-4 w-full px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition-all duration-300 flex items-center justify-center shadow-hover">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        View Available Coupons
+                    </button>
+
+                    <!-- Coupon Modal -->
+                    <div id="couponModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-semibold">Available Coupons</h2>
+                                <button id="closeCouponBtn" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div id="couponList" class="max-h-96 overflow-y-auto">
+                                <!-- Coupons will be dynamically loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Order Details -->
+                <div class="space-y-3">
+                    <!-- Subtotal -->
+                    <div class="flex justify-between items-center p-2">
+                        <p class="text-gray-600 flex items-center">
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            Subtotal
+                        </p>
+                        <p class="font-medium" data-price="subtotal">₹<%= subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></p>
+                    </div>
+
+                    <!-- Coupon Discount -->
+                    <% if (locals.appliedCoupon && appliedCoupon.discountAmount > 0) { %>
+                        <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg animate-fadeIn discount-container">
+                            <div class="flex-1">
+                                <p class="text-green-600 flex items-center">
+                                    <i class="fas fa-tag mr-2"></i>
+                                    Coupon Discount (<%= appliedCoupon.code %>)
+                                </p>
+                            </div>
+                            <p class="text-green-600 font-medium">-₹<%= appliedCoupon.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></p>
+                        </div>
+                    <% } %>
+
+                    <!-- Shipping -->
+                    <div class="flex justify-between items-center p-2">
+                        <p class="text-gray-600 flex items-center">
+                            <i class="fas fa-truck mr-2"></i>
+                            Shipping
+                        </p>
+                        <p class="font-medium" data-price="shipping">₹<%= shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></p>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg mt-4">
+                        <p class="font-semibold text-lg flex items-center">
+                            <i class="fas fa-coins text-yellow-500 mr-2"></i>
+                            Total
+                        </p>
+                        <p class="font-semibold text-lg" data-price="total">₹<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></p>
+                    </div>
+                </div>
+                
+                
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="glass-effect rounded-lg shadow-lg p-6 animate-fadeIn">
+                <h5 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-credit-card text-yellow-500 mr-2"></i>
+                    Payment Method
+                </h5>
+                <div class="space-y-4">
+                    <!-- Wallet Payment -->
+                        <label class="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-yellow-50 transition-all duration-300 shadow-hover relative" 
+                           id="walletPaymentOption">
+                        <input type="radio" name="payment" value="wallet" class="text-yellow-500 focus:ring-yellow-500"
+                               <%= wallet.balance < (subtotal - (locals.appliedCoupon ? appliedCoupon.discountAmount : 0) + 50) ? 'disabled' : '' %>>
+                        <span class="flex items-center flex-1">
+                            <i class="fas fa-wallet text-purple-600 text-xl mr-2"></i>
+                            <span class="font-medium">Wallet</span>
+                            <span class="ml-auto text-sm">
+                                Balance: ₹<%= wallet.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %>
+                            </span>
+                        </span>
+                        <% if (wallet.balance < (subtotal - (locals.appliedCoupon ? appliedCoupon.discountAmount : 0) + 50)) { %>
+                            <div class="absolute inset-0 bg-gray-100 bg-opacity-50 flex items-center justify-center rounded-lg">
+                                <span class="text-sm text-red-500 bg-white px-3 py-1 rounded shadow-sm">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    Insufficient balance
+                                </span>
+                            </div>
+                        <% } %>
+                    </label>
+
+                    <!-- Razorpay -->
+                    <label class="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-yellow-50 transition-all duration-300 shadow-hover">
+                        <input type="radio" name="payment" value="razorpay" class="text-yellow-500 focus:ring-yellow-500">
+                        <span class="flex items-center flex-1">
+                            <i class="fas fa-credit-card text-blue-600 text-xl mr-2"></i>
+                            <span class="font-medium">Razorpay</span>
+                            <span class="ml-auto text-sm text-gray-500">All major cards accepted</span>
+                        </span>
+                    </label>
+
+                    <!-- COD -->
+                    <label class="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-yellow-50 transition-all duration-300 shadow-hover">
+                        <input type="radio" name="payment" value="cod" class="text-yellow-500 focus:ring-yellow-500">
+                        <span class="flex items-center flex-1">
+                            <i class="fas fa-money-bill-wave text-green-600 text-xl mr-2"></i>
+                            <span class="font-medium">Cash On Delivery</span>
+                            <span class="ml-auto text-sm text-gray-500">Pay when you receive</span>
+                        </span>
+                    </label>
+
+                    <button onclick="placeOrder()" class="w-full py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all duration-300 font-medium mt-6 flex items-center justify-center shadow-hover">
+                        <i class="fas fa-lock mr-2"></i>
+                        Place Order Securely
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Initialize page scripts -->
+<script type="text/javascript">
+// Define the validation function first, before it's used
+function validateWalletPayment(walletBalance, totalAmount) {
+    try {
+        // Convert to numbers and fix to 2 decimal places for precise comparison
+        const balance = Number(parseFloat(walletBalance).toFixed(2));
+        const amount = Number(parseFloat(totalAmount).toFixed(2));
+        
+        const MIN_TRANSACTION = 1; // ₹1
+        const MAX_TRANSACTION_LIMIT = 100000; // ₹1,00,000
+
+        // Basic validation
+        if (!amount || isNaN(amount) || amount <= 0) {
+            return {
+                isValid: false,
+                message: 'Invalid order amount'
+            };
+        }
+
+        if (!balance || isNaN(balance)) {
+            return {
+                isValid: false,
+                message: 'Unable to verify wallet balance'
+            };
+        }
+
+        // Validate minimum transaction
+        if (amount < MIN_TRANSACTION) {
+            return {
+                isValid: false,
+                message: `Minimum transaction amount is ₹${MIN_TRANSACTION}`
+            };
+        }
+
+        // Validate maximum transaction
+        if (amount > MAX_TRANSACTION_LIMIT) {
+            return {
+                isValid: false,
+                message: `Maximum transaction limit is ₹${MAX_TRANSACTION_LIMIT.toLocaleString('en-IN')}`
+            };
+        }
+
+        // Validate amount format (2 decimal places)
+        if (!/^\d+(\.\d{0,2})?$/.test(amount.toString())) {
+            return {
+                isValid: false,
+                message: 'Invalid amount format. Maximum 2 decimal places allowed.'
+            };
+        }
+
+        // Check if wallet has sufficient balance
+        if (balance < amount) {
+            const shortfall = (amount - balance).toFixed(2);
+            return {
+                isValid: false,
+                message: `Insufficient wallet balance. ` +
+                        `Required: ₹${amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}. ` +
+                        `Available: ₹${balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}. ` +
+                        `Shortfall: ₹${shortfall.toLocaleString('en-IN', {minimumFractionDigits: 2})}`
+            };
+        }
+
+        return {
+            isValid: true,
+            message: 'Wallet payment available'
+        };
+    } catch (error) {
+        console.error('Wallet validation error:', error);
+        return {
+            isValid: false,
+            message: 'Error validating wallet payment'
+        };
+    }
+}
+
+// Update the placeOrder function with proper COD and wallet handling
+async function placeOrder() {
+    let loadingAlert = null;
+    try {
+        // Get current prices from the DOM and parse them properly
+        const subtotal = parseFloat(document.querySelector('[data-price="subtotal"]').textContent.replace(/[^0-9.]/g, '')) || 0;
+        const shipping = 50; // Fixed shipping charge of ₹50 for all orders
+        
+        // Get discount if applied
+        const discountElement = document.querySelector('.discount-container .text-green-600.font-medium');
+        const discount = discountElement ? 
+            parseFloat(discountElement.textContent.replace(/[^0-9.]/g, '')) || 0 : 0;
+        
+        // Calculate total with proper rounding
+        const calculatedTotal = Number((subtotal + shipping - discount).toFixed(2));
+        const displayedTotal = parseFloat(document.querySelector('[data-price="total"]').textContent.replace(/[^0-9.]/g, '')) || 0;
+
+        // Validate total matches calculated amount
+        if (Math.abs(calculatedTotal - displayedTotal) > 0.01) {
+            throw new Error('Order amount calculation mismatch detected');
+        }
+
+        // Validate minimum order amount (based on subtotal before shipping)
+        const MIN_ORDER_AMOUNT = 100;
+        if (subtotal < MIN_ORDER_AMOUNT) {
+            throw new Error(`Minimum order amount is ₹${MIN_ORDER_AMOUNT} (excluding shipping)`);
+        }
+
+        // Validate address selection
+        const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
+        if (!selectedAddressRadio) {
+            throw new Error('Please select a delivery address');
+        }
+
+        const addressContainer = selectedAddressRadio.closest('.border-2');
+        const addressId = addressContainer?.dataset.addressId;
+        
+        if (!addressId || addressId.trim() === '') {
+            throw new Error('Invalid or missing delivery address');
+        }
+
+        // Validate payment method
+        const paymentMethod = document.querySelector('input[name="payment"]:checked');
+        if (!paymentMethod) {
+            throw new Error('Please select a payment method');
+        }
+
+        // Show loading state
+        loadingAlert = Swal.fire({
+            title: 'Processing Order',
+            html: `
+                <div class="space-y-2 text-left p-4">
+                    <p><strong>Subtotal:</strong> ₹${subtotal.toFixed(2)}</p>
+                    <p><strong>Shipping:</strong> ₹${shipping.toFixed(2)}</p>
+                    ${discount > 0 ? `<p><strong>Discount:</strong> -₹${discount.toFixed(2)}</p>` : ''}
+                    <p class="text-lg font-bold border-t pt-2"><strong>Total:</strong> ₹${calculatedTotal.toFixed(2)}</p>
+                    <div class="progress-bar mt-4"></div>
+                </div>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false
+        });
+
+        const orderData = {
+            addressId,
+            amount: calculatedTotal,
+            subtotal,
+            shipping,
+            discount,
+            paymentMethod: paymentMethod.value,
+            couponCode: document.querySelector('input[name="couponCode"]')?.value || null
+        };
+
+        // Handle different payment methods
+        switch(paymentMethod.value) {
+            case 'wallet':
+                const walletBalance = parseFloat('<%= wallet.balance %>');
+                const validation = validateWalletPayment(walletBalance, calculatedTotal);
+                
+                if (!validation.isValid) {
+                    throw new Error(validation.message);
+                }
+
+                const walletResponse = await fetch('/checkout/wallet-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (!walletResponse.ok) {
+                    throw new Error('Wallet payment failed');
+                }
+
+                const walletResult = await walletResponse.json();
+                if (walletResult.success) {
+                    if (loadingAlert) loadingAlert.close();
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Payment Successful!',
+                        text: 'Your order has been placed successfully.',
+                        confirmButtonColor: '#EAB308'
+                    });
+                    window.location.href = `/orderconfirmation?orderId=${walletResult.orderId}`;
+                } else {
+                    throw new Error(walletResult.message || 'Wallet payment failed');
+                }
+                break;
+
+            case 'cod':
+                try {
+                    // First get cart items
+                    const cartResponse = await fetch('/cart/get-items', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    });
+
+                    if (!cartResponse.ok) {
+                        const errorData = await cartResponse.json();
+                        throw new Error(errorData.message || 'Failed to get cart items');
+                    }
+
+                    const cartData = await cartResponse.json();
+                    
+                    if (!cartData.items || !cartData.items.length) {
+                        throw new Error('Cart is empty');
+                    }
+
+                    // Process COD payment
+                    const codResponse = await fetch('/checkout/cod-payment', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            addressId: orderData.addressId,
+                            amount: orderData.amount,
+                            subtotal: orderData.subtotal,
+                            shipping: orderData.shipping || 50,
+                            discount: orderData.discount || 0,
+                            paymentMethod: 'cod',
+                            couponCode: orderData.couponCode,
+                            items: cartData.items.map(item => ({
+                                product: item.product,
+                                quantity: item.quantity,
+                                price: item.price
+                            }))
+                        })
+                    });
+
+                    if (!codResponse.ok) {
+                        const errorData = await codResponse.json();
+                        throw new Error(errorData.message || 'Failed to place COD order');
+                    }
+
+                    const codResult = await codResponse.json();
+
+                    // Close loading alert before showing success/error
+                    if (loadingAlert) {
+                        loadingAlert.close();
+                    }
+
+                    if (codResult.success) {
+                        // Show success message
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Order Placed Successfully!',
+                            text: 'Your order has been confirmed for Cash on Delivery.',
+                            confirmButtonColor: '#EAB308',
+                            allowOutsideClick: false
+                        });
+
+                        // Clear cart
+                        await fetch('/cart/clear', {
+                            method: 'POST',
+                            credentials: 'include'
+                        });
+
+                        // Redirect to order confirmation
+                        window.location.href = `/orderconfirmation?orderId=${codResult.orderId}`;
+                    } else {
+                        throw new Error(codResult.message || 'Failed to place COD order');
+                    }
+                } catch (error) {
+                    console.error('COD order error:', error);
+                    if (loadingAlert) {
+                        loadingAlert.close();
+                    }
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Order Failed',
+                        text: error.message || 'Unable to place COD order. Please try again.',
+                        confirmButtonColor: '#EAB308'
+                    });
+                }
+                break;
+
+            case 'razorpay':
+                if (loadingAlert) loadingAlert.close();
+                await initializeRazorpayPayment(
+                    addressId,
+                    orderData.couponCode,
+                    {
+                        subtotal,
+                        shipping,
+                        discount,
+                        total: calculatedTotal
+                    }
+                );
+                return;
+
+            default:
+                throw new Error('Invalid payment method selected');
+        }
+
+    } catch (error) {
+        console.error('Order error:', error);
+        if (loadingAlert) {
+            loadingAlert.close();
+        }
+
+        await Swal.fire({
+            icon: 'error',
+            title: 'Order Failed',
+            text: error.message || 'Failed to place order. Please try again.',
+            confirmButtonColor: '#EAB308'
+        });
+    }
+}
+
+// Add this function to handle Razorpay payment
+async function initializeRazorpayPayment(addressId, couponCode, amounts) {
+    try {
+        const response = await fetch('/initiate-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                addressId,
+                couponCode,
+                amounts
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to initiate payment');
+        }
+
+        const orderData = await response.json();
+
+        const options = {
+            key: orderData.key_id,
+            amount: orderData.order.amount,
+            currency: orderData.order.currency,
+            name: 'Your Store',
+            description: 'Order Payment',
+            order_id: orderData.order.id,
+            handler: async function (response) {
+                try {
+                    const verifyResponse = await fetch('/verify-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(response)
+                    });
+
+                    const result = await verifyResponse.json();
+                    if (result.success) {
+                        window.location.href = `/orderconfirmation?orderId=${result.orderId}`;
+                    } else {
+                        await handlePaymentFailure(orderData.orderId, result.message || 'Payment verification failed');
+                    }
+                } catch (error) {
+                    await handlePaymentFailure(orderData.orderId, error.message || 'Payment processing failed');
+                }
+            },
+            modal: {
+                ondismiss: async function() {
+                    await handlePaymentFailure(orderData.orderId, 'Payment cancelled by user');
+                },
+                escape: false,
+                backdropclose: false
+            },
+            prefill: {
+                name: '<%= user.name %>',
+                email: '<%= user.email %>'
+            },
+            theme: {
+                color: '#EAB308'
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        
+        // Handle payment errors
+        rzp.on('payment.failed', async function(response) {
+            await handlePaymentFailure(
+                orderData.orderId, 
+                response.error.description || 'Payment failed'
+            );
+        });
+
+        rzp.open();
+
+    } catch (error) {
+        console.error('Payment error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Failed',
+            text: error.message || 'Failed to process payment',
+            confirmButtonColor: '#EAB308'
+        });
+    }
+}
+
+// ... existing code ...
+
+async function updateCounts() {
+    try {
+        const cartResponse = await fetch('/api/cart/count');
+        if (!cartResponse.ok) {
+            throw new Error('Failed to fetch cart count');
+        }
+        const cartData = await cartResponse.json();
+        document.getElementById('cartCount').textContent = cartData.count;
+
+    } catch (error) {
+        console.error('Error updating counts:', error);
+        // Don't show error to user as this is not critical
+    }
+}
+</script>
+
+<script>
+function toggleOtherAddresses() {
+    const container = document.getElementById('otherAddressesContainer');
+    const button = document.getElementById('viewOtherAddressBtn');
+    
+    if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        container.classList.add('animate-fadeIn');
+        button.innerHTML = '<i class="fas fa-chevron-up mr-2"></i>Hide Other Addresses';
+        button.classList.remove('bg-gray-100');
+        button.classList.add('bg-gray-200');
+    } else {
+        container.classList.add('hidden');
+        container.classList.remove('animate-fadeIn');
+        button.innerHTML = '<i class="fas fa-list mr-2"></i>View Other Addresses';
+        button.classList.add('bg-gray-100');
+        button.classList.remove('bg-gray-200');
+    }
+}
+</script>
+
+<%- include('../../views/partials/user/footer') %>
+
+<!-- Coupon Modal Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const viewCouponsBtn = document.getElementById('viewCouponsBtn');
+    const couponModal = document.getElementById('couponModal');
+    const closeCouponBtn = document.getElementById('closeCouponBtn');
+    const couponList = document.getElementById('couponList');
+
+    // Show modal
+    viewCouponsBtn.addEventListener('click', async function() {
+        try {
+            // Show loading state
+            couponList.innerHTML = `
+                <div class="flex justify-center items-center p-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                </div>
+            `;
+            couponModal.classList.remove('hidden');
+
+            // Get cart details first
+            const cartResponse = await fetch('/cart/details');
+            const cartData = await cartResponse.json();
+            console.log('Cart details:', cartData);
+
+            // Fetch available coupons
+            const response = await fetch('/coupon/available');
+            const coupons = await response.json();
+            console.log('Available coupons:', coupons);
+
+            if (!Array.isArray(coupons) || coupons.length === 0) {
+                const cartTotal = cartData.total || 0;
+                couponList.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-ticket-alt text-gray-300 text-6xl mb-4"></i>
+                        <p class="text-gray-600 text-lg font-medium mb-2">No Coupons Available</p>
+                        <p class="text-gray-500">
+                            Cart Total: ₹${cartTotal.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                        </p>
+                        <p class="text-sm text-gray-400 mt-4">
+                            Check back later for new offers!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            couponList.innerHTML = coupons.map(coupon => `
+                <div class="border rounded-lg p-4 mb-4 ${coupon.canApply ? 'hover:bg-yellow-50' : 'bg-gray-50'} transition-all duration-300">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="font-semibold text-lg ${coupon.canApply ? 'text-yellow-600' : 'text-gray-600'}">${coupon.code}</h3>
+                                ${coupon.isNew ? `
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">New</span>
+                                ` : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 line-clamp-2">${coupon.description}</p>
+                        </div>
+                        <button 
+                            onclick="applyCouponCode('${coupon.code}')" 
+                            class="px-4 py-2 ${coupon.canApply 
+                                ? 'bg-yellow-500 hover:bg-yellow-600' 
+                                : 'bg-gray-300'} text-white rounded-lg transition-colors text-sm flex-shrink-0 ${!coupon.canApply ? 'cursor-not-allowed opacity-75' : ''}"
+                            ${!coupon.canApply ? 'disabled' : ''}>
+                            ${coupon.canApply ? 'Apply' : 'Add More Items'}
+                        </button>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="flex items-center text-sm">
+                            <div class="flex items-center text-yellow-600 font-medium">
+                                <i class="fas fa-tag mr-2"></i>
+                                <span>${coupon.discountType === 'percentage' ? 
+                                    `${coupon.discountAmount}% off` : 
+                                    `₹${coupon.discountAmount} off`}</span>
+                            </div>
+                            <div class="mx-3 text-gray-300">|</div>
+                            <div class="text-gray-600">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Min. purchase: ₹${coupon.minPurchase.toLocaleString('en-IN')}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>Valid till: ${new Date(coupon.expiryDate).toLocaleDateString('en-IN', { 
+                                day: 'numeric', 
+                                month: 'short', 
+                                year: 'numeric'
+                            })}</span>
+                        </div>
+
+                        ${coupon.validationMessage ? `
+                            <div class="mt-2 p-2 bg-orange-50 rounded-lg">
+                                <div class="flex items-center text-sm text-orange-600">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    <span>${coupon.validationMessage}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex items-center justify-between text-sm mt-3 pt-2 border-t">
+                            <div class="text-green-600">
+                                <i class="fas fa-user-check mr-2"></i>
+                                <span>${coupon.userRemainingUses} use${coupon.userRemainingUses !== 1 ? 's' : ''} remaining</span>
+                            </div>
+                            <div class="text-gray-500">
+                                <i class="fas fa-users mr-2"></i>
+                                <span>${coupon.remainingUses} total remaining</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error('Error:', error);
+            couponList.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-circle text-red-500 text-5xl mb-4"></i>
+                    <p class="text-red-500 text-lg">Failed to load coupons</p>
+                    <p class="text-gray-500 text-sm mt-2">Please try again later</p>
+                </div>
+            `;
+        }
+    });
+
+    // Close modal
+    closeCouponBtn.addEventListener('click', function() {
+        couponModal.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside
+    couponModal.addEventListener('click', function(e) {
+        if (e.target === couponModal) {
+            couponModal.classList.add('hidden');
+        }
+    });
+});
+
+// Function to apply coupon code
+async function applyCouponCode(code) {
+    try {
+        const response = await fetch('/coupon/apply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update UI with success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: result.message,
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // Update the coupon input field and button
+            const couponForm = document.getElementById('couponForm');
+            const couponInput = couponForm.querySelector('input[name="couponCode"]');
+            const submitButton = couponForm.querySelector('button[type="submit"]');
+
+            if (couponInput) {
+                couponInput.value = code;
+                couponInput.setAttribute('readonly', true);
+            }
+
+            if (submitButton) {
+                submitButton.innerHTML = '<i class="fas fa-times mr-2"></i>Remove';
+                submitButton.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                submitButton.classList.add('bg-red-500', 'hover:bg-red-600');
+            }
+
+            // Close the coupon modal if it exists
+            const couponModal = document.getElementById('couponModal');
+            if (couponModal) {
+                couponModal.classList.add('hidden');
+            }
+
+            // Update the order summary immediately
+            await updateOrderSummary();
+
+        } else {
+            throw new Error(result.message || 'Failed to apply coupon');
+        }
+    } catch (error) {
+        console.error('Error applying coupon:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Failed to apply coupon. Please try again.',
+            confirmButtonColor: '#EAB308'
+        });
+    }
+}
+
+// Function to update order summary
+async function updateOrderSummary() {
+    try {
+        const response = await fetch('/checkout/order-summary');
+        const data = await response.json();
+        
+        if (data.success) {
+            const elements = {
+                subtotal: document.querySelector('[data-price="subtotal"]'),
+                shipping: document.querySelector('[data-price="shipping"]'),
+                total: document.querySelector('[data-price="total"]'),
+                discount: document.querySelector('.discount-container')
+            };
+
+            // Update subtotal
+            if (elements.subtotal) {
+                elements.subtotal.textContent = `₹${data.subtotal.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2
+                })}`;
+            }
+
+            // Handle discount display
+            if (data.appliedCoupon && data.discount > 0) {
+                if (!elements.discount) {
+                    const discountHtml = `
+                        <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg animate-fadeIn discount-container">
+                            <div class="flex-1">
+                                <p class="text-green-600 flex items-center">
+                                    <i class="fas fa-tag mr-2"></i>
+                                    Coupon Discount (${data.appliedCoupon.code})
+                                </p>
+                            </div>
+                            <p class="text-green-600 font-medium">-₹${data.discount.toLocaleString('en-IN', {
+                                minimumFractionDigits: 2
+                            })}</p>
+                        </div>
+                    `;
+                    elements.shipping.parentElement.insertAdjacentHTML('beforebegin', discountHtml);
+                } else {
+                    const discountAmountElement = elements.discount.querySelector('p:last-child');
+                    if (discountAmountElement) {
+                        discountAmountElement.textContent = `-₹${data.discount.toLocaleString('en-IN', {
+                            minimumFractionDigits: 2
+                        })}`;
+                    }
+                }
+            } else if (elements.discount) {
+                elements.discount.remove();
+            }
+
+            // Update shipping
+            if (elements.shipping) {
+                elements.shipping.textContent = `₹${data.shipping.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2
+                })}`;
+            }
+
+            // Update total
+            if (elements.total) {
+                elements.total.textContent = `₹${data.total.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2
+                })}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error updating order summary:', error);
+    }
+}
+
+// Call this function when page loads
+document.addEventListener('DOMContentLoaded', updateOrderSummary);
+
+// Add this function to remove applied coupon
+async function removeCoupon() {
+    try {
+        const response = await fetch('/checkout/remove-coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update the UI elements
+            const couponForm = document.getElementById('couponForm');
+            const couponInput = couponForm.querySelector('input[name="couponCode"]');
+            const submitButton = couponForm.querySelector('button[type="submit"]');
+
+            if (couponInput) {
+                couponInput.value = '';
+                couponInput.removeAttribute('readonly');
+            }
+
+            if (submitButton) {
+                submitButton.innerHTML = '<i class="fas fa-check mr-2"></i>Apply';
+                submitButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                submitButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+            }
+
+            // Remove discount container if exists
+            const discountContainer = document.querySelector('.discount-container');
+            if (discountContainer) {
+                discountContainer.remove();
+            }
+
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Coupon removed successfully',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // Update the order summary
+            await updateOrderSummary();
+
+        } else {
+            throw new Error(result.message || 'Failed to remove coupon');
+        }
+    } catch (error) {
+        console.error('Error removing coupon:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Failed to remove coupon. Please try again.',
+            confirmButtonColor: '#EAB308'
+        });
+    }
+}
+
+// Also update the coupon form submit handler
+document.getElementById('couponForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const couponInput = this.querySelector('input[name="couponCode"]');
+    const submitButton = this.querySelector('button[type="submit"]');
+    const code = couponInput.value.trim();
+    
+    if (submitButton.textContent.trim().toLowerCase() === 'remove') {
+        await removeCoupon();
+    } else {
+        if (!code) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Empty Code',
+                text: 'Please enter a coupon code',
+                confirmButtonColor: '#EAB308'
+            });
+            return;
+        }
+        await applyCouponCode(code);
+    }
+});
+</script>
+
+<script>
+async function handlePaymentFailure(orderId, error) {
+    try {
+        const response = await fetch('/payment/failure', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                orderId,
+                error
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            window.location.href = data.redirectUrl;
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Error handling payment failure:', error);
+        window.location.href = `/order-failure?orderId=${orderId}&reason=Payment failed`;
+    }
+}
+</script>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin: auto;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include("../../views/partials/admin/header") %>
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-purple-500 text-white p-4 rounded-lg shadow-lg">
+                <h2 class="text-xl">Pending Orders</h2>
+                <p class="text-2xl font-bold"><%= stats.pendingOrders %></p>
+                <% if (stats.pendingOrders > 0) { %>
+                    <p class="text-sm">Requires attention</p>
+                <% } %>
+            </div>
+            <div class="bg-red-500 text-white p-4 rounded-lg shadow-lg">
+                <h2 class="text-xl">Cancelled Orders</h2>
+                <p class="text-2xl font-bold"><%= stats.cancelledOrders %></p>
+            </div>
+            <div class="bg-blue-500 text-white p-4 rounded-lg shadow-lg">
+                <h2 class="text-xl">Processing Orders</h2>
+                <p class="text-2xl font-bold"><%= stats.processingOrders %></p>
+            </div>
+            <div class="bg-green-500 text-white p-4 rounded-lg shadow-lg">
+                <h2 class="text-xl">Today's Revenue</h2>
+                <p class="text-2xl font-bold">₹<%= stats.todayRevenue.toLocaleString() %></p>
+                <p class="text-sm"><%= stats.revenueChange %>% from yesterday</p>
+            </div>
+        </div>
+        
+        <!-- Additional Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            <!-- Top Products -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-box text-blue-500"></i> Top Products
+                </h2>
+                <ul class="space-y-2 text-gray-700">
+                    <% topProducts.forEach(product => { %>
+                        <li class="flex justify-between">
+                            <%= product.productInfo.productName %>
+                            <span class="font-bold">₹<%= product.revenue.toLocaleString() %></span>
+                        </li>
+                    <% }); %>
+                </ul>
+                <a href="/admin/products" class="text-blue-600 font-medium mt-3 inline-block hover:underline">View All →</a>
+            </div>
+        
+            <!-- Top Categories -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-list text-green-500"></i> Top Categories
+                </h2>
+                <ul class="space-y-2 text-gray-700">
+                    <% topCategories.forEach(category => { %>
+                        <li class="flex justify-between">
+                            <%= category.categoryName %>
+                            <span class="font-bold">₹<%= category.revenue.toLocaleString() %></span>
+                        </li>
+                    <% }); %>
+                </ul>
+                <a href="/admin/category" class="text-green-600 font-medium mt-3 inline-block hover:underline">View All →</a>
+            </div>
+        
+            <!-- Recent Orders -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-shopping-cart text-purple-500"></i> Recent Orders
+                </h2>
+                <ul class="space-y-2 text-gray-700">
+                    <% recentOrders.forEach(order => { %>
+                        <li class="flex justify-between">
+                            #<%= order._id.toString().slice(-4) %> - <%= order.user.name %>
+                            <span class="font-bold">₹<%= order.total.toLocaleString() %></span>
+                        </li>
+                    <% }); %>
+                </ul>
+                <a href="/admin/order" class="text-purple-600 font-medium mt-3 inline-block hover:underline">View All →</a>
+            </div>
+        
+            <!-- Low Stock Products -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-yellow-500"></i> Low Stock
+                </h2>
+                <ul class="space-y-2 text-gray-700">
+                    <% lowStockProducts.forEach(product => { %>
+                        <li class="flex justify-between">
+                            <%= product.productName %>
+                            <span class="font-bold"><%= product.quantity %> left</span>
+                        </li>
+                    <% }); %>
+                </ul>
+                <a href="/admin/products" class="text-yellow-600 font-medium mt-3 inline-block hover:underline">View All →</a>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-6">
+            <!-- Sales Overview Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">Sales Overview</h2>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Order Status Distribution Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">Order Status Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Products Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">Top Products by Sales</h2>
+                <div class="chart-container">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Categories Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">Category Revenue Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sales Chart
+        const salesData = <%- JSON.stringify(salesChart) %>;
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: salesData.map(item => item._id),
+                datasets: [{
+                    label: 'Daily Revenue',
+                    data: salesData.map(item => item.revenue),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '₹' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Order Status Chart
+        const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+        const orderStatusData = {
+            pending: <%= stats.pendingOrders %>,
+            processing: <%= stats.processingOrders %>,
+            shipped: <%= stats.shippedOrders %>,
+            delivered: <%= stats.deliveredOrders %>,
+            cancelled: <%= stats.cancelledOrders %>
+        };
+        
+        new Chart(orderStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    data: [
+                        orderStatusData.pending,
+                        orderStatusData.processing,
+                        orderStatusData.shipped,
+                        orderStatusData.delivered,
+                        orderStatusData.cancelled
+                    ],
+                    backgroundColor: [
+                        'rgba(147, 51, 234, 0.7)',  // Purple
+                        'rgba(59, 130, 246, 0.7)',  // Blue
+                        'rgba(245, 158, 11, 0.7)',  // Amber
+                        'rgba(34, 197, 94, 0.7)',   // Green
+                        'rgba(239, 68, 68, 0.7)'    // Red
+                    ],
+                    borderColor: [
+                        'rgba(147, 51, 234, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Top Products Chart
+        const topProductsData = <%- JSON.stringify(topProducts) %>;
+        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+        
+        new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: topProductsData.map(product => product.productInfo.productName),
+                datasets: [
+                    {
+                        label: 'Revenue (₹)',
+                        data: topProductsData.map(product => product.revenue),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Units Sold',
+                        data: topProductsData.map(product => product.totalSales),
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.label.includes('Revenue')) {
+                                    return `Revenue: ₹${context.raw.toLocaleString()}`;
+                                } else {
+                                    return `Units Sold: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Categories Revenue Chart
+        const topCategoriesData = <%- JSON.stringify(topCategories) %>;
+        const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+        
+        new Chart(categoriesCtx, {
+            type: 'pie',
+            data: {
+                labels: topCategoriesData.map(category => category.categoryName),
+                datasets: [{
+                    data: topCategoriesData.map(category => category.revenue),
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.7)',   // Green
+                        'rgba(59, 130, 246, 0.7)',  // Blue
+                        'rgba(245, 158, 11, 0.7)',  // Amber
+                        'rgba(147, 51, 234, 0.7)',  // Purple
+                        'rgba(239, 68, 68, 0.7)'    // Red
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(147, 51, 234, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ₹${context.raw.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

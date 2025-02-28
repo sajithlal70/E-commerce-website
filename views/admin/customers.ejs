@@ -1,0 +1,310 @@
+<%- include("../../views/partials/admin/header") %>
+
+<!-- Page Title with enhanced animation -->
+<div class="p-8 bg-gradient-to-r from-yellow-50 to-white border-b animate-fade-in">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-4xl font-bold text-gray-800 mb-4 flex items-center gap-3 hover:translate-x-2 transition-transform duration-300">
+      <div class="bg-yellow-400 p-3 rounded-lg shadow-lg">
+        <i class="fas fa-users text-gray-800"></i>
+      </div>
+      Customer Management
+    </h1>
+    <p class="text-gray-600 mb-6 flex items-center gap-2">
+      <i class="fas fa-chart-line text-yellow-500"></i>
+      Monitor and manage all customer accounts efficiently
+    </p>
+  </div>
+</div>
+
+<!-- Search and Stats Section -->
+<div class="max-w-[95%] mx-auto px-4 py-6">
+  <div class="bg-white rounded-xl shadow-xl mb-6 transform hover:scale-[1.01] transition-all duration-300">
+    <div class="flex flex-col md:flex-row items-center justify-between p-6 border-b">
+      <div class="w-full md:w-1/2 mb-4 md:mb-0">
+        <form id="searchForm" class="flex items-center space-x-3">
+          <div class="relative flex-1 group">
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-yellow-500 transition-colors duration-300"></i>
+            <input 
+              type="text" 
+              name="search"
+              value="<%= search %>"
+              class="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 transition-all duration-300"
+              placeholder="Search customers..."
+            >
+          </div>
+          <button type="submit" class="px-6 py-3 bg-yellow-400 text-gray-800 rounded-xl hover:bg-yellow-500 active:scale-95 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl">
+            <i class="fas fa-search"></i>
+            <span class="font-medium">Search</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="flex items-center space-x-8">
+        <div class="text-center transform hover:scale-110 transition-transform duration-300 cursor-pointer group">
+          <div class="bg-yellow-100 rounded-lg p-3 mb-2 group-hover:bg-yellow-200 transition-colors duration-300">
+            <p class="text-3xl font-bold text-gray-800"><%= data.length %></p>
+          </div>
+          <p class="text-sm text-gray-600 flex items-center justify-center gap-1">
+            <i class="fas fa-eye text-yellow-500"></i> Showing
+          </p>
+        </div>
+        <div class="text-center transform hover:scale-110 transition-transform duration-300 cursor-pointer group">
+          <div class="bg-green-100 rounded-lg p-3 mb-2 group-hover:bg-green-200 transition-colors duration-300">
+            <p class="text-3xl font-bold text-gray-800"><%= totalPages * 3 %></p>
+          </div>
+          <p class="text-sm text-gray-600 flex items-center justify-center gap-1">
+            <i class="fas fa-users text-green-500"></i> Total
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="w-full overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 table-fixed">
+        <thead class="bg-gradient-to-r from-gray-800 to-gray-700 text-white">
+          <tr>
+            <th class="p-6 text-left whitespace-nowrap w-[25%]">
+              <div class="flex items-center space-x-2 hover:text-yellow-400 transition-colors duration-300">
+                <i class="fas fa-user-circle"></i>
+                <span>Name</span>
+              </div>
+            </th>
+            <th class="p-6 text-left whitespace-nowrap hidden md:table-cell w-[30%]">
+              <div class="flex items-center space-x-2 hover:text-yellow-400 transition-colors duration-300">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+              </div>
+            </th>
+            <th class="p-6 text-left whitespace-nowrap hidden lg:table-cell w-[20%]">
+              <div class="flex items-center space-x-2 hover:text-yellow-400 transition-colors duration-300">
+                <i class="fas fa-phone-alt"></i>
+                <span>Phone</span>
+              </div>
+            </th>
+            <th class="p-6 text-left whitespace-nowrap w-[12%]">
+              <div class="flex items-center space-x-2 hover:text-yellow-400 transition-colors duration-300">
+                <i class="fas fa-circle"></i>
+                <span>Status</span>
+              </div>
+            </th>
+            <th class="p-6 text-left whitespace-nowrap w-[13%]">
+              <div class="flex items-center space-x-2 hover:text-yellow-400 transition-colors duration-300">
+                <i class="fas fa-cog"></i>
+                <span>Action</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% if (data && data.length > 0) { %>
+            <% for (let i=0; i<data.length; i++) { %>
+              <tr class="hover:bg-gray-50 group cursor-pointer animate-fade-in" data-delay="<%- i * 0.1 %>">
+                <td class="p-6">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <span class="text-gray-800 font-bold text-lg"><%= data[i].name.charAt(0).toUpperCase() %></span>
+                    </div>
+                    <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300"><%= data[i].name %></span>
+                  </div>
+                </td>
+                <td class="p-6 hidden md:table-cell">
+                  <div class="flex items-center space-x-2">
+                    <i class="fas fa-envelope text-gray-400 group-hover:text-yellow-500 transition-colors duration-300"></i>
+                    <span class="truncate block max-w-xs text-gray-600 group-hover:text-gray-900 transition-colors duration-300"><%= data[i].email %></span>
+                  </div>
+                </td>
+                <td class="p-6 hidden lg:table-cell">
+                  <div class="flex items-center space-x-2">
+                    <i class="fas fa-phone-alt text-gray-400 group-hover:text-yellow-500 transition-colors duration-300"></i>
+                    <span class="text-gray-600 group-hover:text-gray-900 transition-colors duration-300"><%= data[i].phone %></span>
+                  </div>
+                </td>
+                <td class="p-6">
+                  <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium <%= data[i].IsBlocked ? 'bg-red-100 text-red-800 group-hover:bg-red-200' : 'bg-green-100 text-green-800 group-hover:bg-green-200' %> transition-colors duration-300">
+                    <span class="w-2 h-2 rounded-full <%= data[i].IsBlocked ? 'bg-red-500 animate-pulse' : 'bg-green-500 animate-pulse' %> mr-2"></span>
+                    <%= data[i].IsBlocked ? 'Blocked' : 'Active' %>
+                  </span>
+                </td>
+                <td class="p-6">
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <a href="/admin/users/<%= data[i]._id %>" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:scale-95 transition-all duration-300 shadow hover:shadow-lg">
+                      <i class="fas fa-eye mr-2"></i> View
+                    </a>
+                    <% if (!data[i].IsBlocked) { %>
+                      <a href="/admin/blockCustomer?id=<%=data[i]._id%>" 
+                         class="inline-flex items-center px-3 py-2 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 transition-all duration-300 shadow hover:shadow-lg">
+                        <i class="fas fa-ban mr-2"></i> Block
+                      </a>
+                    <% } else { %>
+                      <a href="/admin/unblockCustomer?id=<%=data[i]._id%>" 
+                         class="inline-flex items-center px-3 py-2 text-sm font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 active:scale-95 transition-all duration-300 shadow hover:shadow-lg">
+                        <i class="fas fa-check mr-2"></i> Unblock
+                      </a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" class="p-12 text-center">
+                <div class="flex flex-col items-center justify-center text-gray-500 animate-bounce">
+                  <i class="fas fa-users-slash text-6xl mb-4 text-yellow-400"></i>
+                  <p class="text-xl font-medium">No customers found</p>
+                  <p class="text-gray-400 mt-2">Try adjusting your search criteria</p>
+                </div>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Enhanced Pagination Section -->
+    <div class="flex justify-between items-center p-6 border-t bg-gray-50">
+      <p class="text-sm text-gray-600 flex items-center space-x-2">
+        <i class="fas fa-file-alt text-yellow-500"></i>
+        <span>Page <%= currentPages %> of <%= totalPages %></span>
+      </p>
+      <div class="flex items-center space-x-2">
+        <% if (currentPages > 1) { %>
+          <a href="?page=<%= currentPages - 1 %>&search=<%= search %>" 
+             class="p-2 rounded-lg hover:bg-yellow-100 text-gray-700 transition-all duration-300 flex items-center space-x-1">
+            <i class="fas fa-chevron-left"></i>
+            <span class="hidden sm:inline">Previous</span>
+          </a>
+        <% } %>
+        
+        <div class="flex items-center space-x-1">
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>&search=<%= search %>" 
+               class="px-4 py-2 rounded-lg transition-all duration-300 <%= (i === currentPages) ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500 shadow-md' : 'hover:bg-yellow-100 text-gray-600' %> font-medium">
+              <%= i %>
+            </a>
+          <% } %>
+        </div>
+        
+        <% if (currentPages < totalPages) { %>
+          <a href="?page=<%= currentPages + 1 %>&search=<%= search %>" 
+             class="p-2 rounded-lg hover:bg-yellow-100 text-gray-700 transition-all duration-300 flex items-center space-x-1">
+            <span class="hidden sm:inline">Next</span>
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Font Awesome and custom styles -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in forwards;
+    opacity: 0;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { 
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Add smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #fbbf24;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #f59e0b;
+  }
+
+  /* Row animation delay */
+  tr[data-delay] {
+    animation-delay: attr(data-delay)s;
+  }
+</style>
+
+<script>
+  // Enhanced search form handling with loading state
+  document.getElementById('searchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const searchValue = this.search.value.trim();
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalContent = submitButton.innerHTML;
+    
+    // Show loading state
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+    submitButton.disabled = true;
+    
+    // Redirect after a small delay to show loading state
+    setTimeout(() => {
+      window.location.href = `?search=${encodeURIComponent(searchValue)}&page=1`;
+    }, 500);
+  });
+
+  // Enhanced table row interactions
+  document.querySelectorAll('tbody tr').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+      this.style.transform = 'scale(1.01) translateX(5px)';
+      this.style.transition = 'all 0.3s ease';
+      this.style.zIndex = '10';
+    });
+    
+    row.addEventListener('mouseleave', function() {
+      this.style.transform = 'scale(1) translateX(0)';
+      this.style.zIndex = '1';
+    });
+  });
+
+  // Add subtle animation to status indicators
+  document.querySelectorAll('.animate-pulse').forEach(element => {
+    setInterval(() => {
+      element.style.opacity = '0.6';
+      setTimeout(() => {
+        element.style.opacity = '1';
+      }, 1000);
+    }, 2000);
+  });
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

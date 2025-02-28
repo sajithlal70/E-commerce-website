@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Shop Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .sidebar-link {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            width: 0;
+            background: linear-gradient(to right, #FCD34D, #F59E0B);
+            transition: width 0.3s ease;
+        }
+        .sidebar-link:hover::after {
+            width: 100%;
+        }
+        .sidebar-link:hover {
+            transform: translateX(6px);
+            background: linear-gradient(to right, rgba(55, 65, 81, 0.5), transparent);
+        }
+        .admin-icon {
+            transition: all 0.4s ease;
+            position: relative;
+        }
+        .admin-icon:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+        .admin-icon::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3B82F6, #8B5CF6, #3B82F6);
+            animation: borderRotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .admin-icon:hover::before {
+            opacity: 1;
+        }
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .menu-icon {
+            transition: all 0.3s ease;
+        }
+        .sidebar-link:hover .menu-icon {
+            transform: scale(1.2);
+            color: #FCD34D;
+        }
+        .logo-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .logo-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, #FCD34D, transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .active-link {
+            background: linear-gradient(to right, rgba(55, 65, 81, 0.8), rgba(55, 65, 81, 0.4));
+            border-right: 3px solid #FCD34D;
+        }
+    </style>
+    <script>
+        function updateHeading(heading) {
+            document.getElementById('pageHeading').textContent = heading;
+        }
+
+        window.onpageshow = function (e){
+            if(e.persisted){
+                window.location.reload();
+            }
+        }
+
+        history.pushState(null,null,location.href);
+
+        window.onpopstate = function (){
+            history.go(1);
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-gray-800 to-gray-900 text-white fixed h-full shadow-xl transition-all duration-300 ease-in-out">
+            <!-- Logo Section -->
+            <div class="logo-container p-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-800 font-bold flex items-center space-x-2">
+                <i class='bx bxs-shopping-bag text-2xl animate-bounce'></i>
+                <span class="text-lg tracking-wider font-black">DENT CART</span>
+            </div>
+
+            <!-- User Profile Section -->
+            <div class="p-6 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-transparent">
+                <div class="flex items-center space-x-4">
+                    <div class="admin-icon w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                        <i class='bx bxs-user-circle text-2xl'></i>
+                    </div>
+                    <div class="fade-in">
+                        <div class="font-medium text-lg">Admin</div>
+                        <div class="text-sm text-gray-400">Administrator</div>
+                    </div>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <a href="#" class="flex items-center space-x-2 text-sm text-gray-300 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-gray-700">
+                        <i class='bx bxs-user-detail text-xl menu-icon'></i>
+                        <span>Profile</span>
+                    </a>
+                    <form action="admin/logout" method="get">
+                        <button type="submit" id="logoutButton" class="flex items-center space-x-2 text-sm text-gray-300 hover:text-white transition-colors duration-200 w-full p-2 rounded-lg hover:bg-gray-700">
+                            <i class='bx bx-log-out text-xl menu-icon'></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="mt-6 px-4">
+                <a href="/admin/dashboard" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-dashboard text-xl menu-icon'></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/users" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-group text-xl menu-icon'></i>
+                    <span>Customers</span>
+                </a>
+                <a href="/admin/products" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-package text-xl menu-icon'></i>
+                    <span>Products</span>
+                </a>
+                <a href="/admin/category" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-category text-xl menu-icon'></i>
+                    <span>Categories</span>
+                </a>
+                <a href="/admin/order" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-cart text-xl menu-icon'></i>
+                    <span>Orders</span>
+                </a>
+                <a href="/admin/coupons" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-discount text-xl menu-icon'></i>
+                    <span>Coupons</span>
+                </a>
+                <a href="/admin/offers" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-gift text-xl menu-icon'></i>
+                    <span>Offers</span>
+                </a>
+                <a href="/admin/inventory" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-box text-xl menu-icon'></i>
+                    <span>Inventory</span>
+                </a>
+                <a href="/admin/reports" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white mb-3" onclick="setActive(this)">
+                    <i class='bx bxs-report text-xl menu-icon'></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 ml-64 p-4">
+            <!-- Content goes here -->
+        

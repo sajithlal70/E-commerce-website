@@ -1,0 +1,650 @@
+<%- include("../../views/partials/admin/header") %>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Edit Product</h1>
+        <% if (typeof success_msg !== 'undefined' && success_msg) { %>
+            <div class="alert alert-success">
+                <%= success_msg %>
+            </div>
+        <% } %>
+        <% if (typeof error_msg !== 'undefined' && error_msg) { %>
+            <div class="alert alert-danger">
+                <%= error_msg %>
+            </div>
+        <% } %>
+    
+        <!-- Edit Product Form -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <form id="editProductForm" method="POST" action="/admin/productsedit/<%= product._id %>" enctype="multipart/form-data">
+                <!-- Product Name -->
+                <div class="mb-4">
+                    <label for="productName" class="block text-sm font-medium text-gray-700">Product Name</label>
+                    <input type="text" id="productName" name="productName" 
+                           value="<%= product.productName %>"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="productNameError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="productDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="productDescription" name="description" rows="4"
+                              class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><%= product.description %></textarea>
+                    <span id="productDescriptionError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-4">
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select id="category" name="category" 
+                            class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Category</option>
+                        <% categories.forEach(function(cat) { %>
+                            <option value="<%= cat._id %>" 
+                                    <%= product.category && product.category._id.toString() === cat._id.toString() ? 'selected' : '' %>>
+                                <%= cat.name %>
+                            </option>
+                        <% }); %>
+                    </select>
+                    <span id="categoryError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Regular Price -->
+                <div class="mb-4">
+                    <label for="regularPrice" class="block text-sm font-medium text-gray-700">Regular Price</label>
+                    <input type="number" id="regularPrice" name="regularPrice" min="0" step="0.01"
+                            value="<%= product.reqularPrice %>"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="regularPriceError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Sale Price -->
+                <div class="mb-4">
+                    <label for="salePrice" class="block text-sm font-medium text-gray-700">Sale Price</label>
+                    <input type="number" id="salePrice" name="salePrice" min="0" step="0.01"
+                           value="<%= product.salePrice %>"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="salePriceError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-4">
+                    <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                    <input type="number" id="quantity" name="quantity" min="0"
+                           value="<%= product.quantity %>"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="quantityError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Color -->
+                <div class="mb-4">
+                    <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
+                    <input type="text" id="color" name="color" 
+                           value="<%= product.color %>"
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="colorError" class="text-red-500 text-sm"></span>
+                </div>
+
+                <!-- Product Images -->
+                <div class="mb-4">
+                    <label for="productImages" class="block text-sm font-medium text-gray-700">Update Product Images</label>
+                    <input type="file" id="productImages" name="images" 
+                           class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           multiple accept="image/jpeg,image/png,image/webp">
+                    <small class="text-gray-600">You can upload up to 4 images total. Max file size: 5MB per image.</small>
+                    <span id="imagesError" class="error-message text-red-500 text-sm block mt-1"></span>
+                    <div id="imagePreview" class="mt-4 flex flex-wrap gap-4">
+                        <% product.productImage.forEach(function(image) { %>
+                            <div class="relative image-container" data-filename="<%= image %>">
+                                <img src="/uploads/products/<%= image %>" class="w-24 h-24 object-cover rounded">
+                                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 remove-image">
+                                    &times;
+                                </button>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+
+                <!-- Image Crop Modal -->
+                <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                    <div class="bg-white p-6 rounded-lg max-w-xl w-full">
+                        <h2 class="text-xl font-bold mb-4">Crop Image</h2>
+                        <div class="mb-4">
+                            <img id="cropperImage" src="" class="max-w-full">
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button type="button" id="cancelCrop" class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                            <button type="button" id="cropImage" class="bg-blue-600 text-white px-4 py-2 rounded">Crop</button>
+                        </div>
+                    </div>
+                </div>
+           
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="status" name="status" 
+                            class="mt-1 px-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Available" <%= product.status === 'Available' ? 'selected' : '' %>>Available</option>
+                        <option value="Out of Stock" <%= product.status === 'out of Stock' ? 'selected' : '' %>>Out of Stock</option>
+                        <option value="Discontinued" <%= product.status === 'Discontinued' ? 'selected' : '' %>>Discontinued</option>
+                    </select>
+                    <span id="statusError" class="text-red-500 text-sm"></span>
+                </div>
+                <input type="hidden" id="removedImagesInput" name="removedImages" value="">
+                <!-- Submit Button -->
+                <div class="mt-6 text-center">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Update Product
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editProductForm');
+    const productImagesInput = document.getElementById('productImages');
+    const imagePreview = document.getElementById('imagePreview');
+    const cropModal = document.getElementById('cropModal');
+    const cropperImage = document.getElementById('cropperImage');
+    const removedImagesInput = document.getElementById('removedImagesInput');
+    let cropper = null;
+    let currentFileIndex = 0;
+    const croppedImages = [];
+    let removedImages = [];
+
+    // Form Validation
+    function validateForm() {
+        let isValid = true;
+        const errors = {};
+
+        // Clear all previous error messages
+        document.querySelectorAll('.error-message').forEach(span => span.textContent = '');
+
+        // Product Name validation
+        const productName = document.getElementById('productName').value.trim();
+        if (!productName) {
+            errors.productName = 'Product name is required';
+        } else if (productName.length < 3) {
+            errors.productName = 'Product name must be at least 3 characters';
+        }
+
+        // Description validation
+        const description = document.getElementById('productDescription').value.trim();
+        if (!description) {
+            errors.description = 'Description is required';
+        } else if (description.length < 10) {
+            errors.description = 'Description must be at least 10 characters';
+        }
+
+        // Category validation
+        const category = document.getElementById('category').value;
+        if (!category) {
+            errors.category = 'Please select a category';
+        }
+
+        // Price validation
+        const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+        const salePrice = parseFloat(document.getElementById('salePrice').value);
+
+        if (!regularPrice || regularPrice <= 0) {
+            errors.regularPrice = 'Regular price must be greater than 0';
+        }
+
+        if (!salePrice || salePrice <= 0) {
+            errors.salePrice = 'Sale price must be greater than 0';
+        } else if (salePrice >= regularPrice) {
+            errors.salePrice = 'Sale price must be less than regular price';
+        }
+
+        // Quantity validation
+        const quantity = parseInt(document.getElementById('quantity').value);
+        if (!quantity || quantity < 0) {
+            errors.quantity = 'Quantity cannot be negative';
+        }
+
+        // Color validation
+        const color = document.getElementById('color').value.trim();
+        if (!color) {
+            errors.color = 'Color is required';
+        }
+
+        // Image validation
+        const existingImages = Array.from(document.querySelectorAll('.image-container[data-filename]'))
+            .filter(container => !removedImages.includes(container.dataset.filename))
+            .length;
+        const totalImages = existingImages + croppedImages.length;
+
+        if (totalImages === 0) {
+            errors.images = 'Product must have at least one image';
+            const errorSpan = document.getElementById('imagesError');
+            if (errorSpan) {
+                errorSpan.textContent = 'Product must have at least one image';
+                isValid = false;
+            }
+        } else if (totalImages > 4) {
+            errors.images = 'Maximum 4 images allowed';
+            const errorSpan = document.getElementById('imagesError');
+            if (errorSpan) {
+                errorSpan.textContent = 'Maximum 4 images allowed';
+                isValid = false;
+            }
+        }
+
+        // Display errors if any
+        for (const [field, message] of Object.entries(errors)) {
+            const errorSpan = document.getElementById(`${field}Error`);
+            if (errorSpan) {
+                errorSpan.textContent = message;
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    // Image Validation
+    function validateImageUpload(files) {
+        const errors = [];
+        const maxFiles = 4;
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        // Get current active images (excluding removed ones and including new ones)
+        const existingImages = Array.from(document.querySelectorAll('.image-container[data-filename]'))
+            .filter(container => !removedImages.includes(container.dataset.filename))
+            .length;
+        
+        const newImagesCount = files.length;
+        const totalImagesAfterUpload = existingImages + croppedImages.length + newImagesCount;
+
+        console.log('Image counts:', {
+            existingImages,
+            croppedImages: croppedImages.length,
+            newImages: newImagesCount,
+            totalAfterUpload: totalImagesAfterUpload,
+            removedImages
+        });
+
+        if (totalImagesAfterUpload > maxFiles) {
+            const availableSlots = maxFiles - (existingImages + croppedImages.length);
+            errors.push(`You can only add ${availableSlots} more image${availableSlots !== 1 ? 's' : ''}. (${existingImages + croppedImages.length} of ${maxFiles} used)`);
+            return errors;
+        }
+
+        Array.from(files).forEach(file => {
+            if (!allowedTypes.includes(file.type)) {
+                errors.push(`${file.name}: Invalid file type. Only JPG, PNG and WebP allowed`);
+            }
+            if (file.size > maxSize) {
+                errors.push(`${file.name}: File size exceeds 5MB limit`);
+            }
+        });
+
+        return errors;
+    }
+
+    // Image Processing
+    function processNextImage() {
+        const files = productImagesInput.files;
+        if (currentFileIndex < files.length) {
+            const file = files[currentFileIndex];
+            openCropModal(file);
+        } else {
+            productImagesInput.value = ''; // Reset file input after processing all images
+        }
+    }
+
+    // Image Cropping
+    function openCropModal(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            cropperImage.src = e.target.result;
+            cropModal.classList.remove('hidden');
+            
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            cropper = new Cropper(cropperImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Event Listeners
+    productImagesInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const errors = validateImageUpload(files);
+        const errorSpan = document.getElementById('imagesError');
+
+        if (errors.length > 0) {
+            errorSpan.textContent = errors.join(', ');
+            this.value = ''; // Reset file input
+            return;
+        }
+
+        errorSpan.textContent = '';
+        currentFileIndex = 0;
+        processNextImage();
+    });
+
+    document.getElementById('cancelCrop').addEventListener('click', function() {
+        cropModal.classList.add('hidden');
+        if (cropper) {
+            cropper.destroy();
+        }
+    });
+
+    document.getElementById('cropImage').addEventListener('click', function() {
+        if (!cropper) return;
+
+        const croppedCanvas = cropper.getCroppedCanvas({
+            width: 800,  // Set maximum dimensions
+            height: 800,
+            imageSmoothingQuality: 'high'
+        });
+
+        croppedCanvas.toBlob(function(blob) {
+            const croppedFile = new File([blob], `cropped-image-${Date.now()}.png`, {
+                type: 'image/png'
+            });
+
+            // Check total images count before adding
+            const existingImages = Array.from(document.querySelectorAll('.image-container[data-filename]'))
+                .filter(container => !removedImages.includes(container.dataset.filename))
+                .length;
+
+            if (existingImages + croppedImages.length >= 4) {
+                const errorSpan = document.getElementById('imagesError');
+                errorSpan.textContent = 'Maximum 4 images allowed';
+                cropModal.classList.add('hidden');
+                cropper.destroy();
+                cropper = null;
+                return;
+            }
+
+            croppedImages.push(croppedFile);
+            
+            // Create preview container
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'relative image-container';
+            
+            const img = document.createElement('img');
+            img.src = croppedCanvas.toDataURL();
+            img.className = 'w-24 h-24 object-cover rounded';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.className = 'absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 remove-image';
+            
+            imgContainer.appendChild(img);
+            imgContainer.appendChild(removeBtn);
+            imagePreview.appendChild(imgContainer);
+            
+            // Close modal and cleanup
+            cropModal.classList.add('hidden');
+            cropper.destroy();
+            cropper = null;
+            
+            // Process next image if any
+            currentFileIndex++;
+            processNextImage();
+        }, 'image/png', 0.9);
+    });
+
+    // Image Removal
+    imagePreview.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-image')) {
+            const imageContainer = e.target.closest('.image-container');
+            const filename = imageContainer.dataset.filename;
+            
+            if (filename) {
+                // For existing images
+                if (!removedImages.includes(filename)) {
+                    removedImages.push(filename);
+                    removedImagesInput.value = JSON.stringify(removedImages);
+                }
+            } else {
+                // For newly added cropped images
+                const newImageContainers = Array.from(imagePreview.children)
+                    .filter(container => !container.dataset.filename);
+                const index = newImageContainers.indexOf(imageContainer);
+                if (index !== -1) {
+                    croppedImages.splice(index, 1);
+                }
+            }
+            
+            imageContainer.remove();
+
+            // Clear error message if we're under the limit
+            const errorSpan = document.getElementById('imagesError');
+            errorSpan.textContent = '';
+
+            // Enable file input if we're under the limit
+            const remainingImages = Array.from(document.querySelectorAll('.image-container[data-filename]'))
+                .filter(container => !removedImages.includes(container.dataset.filename))
+                .length;
+            const totalImages = remainingImages + croppedImages.length;
+
+            if (totalImages === 0) {
+                errorSpan.textContent = 'Product must have at least one image';
+            }
+
+            // Reset file input to allow new selections
+            productImagesInput.value = '';
+
+            console.log('After removal:', {
+                remainingImages,
+                croppedImages: croppedImages.length,
+                totalImages,
+                removedImages
+            });
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+            // Calculate actual active images
+            const existingImages = Array.from(document.querySelectorAll('.image-container[data-filename]'))
+                .filter(container => !removedImages.includes(container.dataset.filename))
+                .length;
+            const totalImages = existingImages + croppedImages.length;
+
+            if (totalImages === 0) {
+                const errorSpan = document.getElementById('imagesError');
+                errorSpan.textContent = 'Product must have at least one image';
+                return;
+            }
+
+            if (totalImages > 4) {
+                const errorSpan = document.getElementById('imagesError');
+                errorSpan.textContent = 'Maximum 4 images allowed';
+                return;
+            }
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            let loadingAlert;
+            try {
+                loadingAlert = Swal.fire({
+                    title: 'Updating Product...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const formData = new FormData(form);
+                formData.set('removedImages', JSON.stringify(removedImages));
+                
+                croppedImages.forEach((croppedImage, index) => {
+                    formData.append('images', croppedImage, `cropped-image-${index}.png`);
+                });
+                
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                // Close loading alert regardless of response
+                if (loadingAlert) {
+                    loadingAlert.close();
+                }
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Failed to update product');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Success!',
+                        text: 'Product updated successfully!',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    window.location.href = '/admin/products';
+                } else {
+                    throw new Error(data.message || 'Failed to update product');
+                }
+
+            } catch (error) {
+                // Close loading alert if it's still open
+                if (loadingAlert) {
+                    loadingAlert.close();
+                }
+                
+                console.error('Error:', error);
+                
+                let errorMessage = 'An unexpected error occurred';
+                if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+                    errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+
+                await Swal.fire({
+                    title: 'Error!',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+
+        } catch (error) {
+            console.error('Outer error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'An unexpected error occurred',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+
+    // Real-time validation
+    const inputs = [
+        'productName',
+        'productDescription',
+        'category',
+        'regularPrice',
+        'salePrice',
+        'quantity',
+        'color'
+    ];
+
+    inputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', function() {
+                validateField(this);
+            });
+            input.addEventListener('blur', function() {
+                validateField(this);
+            });
+        }
+    });
+
+    function validateField(field) {
+        const errorSpan = document.getElementById(`${field.id}Error`);
+        let errorMessage = '';
+
+        switch (field.id) {
+            case 'productName':
+                if (!field.value.trim()) {
+                    errorMessage = 'Product name is required';
+                } else if (field.value.trim().length < 3) {
+                    errorMessage = 'Product name must be at least 3 characters';
+                }
+                break;
+            case 'productDescription':
+                if (!field.value.trim()) {
+                    errorMessage = 'Description is required';
+                } else if (field.value.trim().length < 10) {
+                    errorMessage = 'Description must be at least 10 characters';
+                }
+                break;
+            case 'regularPrice':
+                if (!field.value || parseFloat(field.value) <= 0) {
+                    errorMessage = 'Regular price must be greater than 0';
+                }
+                validateSalePrice();
+                break;
+            case 'salePrice':
+                validateSalePrice();
+                break;
+            case 'quantity':
+                if (!field.value || parseInt(field.value) < 0) {
+                    errorMessage = 'Quantity cannot be negative';
+                }
+                break;
+            case 'color':
+                if (!field.value.trim()) {
+                    errorMessage = 'Color is required';
+                }
+                break;
+        }
+
+        if (errorSpan) {
+            errorSpan.textContent = errorMessage;
+        }
+    }
+
+    function validateSalePrice() {
+        const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+        const salePrice = parseFloat(document.getElementById('salePrice').value);
+        const errorSpan = document.getElementById('salePriceError');
+
+        if (salePrice >= regularPrice) {
+            errorSpan.textContent = 'Sale price must be less than regular price';
+        } else {
+            errorSpan.textContent = '';
+        }
+    }
+});
+    </script>
+</body>
+</document>

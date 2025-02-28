@@ -1,0 +1,247 @@
+<%- include("../../views/partials/user/header") %>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container-fluid">
+  <div class="row px-xl-5">
+      <div class="col-12">
+          <nav class="breadcrumb bg-light mb-30">
+              <a class="breadcrumb-item text-dark" href="/">Home</a>
+              <a class="breadcrumb-item text-dark" href="/profile">Profile</a>
+              <span class="breadcrumb-item active">My wishlist</span>
+          </nav>
+      </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<main class="w-full grid grid-cols-12 gap-6 animate__animated animate__fadeIn px-4 sm:px-6 lg:px-8">
+    <!-- Include Profile Sidebar -->
+    <%- include("../partials/user/profileSidebar", { currentPage: 'wishlist' }) %>
+
+    <!-- Wishlist Content -->
+    <div class="col-span-9 space-y-6">
+        <!-- Container -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <!-- Wishlist Heading -->
+            <h1 class="text-2xl font-bold mb-6 flex items-center">
+                My Wishlist
+            </h1>
+
+            <!-- Wishlist Table -->
+            <% if (wishlist && wishlist.length > 0) { %>
+                <div class="bg-white shadow-md rounded-lg">
+                    <table class="min-w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="p-4 text-sm font-medium text-gray-600"> </th>
+                                <th class="p-4 text-sm font-medium text-gray-600">Product Name</th>
+                                <th class="p-4 text-sm font-medium text-gray-600">Unit Price</th>
+                                <th class="p-4 text-sm font-medium text-gray-600">Stock Status</th>
+                                <th class="p-4 text-sm font-medium text-gray-600">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% wishlist.forEach(product => { 
+                                // Determine stock status and availability
+                                let stockStatus = 'Out of Stock';
+                                let stockClass = 'text-red-500';
+                                let isAvailable = false;
+    
+                                if (product.quantity > 0 && !product.isBlocked) {
+                                    stockStatus = 'In Stock';
+                                    stockClass = 'text-green-500';
+                                    isAvailable = true;
+                                } else if (product.isBlocked) {
+                                    stockStatus = 'Unavailable';
+                                    stockClass = 'text-gray-500';
+                                }
+                            %>
+                                <tr class="border-b">
+                                    <td class="p-4">
+                                        <button class="remove-wishlist text-yellow-500 hover:text-yellow-600" data-product-id="<%= product._id %>">✖</button>
+                                    </td>
+                                    <td class="p-4 flex items-center space-x-4">
+                                        <img src="/uploads/products/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-16 h-16 object-cover rounded">
+                                        <span class="font-medium"><%= product.productName %></span>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="font-bold">&#8377;<%= product.salePrice %></span>
+                                    </td>
+                                    <td class="p-4 <%= stockClass %>"><%= stockStatus %></td>
+                                    <td class="p-4">
+                                        <% if (isAvailable) { %>
+                                            <button class="add-to-cart bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">Add to Cart</button>
+                                        <% } else { %>
+                                            <button disabled class="bg-gray-300 text-gray-500 py-2 px-4 rounded cursor-not-allowed">Unavailable</button>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination Controls -->
+                    <div class="flex items-center justify-between px-4 py-3 border-t">
+                        <div class="flex items-center">
+                            <p class="text-sm text-gray-700">
+                                Showing
+                                <span class="font-medium"><%= (pagination.currentPage - 1) * pagination.limit + 1 %></span>
+                                to
+                                <span class="font-medium">
+                                    <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalItems) %>
+                                </span>
+                                of
+                                <span class="font-medium"><%= pagination.totalItems %></span>
+                                results
+                            </p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <% if (pagination.hasPrevPage) { %>
+                                <a href="?page=<%= pagination.currentPage - 1 %>" 
+                                    class="px-3 py-1 text-sm bg-white border rounded-md hover:bg-gray-100">
+                                    Previous
+                                </a>
+                            <% } %>
+                            
+                            <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+                                <a href="?page=<%= i %>"
+                                    class="px-3 py-1 text-sm <%= pagination.currentPage === i ? 'bg-yellow-500 text-white' : 'bg-white' %> border rounded-md hover:bg-yellow-100">
+                                    <%= i %>
+                                </a>
+                            <% } %>
+                            
+                            <% if (pagination.hasNextPage) { %>
+                                <a href="?page=<%= pagination.currentPage + 1 %>"
+                                    class="px-3 py-1 text-sm bg-white border rounded-md hover:bg-gray-100">
+                                    Next
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <!-- Empty Wishlist State -->
+                <div class="flex flex-col items-center justify-center bg-white shadow-md rounded-lg p-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    <h2 class="text-xl font-semibold text-gray-600 mb-2">Your Wishlist is Empty</h2>
+                    <p class="text-gray-500 mb-6 text-center">Looks like you haven't added any items to your wishlist yet.</p>
+                    <a href="/shop" class="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">
+                        Continue Shopping
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Remove from Wishlist
+    document.querySelectorAll('.remove-wishlist').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        const productId = event.target.dataset.productId;
+        try {
+          const response = await fetch(`/wishlist/${productId}`, {
+            method: 'DELETE',
+          });
+          
+          if (response.ok) {
+            // Remove the row from the table
+           
+
+
+          Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to remove this product from your wishlist?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, remove it!',
+            cancelButtonText: 'No, keep it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // If user clicks "Yes", show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Removed!',
+                    text: 'Product has been removed from your wishlist.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+          setTimeout(() => {
+                location.reload();  
+                }, 1500);
+
+           }
+        });
+
+            
+          } else {
+            const result = await response.json();
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: result.message || 'Failed to remove product',
+            });
+          }
+        } catch (error) {
+          console.error('Error removing from wishlist:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while removing the product',
+          });
+        }
+      });
+    });
+
+    // Add to Cart functionality
+    document.querySelectorAll('.add-to-cart').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        const productId = event.target.closest('tr').querySelector('.remove-wishlist').dataset.productId;
+        try {
+          const response = await fetch('/add-to-cart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId }),
+          });
+          
+          const result = await response.json();
+          if (response.ok) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Added to Cart!',
+              text: 'The item has been added to your cart.',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: result.message || 'Failed to add item to cart',
+            });
+          }
+        } catch (error) {
+          console.error('Error adding to cart:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while adding the item to cart',
+          });
+        }
+      });
+    });
+  });
+</script>
+
+<%- include("../../views/partials/user/footer") %>

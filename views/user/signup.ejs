@@ -1,0 +1,321 @@
+<%-include("../../views/partials/user/header")%>
+
+<div class="container">
+    <form class="signup-form" id="signupForm" method="post" action="/signup">
+        <h2 class="form-title">Create an Account</h2>
+        
+        <% if (typeof message !== 'undefined') { %>
+            <div class="alert alert-danger mb-4" role="alert">
+                <%= message %>
+            </div>
+        <% } %>
+        
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" name="name" id="fullName" class="form-control" required minlength="3">
+            <div id="error1" class="error-message"></div>
+        </div>
+  
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" name="email" id="email" class="form-control" required>
+            <div id="error2" class="error-message"></div>
+        </div>
+  
+        <div class="form-group">
+            <label for="phone">Mobile Number</label>
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter 10 digit mobile number" required pattern="[0-9]{10}">
+            <div id="error3" class="error-message"></div>
+        </div>
+  
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-input-wrapper">
+                <input type="password" name="password" id="password" class="form-control" required minlength="8">
+                <i class="fas fa-eye-slash toggle-password" onclick="togglePasswordVisibility('password')"></i>
+            </div>
+            <div id="error4" class="error-message"></div>
+            <div class="password-requirements text-muted small mt-1">
+                Password must contain at least 8 characters, including uppercase, lowercase, number and special character
+            </div>
+        </div>
+  
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="password-input-wrapper">
+                <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" required>
+                <i class="fas fa-eye-slash toggle-password" onclick="togglePasswordVisibility('confirmPassword')"></i>
+            </div>
+            <div id="error5" class="error-message"></div>
+        </div>
+  
+        <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="btn-text">Sign Up</span>
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+
+        <div class="form-footer mt-3 text-center">
+            <p>Already have an account? <a href="/signin" class="text-primary">Sign In</a></p>
+        </div>
+    </form>
+</div>
+
+<style>
+.signup-form {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.form-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: #0056b3;
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+}
+
+.password-requirements {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.alert {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+</style>
+
+<script>
+const nameid = document.getElementById("fullName");
+const emailid = document.getElementById("email");
+const phoneid = document.getElementById("phone");
+const passwordid = document.getElementById("password");
+const confirmPasswordid = document.getElementById("confirmPassword");
+const submitBtn = document.getElementById("submitBtn");
+
+const error1 = document.getElementById("error1");
+const error2 = document.getElementById("error2");
+const error3 = document.getElementById("error3");
+const error4 = document.getElementById("error4");
+const error5 = document.getElementById("error5");
+
+const signupform = document.getElementById("signupForm");
+
+function showError(element, message) {
+    element.style.display = "block";
+    element.innerHTML = message;
+    element.closest('.form-group').querySelector('input').classList.add('is-invalid');
+}
+
+function clearError(element) {
+    element.style.display = "none";
+    element.innerHTML = "";
+    element.closest('.form-group').querySelector('input').classList.remove('is-invalid');
+}
+
+function nameValidateChecking() {
+    const nameval = nameid.value.trim();
+    const namepattern = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+    if (nameval === "") {
+        showError(error1, "Please enter your name");
+        return false;
+    } else if (!namepattern.test(nameval)) {
+        showError(error1, "Name can only contain alphabets and spaces");
+        return false;
+    } else {
+        clearError(error1);
+        return true;
+    }
+}
+
+function emailValidateChecking() {
+    const emailval = emailid.value.trim();
+    const emailpattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (emailval === "") {
+        showError(error2, "Please enter your email");
+        return false;
+    } else if (!emailpattern.test(emailval)) {
+        showError(error2, "Please enter a valid email address");
+        return false;
+    } else {
+        clearError(error2);
+        return true;
+    }
+}
+
+function phoneValidateChecking() {
+    const phoneval = phoneid.value.trim();
+    const phonepattern = /^[0-9]{10}$/;
+
+    if (phoneval === "") {
+        showError(error3, "Please enter your phone number");
+        return false;
+    } else if (!phonepattern.test(phoneval)) {
+        showError(error3, "Please enter a valid 10-digit phone number");
+        return false;
+    } else {
+        clearError(error3);
+        return true;
+    }
+}
+
+function passValidateChecking() {
+    const passval = passwordid.value.trim();
+    const cpassval = confirmPasswordid.value.trim();
+    const passwordpattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    let isValid = true;
+
+    if (passval === "") {
+        showError(error4, "Please enter a password");
+        isValid = false;
+    } else if (!passwordpattern.test(passval)) {
+        showError(error4, "Password must contain at least 8 characters, including uppercase, lowercase, number and special character");
+        isValid = false;
+    } else {
+        clearError(error4);
+    }
+
+    if (cpassval === "") {
+        showError(error5, "Please confirm your password");
+        isValid = false;
+    } else if (cpassval !== passval) {
+        showError(error5, "Passwords do not match");
+        isValid = false;
+    } else {
+        clearError(error5);
+    }
+
+    return isValid;
+}
+
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling;
+    
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    }
+}
+
+// Real-time validation
+nameid.addEventListener("input", nameValidateChecking);
+emailid.addEventListener("input", emailValidateChecking);
+phoneid.addEventListener("input", phoneValidateChecking);
+passwordid.addEventListener("input", passValidateChecking);
+confirmPasswordid.addEventListener("input", passValidateChecking);
+
+signupform.addEventListener("submit", (e) => {
+    e.preventDefault();
+    
+    const isNameValid = nameValidateChecking();
+    const isEmailValid = emailValidateChecking();
+    const isPhoneValid = phoneValidateChecking();
+    const isPasswordValid = passValidateChecking();
+
+    if (isNameValid && isEmailValid && isPhoneValid && isPasswordValid) {
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.querySelector('.btn-text').style.display = 'none';
+        submitBtn.querySelector('.spinner-border').classList.remove('d-none');
+        
+        // Submit the form
+        signupform.submit();
+    }
+});
+
+// Clear server-side error message after 5 seconds
+document.addEventListener('DOMContentLoaded', () => {
+    const alertElement = document.querySelector('.alert');
+    if (alertElement) {
+        setTimeout(() => {
+            alertElement.style.opacity = '0';
+            setTimeout(() => alertElement.remove(), 300);
+        }, 5000);
+    }
+});
+</script>
+
+<%-include("../../views/partials/user/footer")%>
