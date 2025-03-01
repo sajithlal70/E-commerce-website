@@ -97,73 +97,73 @@
         <!-- Left Column - Address Section -->
         <div class="lg:w-2/3">
             <div class="glass-effect rounded-lg shadow-lg p-6 animate-fadeIn">
-                <!-- Address Section -->
-                <div class="bg-white p-6 rounded-lg shadow-sm mb-6 hover:shadow-md transition-shadow duration-300">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold flex items-center">
-                            <i class="fas fa-map-marker-alt text-yellow-500 mr-2"></i>
-                            Delivery Address
-                        </h2>
-                        <div class="flex gap-2">
-                            <a href="/checkout/addresses" class="px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors duration-300 flex items-center shadow-hover">
-                                <i class="fas fa-list mr-2"></i>
-                                Manage Addresses
-                            </a>
-                        </div>
-                    </div>
+<!-- Address Section -->
+<div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm mb-4 sm:mb-6 hover:shadow-md transition-shadow duration-300">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+        <h2 class="text-lg sm:text-xl font-semibold flex items-center">
+            <i class="fas fa-map-marker-alt text-yellow-500 mr-2"></i>
+            Delivery Address
+        </h2>
+        <div class="flex gap-2">
+            <a href="/checkout/addresses" class="w-full sm:w-auto px-3 py-2 text-sm sm:text-base bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors duration-300 flex items-center justify-center sm:justify-start shadow-hover">
+                <i class="fas fa-list mr-2"></i>
+                Manage Addresses
+            </a>
+        </div>
+    </div>
 
-                    <div class="grid grid-cols-1 gap-4">
-                        <% if (defaultAddress) { %>
-                            <!-- Default Address -->
-                            <div class="border-2 border-yellow-500 p-6 rounded-lg relative group shadow-hover animate-fadeIn" data-address-id="<%= defaultAddress._id %>">
-                                <input type="radio" name="address" id="addressIdd" checked class="absolute top-4 left-4 w-4 h-4 text-yellow-500 focus:ring-yellow-500">
-                                <div class="ml-8">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center">
-                                            <h6 class="font-medium text-lg flex items-center">
-                                                <i class="<%= defaultAddress.addressType === 'Home' ? 'fas fa-home' : 'fas fa-building' %> text-yellow-500 mr-2"></i>
-                                                <%= defaultAddress.addressType %>
-                                            </h6>
-                                            <span class="ml-2 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full animate-pulse">Default</span>
-                                        </div>
-                                        <a href="/checkout/addresses" class="text-yellow-600 hover:text-yellow-700 transition-colors">
-                                            <i class="fas fa-edit"></i> Change
-                                        </a>
-                                    </div>
-                                    <div class="space-y-2 text-gray-600">
-                                        <p class="flex items-center">
-                                            <i class="fas fa-user mr-2 text-gray-400"></i>
-                                            <%= defaultAddress.name %>
-                                        </p>
-                                        <p class="flex items-center">
-                                            <i class="fas fa-phone mr-2 text-gray-400"></i>
-                                            <%= defaultAddress.phone %>
-                                        </p>
-                                        <p class="flex items-center">
-                                            <i class="fas fa-map-pin mr-2 text-gray-400"></i>
-                                            <%= defaultAddress.street %>, <%= defaultAddress.city %>, <%= defaultAddress.postalCode %>
-                                        </p>
-                                        <% if (defaultAddress.landMark) { %>
-                                            <p class="flex items-center">
-                                                <i class="fas fa-landmark mr-2 text-gray-400"></i>
-                                                <%= defaultAddress.landMark %>
-                                            </p>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </div>
-                        <% } else { %>
-                            <div class="text-center py-8 animate-fadeIn">
-                                <i class="fas fa-map-marker-alt text-6xl text-gray-400 mb-4 animate-bounce"></i>
-                                <p class="text-gray-600 mb-4">No delivery address selected</p>
-                                <a href="/checkout/address/add" class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-300 inline-flex items-center shadow-hover">
-                                    <i class="fas fa-plus mr-2"></i>
-                                    Add New Address
-                                </a>
-                            </div>
+    <div class="grid grid-cols-1 gap-4">
+        <% if (defaultAddress) { %>
+            <!-- Default Address -->
+            <div class="border-2 border-yellow-500 p-4 sm:p-6 rounded-lg relative group shadow-hover animate-fadeIn" data-address-id="<%= defaultAddress._id %>">
+                <input type="radio" name="address" id="addressIdd" checked class="absolute top-4 left-4 w-4 h-4 text-yellow-500 focus:ring-yellow-500">
+                <div class="ml-6 sm:ml-8">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h6 class="font-medium text-base sm:text-lg flex items-center">
+                                <i class="<%= defaultAddress.addressType === 'Home' ? 'fas fa-home' : 'fas fa-building' %> text-yellow-500 mr-2"></i>
+                                <%= defaultAddress.addressType %>
+                            </h6>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full animate-pulse">Default</span>
+                        </div>
+                        <a href="/checkout/addresses" class="text-yellow-600 hover:text-yellow-700 transition-colors">
+                            <i class="fas fa-edit"></i> Change
+                        </a>
+                    </div>
+                    <div class="space-y-2 text-gray-600 text-sm sm:text-base">
+                        <p class="flex items-center">
+                            <i class="fas fa-user min-w-4 mr-2 text-gray-400"></i>
+                            <span class="break-words"><%= defaultAddress.name %></span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-phone min-w-4 mr-2 text-gray-400"></i>
+                            <span class="break-words"><%= defaultAddress.phone %></span>
+                        </p>
+                        <p class="flex items-start">
+                            <i class="fas fa-map-pin min-w-4 mr-2 mt-1 text-gray-400"></i>
+                            <span class="break-words"><%= defaultAddress.street %>, <%= defaultAddress.city %>, <%= defaultAddress.postalCode %></span>
+                        </p>
+                        <% if (defaultAddress.landMark) { %>
+                            <p class="flex items-start">
+                                <i class="fas fa-landmark min-w-4 mr-2 mt-1 text-gray-400"></i>
+                                <span class="break-words"><%= defaultAddress.landMark %></span>
+                            </p>
                         <% } %>
                     </div>
                 </div>
+            </div>
+        <% } else { %>
+            <div class="text-center py-6 sm:py-8 animate-fadeIn">
+                <i class="fas fa-map-marker-alt text-4xl sm:text-6xl text-gray-400 mb-3 sm:mb-4 animate-bounce"></i>
+                <p class="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">No delivery address selected</p>
+                <a href="/checkout/address/add" class="px-4 sm:px-6 py-2 sm:py-3 bg-yellow-500 text-white text-sm sm:text-base rounded-lg hover:bg-yellow-600 transition-colors duration-300 inline-flex items-center shadow-hover">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Address
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div>
             </div>
         </div>
 

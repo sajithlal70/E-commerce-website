@@ -9714,7 +9714,6 @@ a.text-dark:hover, a.text-dark:focus {
 /* Signup page css properties */
 
 .container {
-  min-height: calc(100vh - 60px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9841,7 +9840,6 @@ a.text-dark:hover, a.text-dark:focus {
 
 /* Container */
 .container {
-  min-height: calc(100vh - 60px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10027,7 +10025,6 @@ form {
 /* OTP verification page styles */
 
 .container {
-  min-height: calc(100vh - 60px);
   display: flex;
   justify-content: center;
   align-items: center;

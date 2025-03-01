@@ -16,10 +16,10 @@
 <%- include('../../views/partials/user/header') %>
 
 <!-- Breadcrumb Start -->
-<div class="container-fluid">
+<div class="container-fluid px-4 sm:px-6 lg:px-8">
     <div class="row px-xl-5">
         <div class="col-12">
-            <nav class="breadcrumb bg-light mb-30">
+            <nav class="breadcrumb bg-light mb-4 sm:mb-6 lg:mb-8 p-2 rounded-lg text-sm">
                 <a class="breadcrumb-item text-dark" href="/">Home</a>
                 <a class="breadcrumb-item text-dark" href="/profile">Profile</a>
                 <span class="breadcrumb-item active">Orders</span>
@@ -30,201 +30,305 @@
 <!-- Breadcrumb End -->
 
 <!-- Main Content -->
-<main class="w-full grid grid-cols-12 gap-6 animate__animated animate__fadeIn px-4 sm:px-6 lg:px-8">
-    <!-- Include Profile Sidebar -->
-    <%- include("../partials/user/profileSidebar", { currentPage: 'orders' }) %>
-
-    <!-- Orders Content -->
-    <div class="col-span-9 space-y-6">
-        <!-- Order Filter Section -->
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <h1 class="text-2xl font-semibold">My Orders</h1>
-                <div class="flex flex-wrap gap-4">
-                    <!-- Search -->
-                    <div class="relative">
-                        <input type="text" 
-                               placeholder="Search orders..." 
-                               class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                               onkeyup="searchOrders(this.value)">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                    </div>
-                    <!-- Filter Dropdown -->
-                    <select onchange="filterOrders(this.value)" 
-                            class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                        <option value="all">All Orders</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="returned">Returned</option>
-                    </select>
-                </div>
-            </div>
+<main class="w-full px-4 sm:px-6 lg:px-8 animate-fadeIn">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+        <!-- Include Profile Sidebar -->
+        <div class="lg:col-span-3">
+            <%- include("../partials/user/profileSidebar", { currentPage: 'orders' }) %>
         </div>
 
-        <!-- Orders List -->
-        <div id="ordersList" class="space-y-6">
-            <% if (orders.length > 0) { %>
-                <% orders.forEach(order => { %>
-                    <div class="order-item mb-6 bg-white rounded-lg shadow-sm p-6">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="text-lg font-semibold">Order #<%= order._id %></h3>
-                                <p class="text-sm text-gray-600">
-                                    Placed on <%= new Date(order.createdAt).toLocaleDateString() %>
-                                </p>
-                                
-                                <!-- Order Status Badge -->
-                                <div class="mt-2 flex items-center gap-2">
-                                    <span class="px-3 py-1 rounded-full text-sm 
-                                        <%= order.orderStatus === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                                            order.orderStatus === 'Shipped' ? 'bg-yellow-100 text-yellow-800' :
-                                            order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                            order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                                            order.orderStatus === 'Payment Failed' ? 'bg-red-100 text-red-800' :
-                                            'bg-gray-100 text-gray-800' %>">
-                                        <%= order.orderStatus %>
-                                    </span>
-                                    
-                                    <!-- Payment Status Badge -->
-                                    <% if (order.paymentStatus === 'Failed' || order.orderStatus === 'Payment Failed') { %>
-                                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                                            Payment Failed
-                                        </span>
-                                    <% } %>
-                                </div>
-                            </div>
-                            
-                            <div class="text-right">
-                                <p class="text-lg font-semibold">₹<%= order.total.toFixed(2) %></p>
-                                <p class="text-sm text-gray-600">
-                                    <%= order.items.length %> item<%= order.items.length > 1 ? 's' : '' %>
-                                </p>
-                            </div>
+        <!-- Orders Content -->
+        <div class="lg:col-span-9 space-y-4 sm:space-y-6">
+            <!-- Order Filter Section -->
+            <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <h1 class="text-xl sm:text-2xl font-semibold">My Orders</h1>
+                    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+                        <!-- Search -->
+                        <div class="relative w-full sm:w-auto">
+                            <input type="text" 
+                                   placeholder="Search orders..." 
+                                   class="w-full sm:w-auto pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                   onkeyup="searchOrders(this.value)">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                         </div>
-
-                        <!-- Order Items Preview -->
-                        <div class="mt-4 border-t pt-4">
-                            <% order.items.forEach(function(item) { %>
-                                <div class="flex items-center gap-4 mb-2">
-                                    <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
-                                        <img src="/uploads/products/<%= item.product.productImage[0] %>" 
-                                             alt="<%= item.product.productName %>"
-                                             class="w-16 h-16 object-cover rounded-lg shadow"
-                                             onerror="this.src='/img/default-product.jpg'">
-                                    <% } else { %>
-                                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-image text-gray-400 text-2xl"></i>
-                                        </div>
-                                    <% } %>
-                                    <div>
-                                        <p class="font-medium"><%= item.product.productName %></p>
-                                        <p class="text-sm text-gray-600">
-                                            Qty: <%= item.quantity %> × ₹<%= item.price.toFixed(2) %>
-                                        </p>
-                                    </div>
-                                </div>
-                            <% }); %>
-                        </div>
-
-                        <!-- Payment Failed Actions -->
-                        <% if (order.orderStatus === 'Payment Failed' || order.paymentStatus === 'Failed') { %>
-                            <div class="mt-4 p-4 bg-red-50 rounded-lg border border-red-100">
-                                <div class="flex items-center mb-3">
-                                    <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
-                                    <span class="text-red-700 font-medium">Payment Failed</span>
-                                    <% if (order.paymentDetails && order.paymentDetails.error) { %>
-                                        <span class="ml-2 text-sm text-red-600">
-                                            (<%= order.paymentDetails.error %>)
-                                        </span>
-                                    <% } %>
-                                </div>
-                                <div class="flex gap-3">
-                                    <button onclick="retryPayment('<%= order._id %>')" 
-                                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center">
-                                        <i class="fas fa-redo mr-2"></i>
-                                        Retry Payment
-                                    </button>
-                                    <button onclick="abortOrder('<%= order._id %>')"
-                                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center">
-                                        <i class="fas fa-times mr-2"></i>
-                                        Cancel Order
-                                    </button>
-                                </div>
-                            </div>
-                        <% } %>
-
-                        <!-- Order Actions -->
-                        <div class="mt-4 flex justify-between items-center">
-                            <button onclick="trackOrder('<%= order._id %>')"
-                                    class="text-yellow-600 hover:text-yellow-700 flex items-center">
-                                <i class="fas fa-truck mr-2"></i>
-                                Track Order
-                            </button>
-                            
-                            <div class="flex gap-3">
-                                <a href="/orders/<%= order._id.toString() %>" 
-                                   class="px-4 py-2 border border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-50 transition-colors">
-                                    <i class="fas fa-eye mr-2"></i>View Details
-                                </a>
-                                
-                                <% if (['Delivered'].includes(order.orderStatus) && !order.returnDetails) { %>
-                                    <button onclick="handleOrderAction('return', '<%= order._id %>')"
-                                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
-                                        Return Order
-                                    </button>
-                                <% } %>
-                                
-                                <% if (['Pending', 'Processing'].includes(order.orderStatus) && order.paymentStatus !== 'Failed') { %>
-                                    <button onclick="handleOrderAction('cancel', '<%= order._id %>')"
-                                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                                        Cancel Order
-                                    </button>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
-                <% }); %>
-            <% } else { %>
-                <div class="text-center py-8">
-                    <i class="fas fa-box-open text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-600">You haven't placed any orders yet.</p>
-                    <a href="/shop" class="mt-4 inline-block px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
-                        Start Shopping
-                    </a>
-                </div>
-            <% } %>
-        </div>
-
-        <!-- Modal for Cancel/Return -->
-         
-        <div id="actionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                <h2 id="modalTitle" class="text-xl font-semibold mb-4"></h2>
-                <form id="actionForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
-                        <select id="reason" name="reason" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                            <option value="">Select a reason</option>
-                            <option value="wrong_item">Wrong item received</option>
-                            <option value="damaged">Item damaged/defective</option>
-                            <option value="size_issue">Size/fit issue</option>
-                            <option value="changed_mind">Changed my mind</option>
-                            <option value="better_price">Found better price elsewhere</option>
-                            <option value="other">Other</option>
+                        <!-- Filter Dropdown -->
+                        <select onchange="filterOrders(this.value)" 
+                                class="w-full sm:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                            <option value="all">All Orders</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="returned">Returned</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Comments</label>
-                        <textarea id="comments" name="comments" rows="3" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-4 pt-4">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Submit</button>
-                    </div>
-                </form>
+                </div>
             </div>
+
+            <!-- Orders List -->
+            <div id="ordersList" class="space-y-4 sm:space-y-6">
+                <% if (orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                        <div class="order-item bg-white rounded-lg shadow-sm p-4 sm:p-6" data-status="<%= order.orderStatus.toLowerCase() %>">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                                <div>
+                                    <h3 class="text-base sm:text-lg font-semibold break-all">Order #<%= order._id %></h3>
+                                    <p class="text-xs sm:text-sm text-gray-600">
+                                        Placed on <%= new Date(order.createdAt).toLocaleDateString() %>
+                                    </p>
+                                    
+                                    <!-- Order Status Badge -->
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                                        <span class="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm 
+                                            <%= order.orderStatus === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                                                order.orderStatus === 'Shipped' ? 'bg-yellow-100 text-yellow-800' :
+                                                order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                                order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                                order.orderStatus === 'Payment Failed' ? 'bg-red-100 text-red-800' :
+                                                'bg-gray-100 text-gray-800' %>">
+                                            <%= order.orderStatus %>
+                                        </span>
+                                        
+                                        <!-- Payment Status Badge -->
+                                        <% if (order.paymentStatus === 'Failed' || order.orderStatus === 'Payment Failed') { %>
+                                            <span class="px-2 sm:px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs sm:text-sm">
+                                                Payment Failed
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-left sm:text-right mt-2 sm:mt-0">
+                                    <p class="text-base sm:text-lg font-semibold">₹<%= order.total.toFixed(2) %></p>
+                                    <p class="text-xs sm:text-sm text-gray-600">
+                                        <%= order.items.length %> item<%= order.items.length > 1 ? 's' : '' %>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Order Items Preview -->
+                            <div class="mt-4 border-t pt-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    <% order.items.forEach(function(item, index) { %>
+                                        <% if (index < 3) { %> <!-- Limit to 3 items for preview -->
+                                            <div class="flex items-center gap-3">
+                                                <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
+                                                    <img src="/uploads/products/<%= item.product.productImage[0] %>" 
+                                                         alt="<%= item.product.productName %>"
+                                                         class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg shadow"
+                                                         onerror="this.src='/img/default-product.jpg'">
+                                                <% } else { %>
+                                                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-image text-gray-400 text-xl"></i>
+                                                    </div>
+                                                <% } %>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="font-medium text-sm sm:text-base truncate"><%= item.product.productName %></p>
+                                                    <p class="text-xs sm:text-sm text-gray-600">
+                                                        Qty: <%= item.quantity %> × ₹<%= item.price.toFixed(2) %>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                    <% }); %>
+                                </div>
+                                <% if (order.items.length > 3) { %>
+                                    <p class="mt-2 text-xs text-gray-500 italic">+<%= order.items.length - 3 %> more items</p>
+                                <% } %>
+                            </div>
+
+                            <!-- Payment Failed Actions -->
+                            <% if (order.orderStatus === 'Payment Failed' || order.paymentStatus === 'Failed') { %>
+                                <div class="mt-4 p-3 sm:p-4 bg-red-50 rounded-lg border border-red-100">
+                                    <div class="flex items-center mb-3">
+                                        <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                                        <span class="text-red-700 font-medium text-sm">Payment Failed</span>
+                                        <% if (order.paymentDetails && order.paymentDetails.error) { %>
+                                            <span class="ml-2 text-xs text-red-600 truncate">
+                                                (<%= order.paymentDetails.error %>)
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <button onclick="retryPayment('<%= order._id %>')" 
+                                                class="px-3 sm:px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center text-sm">
+                                            <i class="fas fa-redo mr-2"></i>
+                                            Retry Payment
+                                        </button>
+                                        <button onclick="abortOrder('<%= order._id %>')"
+                                                class="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center text-sm">
+                                            <i class="fas fa-times mr-2"></i>
+                                            Cancel Order
+                                        </button>
+                                    </div>
+                                </div>
+                            <% } %>
+
+                            <!-- Order Actions -->
+                            <div class="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <button onclick="trackOrder('<%= order._id %>')"
+                                        class="text-yellow-600 hover:text-yellow-700 flex items-center text-sm">
+                                    <i class="fas fa-truck mr-2"></i>
+                                    Track Order
+                                </button>
+                                
+                                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                                    <a href="/orders/<%= order._id.toString() %>" 
+                                       class="px-3 sm:px-4 py-2 border border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-50 transition-colors text-sm whitespace-nowrap">
+                                        <i class="fas fa-eye mr-1 sm:mr-2"></i>View Details
+                                    </a>
+                                    
+                                    <% if (['Delivered'].includes(order.orderStatus) && !order.returnDetails) { %>
+                                        <button onclick="handleOrderAction('return', '<%= order._id %>')"
+                                                class="px-3 sm:px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm">
+                                            Return Order
+                                        </button>
+                                    <% } %>
+                                    
+                                    <% if (['Pending', 'Processing'].includes(order.orderStatus) && order.paymentStatus !== 'Failed') { %>
+                                        <button onclick="handleOrderAction('cancel', '<%= order._id %>')"
+                                                class="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                            Cancel Order
+                                        </button>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-8">
+                        <i class="fas fa-box-open text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">You haven't placed any orders yet.</p>
+                        <a href="/shop" class="mt-4 inline-block px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
+                            Start Shopping
+                        </a>
+                    </div>
+                <% } %>
+
+<!-- Pagination -->
+<% if (pagination && pagination.totalPages > 1) { %>
+    <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="text-sm text-gray-600">
+        Showing <span class="font-medium"><%= ((pagination.page - 1) * pagination.limit) + 1 %></span> to 
+        <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.totalOrders) %></span> of 
+        <span class="font-medium"><%= pagination.totalOrders %></span> orders
+      </div>
+      
+      <div class="flex items-center space-x-1">
+        <!-- Previous Page -->
+        <% if (pagination.hasPrevPage) { %>
+          <a href="?page=<%= pagination.page - 1 %>&limit=<%= pagination.limit %>" 
+             class="px-3 py-2 rounded-lg border hover:bg-gray-50 text-gray-700">
+            <i class="fas fa-chevron-left text-xs"></i>
+          </a>
+        <% } else { %>
+          <button disabled class="px-3 py-2 rounded-lg border bg-gray-100 text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-left text-xs"></i>
+          </button>
+        <% } %>
+        
+        <!-- Page Numbers -->
+        <% 
+        let startPage = Math.max(1, pagination.page - 2);
+        let endPage = Math.min(pagination.totalPages, pagination.page + 2);
+        
+        // Always show 5 pages if possible
+        if (endPage - startPage < 4) {
+          if (startPage === 1) {
+            endPage = Math.min(5, pagination.totalPages);
+          } else if (endPage === pagination.totalPages) {
+            startPage = Math.max(1, pagination.totalPages - 4);
+          }
+        }
+        
+        // First page
+        if (startPage > 1) { %>
+          <a href="?page=1&limit=<%= pagination.limit %>" 
+             class="px-3 py-2 rounded-lg border hover:bg-gray-50 text-gray-700 hidden sm:block">
+            1
+          </a>
+          <% if (startPage > 2) { %>
+            <span class="px-2 py-2 text-gray-500">...</span>
+          <% } %>
+        <% } %>
+        
+        <!-- Page links -->
+        <% for (let i = startPage; i <= endPage; i++) { %>
+          <a href="?page=<%= i %>&limit=<%= pagination.limit %>" 
+             class="px-3 py-2 rounded-lg border <%= pagination.page === i ? 'bg-yellow-500 text-white border-yellow-500' : 'hover:bg-gray-50 text-gray-700' %>">
+            <%= i %>
+          </a>
+        <% } %>
+        
+        <!-- Last page -->
+        <% if (endPage < pagination.totalPages) { %>
+          <% if (endPage < pagination.totalPages - 1) { %>
+            <span class="px-2 py-2 text-gray-500">...</span>
+          <% } %>
+          <a href="?page=<%= pagination.totalPages %>&limit=<%= pagination.limit %>" 
+             class="px-3 py-2 rounded-lg border hover:bg-gray-50 text-gray-700 hidden sm:block">
+            <%= pagination.totalPages %>
+          </a>
+        <% } %>
+        
+        <!-- Next Page -->
+        <% if (pagination.hasNextPage) { %>
+          <a href="?page=<%= pagination.page + 1 %>&limit=<%= pagination.limit %>" 
+             class="px-3 py-2 rounded-lg border hover:bg-gray-50 text-gray-700">
+            <i class="fas fa-chevron-right text-xs"></i>
+          </a>
+        <% } else { %>
+          <button disabled class="px-3 py-2 rounded-lg border bg-gray-100 text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-right text-xs"></i>
+          </button>
+        <% } %>
+      </div>
+      
+      <!-- Items per page selector -->
+      <div class="flex items-center space-x-2 text-sm">
+        <span class="text-gray-600">Show:</span>
+        <select onchange="changeItemsPerPage(this.value)" 
+                class="px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+          <option value="5" <%= pagination.limit === 5 ? 'selected' : '' %>>5</option>
+          <option value="10" <%= pagination.limit === 10 ? 'selected' : '' %>>10</option>
+          <option value="20" <%= pagination.limit === 20 ? 'selected' : '' %>>20</option>
+        </select>
+      </div>
+    </div>
+  <% } %>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Cancel/Return -->
+    <div id="actionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
+            <h2 id="modalTitle" class="text-lg sm:text-xl font-semibold mb-4"></h2>
+            <form id="actionForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                    <select id="reason" name="reason" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Select a reason</option>
+                        <option value="wrong_item">Wrong item received</option>
+                        <option value="damaged">Item damaged/defective</option>
+                        <option value="size_issue">Size/fit issue</option>
+                        <option value="changed_mind">Changed my mind</option>
+                        <option value="better_price">Found better price elsewhere</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Additional Comments</label>
+                    <textarea id="comments" name="comments" rows="3" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Submit</button>
+                </div>
+            </form>
         </div>
     </div>
 </main>
@@ -246,10 +350,11 @@ function filterOrders(status) {
     const orders = document.querySelectorAll('.order-item');
     
     orders.forEach(order => {
-        if (status === 'all' || order.dataset.status === status) {
+        if (status === 'all') {
             order.style.display = 'block';
         } else {
-            order.style.display = 'none';
+            const orderStatus = order.dataset.status;
+            order.style.display = (orderStatus === status) ? 'block' : 'none';
         }
     });
 }
@@ -336,18 +441,18 @@ function trackOrder(orderId) {
                 Swal.fire({
                     title: 'Track Your Order',
                     html: `
-                        <div class="space-y-6 p-4">
+                        <div class="space-y-6 p-2 sm:p-4">
                             <!-- Order Placed -->
                             <div class="flex items-center">
                                 <div class="relative">
-                                    <div class="w-8 h-8 ${timeline.ordered.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                    <div class="w-6 h-6 sm:w-8 sm:h-8 ${timeline.ordered.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white text-xs sm:text-sm">
                                         <i class="fas fa-check"></i>
                                     </div>
-                                    <div class="absolute h-full w-0.5 bg-gray-300 left-1/2 top-8 transform -translate-x-1/2"></div>
+                                    <div class="absolute h-full w-0.5 bg-gray-300 left-1/2 top-6 sm:top-8 transform -translate-x-1/2"></div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="font-medium">Order Placed</p>
-                                    <p class="text-sm text-gray-600">
+                                <div class="ml-3 sm:ml-4">
+                                    <p class="font-medium text-sm sm:text-base">Order Placed</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">
                                         ${timeline.ordered.date ? new Date(timeline.ordered.date).toLocaleString() : 'Pending'}
                                     </p>
                                 </div>
@@ -356,14 +461,14 @@ function trackOrder(orderId) {
                             <!-- Processing -->
                             <div class="flex items-center">
                                 <div class="relative">
-                                    <div class="w-8 h-8 ${timeline.processing.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                    <div class="w-6 h-6 sm:w-8 sm:h-8 ${timeline.processing.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white text-xs sm:text-sm">
                                         <i class="fas fa-box"></i>
                                     </div>
-                                    <div class="absolute h-full w-0.5 bg-gray-300 left-1/2 top-8 transform -translate-x-1/2"></div>
+                                    <div class="absolute h-full w-0.5 bg-gray-300 left-1/2 top-6 sm:top-8 transform -translate-x-1/2"></div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="font-medium">Processing</p>
-                                    <p class="text-sm text-gray-600">
+                                <div class="ml-3 sm:ml-4">
+                                    <p class="font-medium text-sm sm:text-base">Processing</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">
                                         ${timeline.processing.date ? new Date(timeline.processing.date).toLocaleString() : 'Pending'}
                                     </p>
                                 </div>
@@ -372,14 +477,14 @@ function trackOrder(orderId) {
                             <!-- Shipped -->
                             <div class="flex items-center">
                                 <div class="relative">
-                                    <div class="w-8 h-8 ${timeline.shipped.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                    <div class="w-6 h-6 sm:w-8 sm:h-8 ${timeline.shipped.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white text-xs sm:text-sm">
                                         <i class="fas fa-shipping-fast"></i>
                                     </div>
-                                    <div class="absolute h-full w-0.5 bg-gray-300 left-1/2 top-8 transform -translate-x-1/2"></div>
+                                    <div class="absolute h-full w-0.5 bg-gray-300 left-1/2 top-6 sm:top-8 transform -translate-x-1/2"></div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="font-medium">Shipped</p>
-                                    <p class="text-sm text-gray-600">
+                                <div class="ml-3 sm:ml-4">
+                                    <p class="font-medium text-sm sm:text-base">Shipped</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">
                                         ${timeline.shipped.date ? new Date(timeline.shipped.date).toLocaleString() : 'Pending'}
                                     </p>
                                 </div>
@@ -388,20 +493,21 @@ function trackOrder(orderId) {
                             <!-- Delivered -->
                             <div class="flex items-center">
                                 <div class="relative">
-                                    <div class="w-8 h-8 ${timeline.delivered.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white">
+                                    <div class="w-6 h-6 sm:w-8 sm:h-8 ${timeline.delivered.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white text-xs sm:text-sm">
                                         <i class="fas fa-home"></i>
                                     </div>
                                 </div>
-                                <div class="ml-4">¯
-                                    <p class="font-medium">Delivered</p>
-                                    <p class="text-sm text-gray-600">
+                                <div class="ml-3 sm:ml-4">
+                                    <p class="font-medium text-sm sm:text-base">Delivered</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">
                                         ${timeline.delivered.date ? new Date(timeline.delivered.date).toLocaleString() : 'Expected by ' + estimateDeliveryDate()}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     `,
-                    width: '32rem',
+                    width: 'auto',
+                    maxWidth: '90%',
                     showConfirmButton: true,
                     confirmButtonText: 'Close',
                     confirmButtonColor: '#EAB308'
@@ -586,6 +692,126 @@ async function abortOrder(orderId) {
     }
 }
 
+// Add data-status attribute to all order items on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const orderItems = document.querySelectorAll('.order-item');
+    orderItems.forEach(item => {
+        const statusBadge = item.querySelector('.rounded-full');
+        if (statusBadge) {
+            const statusText = statusBadge.textContent.trim().toLowerCase();
+            item.setAttribute('data-status', statusText);
+        }
+    });
+});
+</script>
+
+<!-- Pagination -->
+
+<script>
+    
+function changeItemsPerPage(limit) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('limit', limit);
+    urlParams.set('page', 1); // Reset to first page when changing items per page
+    window.location.search = urlParams.toString();
+}
+
+// Modify your existing search and filter functions to maintain pagination
+function searchOrders(query) {
+    const orders = document.querySelectorAll('.order-item');
+    query = query.toLowerCase();
+    
+    let foundAny = false;
+    orders.forEach(order => {
+        const text = order.textContent.toLowerCase();
+        const isVisible = text.includes(query);
+        order.style.display = isVisible ? 'block' : 'none';
+        if (isVisible) foundAny = true;
+    });
+    
+    // Show/hide pagination based on search results
+    const paginationElement = document.querySelector('.pagination');
+    if (paginationElement) {
+        paginationElement.style.display = query.length > 0 ? 'none' : 'flex';
+    }
+    
+    // Show message if no results
+    const noResultsElement = document.getElementById('noResultsMessage');
+    if (noResultsElement) {
+        noResultsElement.style.display = !foundAny ? 'block' : 'none';
+    } else if (!foundAny) {
+        const ordersList = document.getElementById('ordersList');
+        const noResults = document.createElement('div');
+        noResults.id = 'noResultsMessage';
+        noResults.className = 'text-center py-8';
+        noResults.innerHTML = `
+            <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600">No orders found matching your search.</p>
+            <button onclick="clearSearch()" class="mt-4 inline-block px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
+                Clear Search
+            </button>
+        `;
+        ordersList.appendChild(noResults);
+    }
+}
+
+function clearSearch() {
+    const searchInput = document.querySelector('input[placeholder="Search orders..."]');
+    if (searchInput) {
+        searchInput.value = '';
+        searchOrders('');
+    }
+}
+
+function filterOrders(status) {
+    const orders = document.querySelectorAll('.order-item');
+    
+    let foundAny = false;
+    orders.forEach(order => {
+        if (status === 'all') {
+            order.style.display = 'block';
+            foundAny = true;
+        } else {
+            const orderStatus = order.dataset.status;
+            const isVisible = (orderStatus === status);
+            order.style.display = isVisible ? 'block' : 'none';
+            if (isVisible) foundAny = true;
+        }
+    });
+    
+    // Show/hide pagination based on filter results
+    const paginationElement = document.querySelector('.pagination');
+    if (paginationElement) {
+        paginationElement.style.display = status !== 'all' ? 'none' : 'flex';
+    }
+    
+    // Show message if no results
+    const noResultsElement = document.getElementById('noResultsMessage');
+    if (noResultsElement) {
+        noResultsElement.style.display = !foundAny ? 'block' : 'none';
+    } else if (!foundAny) {
+        const ordersList = document.getElementById('ordersList');
+        const noResults = document.createElement('div');
+        noResults.id = 'noResultsMessage';
+        noResults.className = 'text-center py-8';
+        noResults.innerHTML = `
+            <i class="fas fa-filter text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600">No orders found with this status.</p>
+            <button onclick="resetFilter()" class="mt-4 inline-block px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
+                Show All Orders
+            </button>
+        `;
+        ordersList.appendChild(noResults);
+    }
+}
+
+function resetFilter() {
+    const filterSelect = document.querySelector('select[onchange="filterOrders(this.value)"]');
+    if (filterSelect) {
+        filterSelect.value = 'all';
+        filterOrders('all');
+    }
+}
 </script>
 
 <%- include('../../views/partials/user/footer') %>

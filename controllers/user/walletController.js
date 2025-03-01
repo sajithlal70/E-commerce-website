@@ -23,6 +23,10 @@ const MAX_TRANSACTION_LIMIT = 100000;
 const getWalletPage = async (req, res) => {
     try {
         const userId = req.session.user._id;
+
+        const page = parseInt(req.query.page) || 1 ;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page-1) * limit;  
         
         // Get wallet with transactions
         let wallet = await Wallet.findOne({ userId })
@@ -44,11 +48,16 @@ const getWalletPage = async (req, res) => {
             await wallet.save();
         }
 
+        const totalTransactions = await Transaction.countDocuments({userId});
+        const totalPages = Math.ceil(totalTransactions / limit);
+
         // Get all transactions using Transaction model and format them
         const transactions = await Transaction.find({ userId })
             .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
             .populate('orderId', 'orderStatus');
-
+       
         // Format transactions to ensure balance exists
         const formattedTransactions = transactions.map(transaction => ({
             ...transaction.toObject(),
@@ -61,9 +70,19 @@ const getWalletPage = async (req, res) => {
             transactionType: transaction.transactionType
         }));
 
-        res.render('user/wallet-page', {
+        res.render('wallet-page', {
             wallet,
             transactions: formattedTransactions,
+            pagination:{
+                currentPage:page,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1,
+                nextPage : page + 1,
+                prevPage : page - 1,
+                totalTransactions,
+                limit
+            },
             user: req.session.user,
             categories: await Category.find({ status: 'Listed' })
         });

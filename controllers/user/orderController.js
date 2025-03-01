@@ -200,45 +200,63 @@ const confirmOrder = async (req, res) => {
 
 
 
-const  getOrderMangement = async (req, res) => {
-  try {
-
-      const userId = req.session.user._id; 
+const getOrderMangement = async (req, res) => {
+    try {
+      const userId = req.session.user._id;
       const user = req.session.user;
       
+      // Pagination parameters
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 5; // Number of orders per page
+      const skip = (page - 1) * limit;
+      
+      // Get total count for pagination
+      const totalOrders = await Order.countDocuments({ user: userId });
+      const totalPages = Math.ceil(totalOrders / limit);
+      
+      // Fetch orders with pagination
       const orders = await Order.find({ user: userId })
-      .sort({ createdAt: -1 })
-      .populate({
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate({
           path: 'items.product',
           select: 'productName productImage salePrice',
           model: 'Product'
-      });
-
+        });
+      
       const category = await Category.find();
-
+      
       const processedOrders = orders.map(order => {
-          const items = order.items.map(item => ({
-              ...item.toObject(),
-              product: item.product || {
-                  productName: 'Product Unavailable',
-                  productImage: ['default.jpg'],
-                  salePrice: 0
-              }
-          }));
-          return { ...order.toObject(), items };
+        const items = order.items.map(item => ({
+          ...item.toObject(),
+          product: item.product || {
+            productName: 'Product Unavailable',
+            productImage: ['default.jpg'],
+            salePrice: 0
+          }
+        }));
+        return { ...order.toObject(), items };
       });
-
+      
       res.render('ordermanagement', {
-         orders: processedOrders,
-         user: user,
-         categories: category
-        }); 
-
-  } catch (error) {
+        orders: processedOrders,
+        user: user,
+        categories: category,
+        pagination: {
+          page,
+          limit,
+          totalPages,
+          totalOrders,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1
+        }
+      });
+    } catch (error) {
       console.error("Error fetching orders:", error);
       res.status(500).send("Internal Server Error");
-  }
-};
+    }
+  };
 
 const getOrderConfirmation = async (req, res) => {
     try {
