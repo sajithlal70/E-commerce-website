@@ -114,7 +114,7 @@ app.use((err, req, res, next) => {
         : 'Something went wrong. Please try again later.';
 
      app.locals.baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://your-production-domain.com' 
+        ? 'https://dentkart.shop' || 'https://www.dentkart.shop' 
         : 'http://localhost:3000';
 
 
