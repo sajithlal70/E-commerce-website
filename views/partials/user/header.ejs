@@ -326,6 +326,283 @@
         .dropdown-profile {
             margin-left: 10px;
         }
+
+        /* responsive styles */
+        /* Base Responsive Layout */
+@media (max-width: 1199.98px) {
+    .search-input {
+        padding: 8px 15px;
+    }
+    
+    .search-container {
+        max-width: 400px;
+    }
+    
+    .h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Medium devices (tablets) */
+@media (max-width: 991.98px) {
+    /* Make header elements visible on medium screens */
+    .row.align-items-center.bg-light.py-3.px-xl-5.d-none.d-lg-flex {
+        display: flex !important;
+    }
+    
+    /* Adjust header layout for tablets */
+    .logo-section, .search-section, .user-section {
+        justify-content: center;
+        padding: 10px 0;
+    }
+    
+    .col-lg-4 {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    /* Adjust categories dropdown width */
+    #navbar-vertical {
+        width: 100% !important;
+        position: static !important;
+    }
+    
+    /* Make navbar more compact */
+    .navbar-nav .nav-link {
+        padding: 8px 12px;
+    }
+    
+    /* Adjust sizes for medium screens */
+    .h1 {
+        font-size: 1.5rem;
+    }
+    
+    .search-container {
+        max-width: 80%;
+        margin: 10px auto;
+    }
+    
+    /* Make the categories display differently on medium screens */
+    .col-lg-3 {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+    
+    .col-lg-9 {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+}
+
+/* Small devices (landscape phones) */
+@media (max-width: 767.98px) {
+    /* Mobile header layout */
+    .row.align-items-center.bg-light.py-3.px-xl-5 {
+        padding: 10px !important;
+    }
+    
+    /* Adjust logo for mobile */
+    .logo-section {
+        text-align: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    
+    .h1 {
+        font-size: 1.2rem;
+    }
+    
+    /* Mobile search adjustments */
+    .search-section {
+        padding: 10px 0;
+    }
+    
+    .search-input {
+        height: 40px;
+        font-size: 0.9rem;
+    }
+    
+    .search-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Adjust user section for mobile */
+    .user-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .top-icons {
+        justify-content: center;
+        margin-right: 0;
+        width: 100%;
+    }
+    
+    .btn-group {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* Responsive dropdown profile */
+    .dropdown-profile {
+        margin: 0 auto;
+    }
+    
+    .dropdown-content {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    /* Mobile navigation adjustments */
+    .navbar-dark .navbar-nav .nav-link {
+        text-align: center;
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Adjust margins for mobile */
+    .mb-30 {
+        margin-bottom: 15px !important;
+    }
+    
+    /* Make cart display more compact on mobile */
+    .cart-icon-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cart-amount {
+        font-size: 0.8rem;
+    }
+}
+
+/* Extra small devices (portrait phones) */
+@media (max-width: 575.98px) {
+    /* Extra adjustments for very small screens */
+    .px-xl-5 {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    /* Stack brand elements on very small screens */
+    .h1.text-uppercase.text-primary,
+    .h1.text-uppercase.text-dark {
+        display: inline-block;
+        font-size: 1rem;
+        padding: 5px 10px !important;
+    }
+    
+    /* Simplify search on very small screens */
+    .search-container {
+        max-width: 100%;
+    }
+    
+    .search-input {
+        height: 36px;
+        font-size: 0.85rem;
+        padding: 0 10px;
+    }
+    
+    .search-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    /* Stack icons vertically on very small screens */
+    .top-icons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    /* Make the top navigation more visible on mobile */
+    .navbar-dark {
+        padding: 0 !important;
+    }
+    
+    .navbar-toggler {
+        margin: 10px;
+    }
+    
+    /* Ensure categories list is scrollable on small screens */
+    .navbar-vertical .navbar-nav {
+        max-height: 250px;
+        overflow-y: auto;
+    }
+    
+    /* Make dropdown menu fit on small screens */
+    .dropdown-menu {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Ensure dropdown profile menu doesn't go off-screen */
+    .dropdown-content {
+        min-width: 150px;
+        max-width: 100%;
+    }
+}
+
+/* Additional responsive fixes */
+@media (max-width: 991.98px) {
+    /* Make the mobile header visible */
+    .d-none.d-lg-flex {
+        display: flex !important;
+        flex-wrap: wrap;
+    }
+    
+    /* Ensure navigation is visible on mobile */
+    .navbar-collapse {
+        background-color: #3D464D;
+        padding: 10px;
+    }
+    
+    /* Create a better layout for cart and icons */
+    .top-icon-btn {
+        padding: 5px 15px;
+        margin: 0 5px;
+        background-color: rgba(255, 211, 51, 0.1);
+        border-radius: 20px;
+    }
+    
+    /* Ensure search works well on all devices */
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 211, 51, 0.25);
+        border-color: #FFD333;
+    }
+}
+
+/* Custom menu toggle for mobile */
+@media (max-width: 767.98px) {
+    .navbar-toggler {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+        border-radius: 0;
+    }
+    
+    /* Improved dropdown for mobile category selection */
+    #navbar-vertical {
+        border: 1px solid #e5e5e5;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    /* Improve profile dropdown on mobile */
+    .dropdown-profile .sign-in-link {
+        display: inline-block;
+        margin-left: 5px;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
     </style>
 
 </head>
