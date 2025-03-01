@@ -113,6 +113,11 @@ app.use((err, req, res, next) => {
         ? err.message 
         : 'Something went wrong. Please try again later.';
 
+     app.locals.baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://your-production-domain.com' 
+        : 'http://localhost:3000';
+
+
     // For API requests
     if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
         return res.status(statusCode).json({

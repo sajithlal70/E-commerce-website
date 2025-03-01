@@ -40,9 +40,8 @@
                                 <% 
                                 const productImage = item.product && (item.product.productImage || item.product.images);
                                 const imageUrl = productImage && productImage.length > 0 
-                                    ? `http://localhost:3000/uploads/products/${productImage[0]}` 
-                                    : '/path/to/default/image.jpg';
-                                %>
+                                ? `${baseUrl}/uploads/products/${productImage[0]}` 
+                                : '/path/to/default/image.jpg';
                                 <div class="d-flex align-items-center">
                                     <img src="<%= imageUrl %>" 
                                          alt="<%= item.product ? item.product.name : 'Product' %>" 
