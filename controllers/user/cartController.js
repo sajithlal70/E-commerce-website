@@ -89,6 +89,7 @@ const getCartPage = async (req, res) => {
         }
 
         const userId = req.session.user._id;
+        const baseUrl = 'http://localhost:3000'; 
 
         // Clear any applied coupon when viewing cart
         if (req.session.appliedCoupon) {
@@ -128,7 +129,7 @@ const getCartPage = async (req, res) => {
                 // Handle both productImage and images arrays
                 const productImages = item.product.images || [];
                 const imageUrl = productImages.length > 0
-                    ? `http://localhost:3000/uploads/products/${productImages[0]}`
+                    ? `${baseUrl}/uploads/products/${productImages[0]}`
                     : '/path/to/default/image.jpg';
 
                 return {
@@ -161,7 +162,8 @@ const getCartPage = async (req, res) => {
             total,
             categories,
             user: req.session.user,
-            offersMap
+            offersMap,
+            baseUrl 
         });
     } catch (error) {
         console.error('Cart Page Error:', error);

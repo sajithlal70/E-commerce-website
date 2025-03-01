@@ -3,7 +3,6 @@
 
 <%- include("../../views/partials/user/header") %>
 
-
 <div class="container-fluid">
   <div class="row px-xl-5">
       <div class="col-12">
@@ -18,101 +17,150 @@
 
 <!-- Cart Start -->
 
-
 <div class="container-fluid">
   <div class="row px-xl-5">
-      <div class="col-lg-8 table-responsive mb-5">
-        <table class="table table-light table-borderless table-hover text-center mb-0">
-            <thead class="thead-dark">
-                <tr>
-                    <th class="align-middle text-left pl-4">Products</th>
-                    <th class="align-middle text-center">Price</th>
-                    <th class="align-middle text-center">Quantity</th>
-                    <th class="align-middle text-center">Total</th>
-                    <th class="align-middle text-right pr-4">Remove</th>
-                </tr>
-            </thead>
-            <tbody class="align-middle">
-                <% if (cart && cart.items && cart.items.length > 0) { %>
-                    <% cart.items.forEach((item) => { %>
-                        <tr>
-                            <td class="align-middle pl-4">
-                                <% 
-                                const productImage = item.product && (item.product.productImage || item.product.images);
-                                const imageUrl = productImage && productImage.length > 0 
-                                ? `${baseUrl}/uploads/products/${productImage[0]}` 
-                                : '/path/to/default/image.jpg';
-                                <div class="d-flex align-items-center">
-                                    <img src="<%= imageUrl %>" 
-                                         alt="<%= item.product ? item.product.name : 'Product' %>" 
-                                         class="object-cover rounded" 
-                                         style="width: 50px; height: 50px; margin-right: 8px;">
-                                    <span class="text-gray-800 font-medium text-base" style="font-size: 14px;">
-                                        <%= item.product ? item.product.productName : 'Unknown Product' %>
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="align-middle text-center">
-                                ₹ <%= item.product && item.product.salePrice 
-                                      ? item.product.salePrice.toFixed(2) 
-                                      : '0.00' %>
-                            </td>
-                            <td class="align-middle text-center">
-                                <div class="input-group quantity mx-auto" style="width: 120px; height: 30px;">
-                                    <button class="btn btn-sm btn-primary btn-minus" 
-                                            style="width: 30px; height: 30px; font-size: 14px;" 
-                                            data-product-id="<%= item.product ? item.product._id : '' %>">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
-                                    <input type="text" 
-                                           class="form-control form-control-sm bg-secondary border-0 text-center" 
-                                           value="<%= Math.max(1, item.quantity || 1) %>"
-                                           min="1"
-                                           style="width: 40px; height: 30px; font-size: 14px;" 
-                                           data-product-id="<%= item.product ? item.product._id : '' %>">
-                                    <button class="btn btn-sm btn-primary btn-plus" 
-                                            style="width: 30px; height: 30px; font-size: 14px;" 
-                                            data-product-id="<%= item.product ? item.product._id : '' %>">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
-                                </div>
-                            </td>
-                            <td class="align-middle text-center">
-                                ₹ <%= item.product && item.product.salePrice 
-                                      ? (item.product.salePrice * Math.max(1, item.quantity || 1)).toFixed(2) 
-                                      : '0.00' %>
-                            </td>
-                            <td class="align-middle text-right pr-4">
-                                <button class="btn btn-sm btn-danger remove-from-cart" 
-                                        data-product-id="<%= item.product ? item.product._id : '' %>">
-                                    <i class="fa fa-times"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    <% }); %>
-                <% } else { %>
-                    <tr>
-                        <td colspan="5" class="text-center">Your cart is empty</td>
-                    </tr>
-                <% } %>
-            </tbody>
-
-        </table>
+      <div class="col-lg-8 col-md-12 mb-5">
+        <div class="table-responsive">
+          <table class="table table-light table-borderless table-hover text-center mb-0">
+              <thead class="thead-dark">
+                  <tr>
+                      <th class="align-middle text-left pl-4">Products</th>
+                      <th class="align-middle text-center">Price</th>
+                      <th class="align-middle text-center">Quantity</th>
+                      <th class="align-middle text-center">Total</th>
+                      <th class="align-middle text-right pr-4">Remove</th>
+                  </tr>
+              </thead>
+              <tbody class="align-middle">
+                  <% if (cart && cart.items && cart.items.length > 0) { %>
+                      <% cart.items.forEach((item) => { %>
+                          <tr>
+                              <td class="align-middle pl-4">
+                                  <% 
+                                  const productImage = item.product && (item.product.productImage || item.product.images);
+                                  const imageUrl = productImage && productImage.length > 0 
+                                      ? `${baseUrl}/uploads/products/${productImage[0]}` 
+                                      : '/path/to/default/image.jpg';
+                                  %>
+                                  <div class="d-flex align-items-center flex-wrap">
+                                      <img src="<%= imageUrl %>" 
+                                           alt="<%= item.product ? item.product.name : 'Product' %>" 
+                                           class="object-cover rounded" 
+                                           style="width: 50px; height: 50px; margin-right: 8px;">
+                                      <span class="text-gray-800 font-medium text-base" style="font-size: 14px;">
+                                          <%= item.product ? item.product.productName : 'Unknown Product' %>
+                                      </span>
+                                  </div>
+                              </td>
+                              <td class="align-middle text-center">
+                                  ₹ <%= item.product && item.product.salePrice 
+                                        ? item.product.salePrice.toFixed(2) 
+                                        : '0.00' %>
+                              </td>
+                              <td class="align-middle text-center">
+                                  <div class="input-group quantity mx-auto" style="max-width: 120px; height: 30px;">
+                                      <button class="btn btn-sm btn-primary btn-minus" 
+                                              style="width: 30px; height: 30px; font-size: 14px;" 
+                                              data-product-id="<%= item.product ? item.product._id : '' %>">
+                                          <i class="fa fa-minus"></i>
+                                      </button>
+                                      <input type="text" 
+                                             class="form-control form-control-sm bg-secondary border-0 text-center" 
+                                             value="<%= Math.max(1, item.quantity || 1) %>"
+                                             min="1"
+                                             style="width: 40px; height: 30px; font-size: 14px;" 
+                                             data-product-id="<%= item.product ? item.product._id : '' %>">
+                                      <button class="btn btn-sm btn-primary btn-plus" 
+                                              style="width: 30px; height: 30px; font-size: 14px;" 
+                                              data-product-id="<%= item.product ? item.product._id : '' %>">
+                                          <i class="fa fa-plus"></i>
+                                      </button>
+                                  </div>
+                              </td>
+                              <td class="align-middle text-center">
+                                  ₹ <%= item.product && item.product.salePrice 
+                                        ? (item.product.salePrice * Math.max(1, item.quantity || 1)).toFixed(2) 
+                                        : '0.00' %>
+                              </td>
+                              <td class="align-middle text-right pr-4">
+                                  <button class="btn btn-sm btn-danger remove-from-cart" 
+                                          data-product-id="<%= item.product ? item.product._id : '' %>">
+                                      <i class="fa fa-times"></i>
+                                  </button>
+                              </td>
+                          </tr>
+                      <% }); %>
+                  <% } else { %>
+                      <tr>
+                          <td colspan="5" class="text-center">Your cart is empty</td>
+                      </tr>
+                  <% } %>
+              </tbody>
+          </table>
+        </div>
         
-      </div>
-      <!-- Rest of the code remains the same -->
-
-
-
-      <div class="col-lg-4">
-          <!-- <form class="mb-30" action="/apply-coupon" method="POST">
-              <div class="input-group">
-                  <input type="text" class="form-control border-0 p-4" placeholder="Coupon Code" name="couponCode">
-                  <div class="input-group-append">
-                      <button class="btn btn-primary">Apply Coupon</button>
+        <!-- Mobile Cart View (Only visible on xs and sm screens) -->
+        <div class="d-md-none mt-4">
+          <% if (cart && cart.items && cart.items.length > 0) { %>
+              <% cart.items.forEach((item) => { %>
+                  <div class="card mb-3">
+                      <div class="card-body">
+                          <% 
+                          const productImage = item.product && (item.product.productImage || item.product.images);
+                          const imageUrl = productImage && productImage.length > 0 
+                              ? `${baseUrl}/uploads/products/${productImage[0]}` 
+                              : '/path/to/default/image.jpg';
+                          %>
+                          <div class="d-flex mb-2">
+                              <img src="<%= imageUrl %>" 
+                                  alt="<%= item.product ? item.product.name : 'Product' %>" 
+                                  class="object-cover rounded" 
+                                  style="width: 80px; height: 80px; margin-right: 15px;">
+                              <div>
+                                  <h6 class="mb-1"><%= item.product ? item.product.productName : 'Unknown Product' %></h6>
+                                  <p class="mb-0">₹ <%= item.product && item.product.salePrice 
+                                      ? item.product.salePrice.toFixed(2) 
+                                      : '0.00' %></p>
+                              </div>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center">
+                              <div class="input-group quantity" style="max-width: 120px;">
+                                  <button class="btn btn-sm btn-primary btn-minus" 
+                                          data-product-id="<%= item.product ? item.product._id : '' %>">
+                                      <i class="fa fa-minus"></i>
+                                  </button>
+                                  <input type="text" 
+                                        class="form-control form-control-sm bg-secondary border-0 text-center" 
+                                        value="<%= Math.max(1, item.quantity || 1) %>"
+                                        min="1"
+                                        data-product-id="<%= item.product ? item.product._id : '' %>">
+                                  <button class="btn btn-sm btn-primary btn-plus" 
+                                          data-product-id="<%= item.product ? item.product._id : '' %>">
+                                      <i class="fa fa-plus"></i>
+                                  </button>
+                              </div>
+                              <p class="mb-0 font-weight-bold">₹ <%= item.product && item.product.salePrice 
+                                  ? (item.product.salePrice * Math.max(1, item.quantity || 1)).toFixed(2) 
+                                  : '0.00' %></p>
+                              <button class="btn btn-sm btn-danger remove-from-cart" 
+                                      data-product-id="<%= item.product ? item.product._id : '' %>">
+                                  <i class="fa fa-times"></i>
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              <% }); %>
+          <% } else { %>
+              <div class="card">
+                  <div class="card-body text-center">
+                      Your cart is empty
                   </div>
               </div>
-          </form> -->
+          <% } %>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-12">
           <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Cart Summary</span></h5>
           <div class="bg-light p-30 mb-5">
               <div class="border-bottom pb-2">
@@ -129,19 +177,15 @@
                   <div class="d-flex justify-content-between mt-2">
                       <h5>Total</h5>
                       <h5>₹ <%= total ? total.toFixed(2) : '0.00' %></h5>
-                  <a href="/Checkout">
-                </div>
-                <button class="btn btn-block btn-primary font-weight-bold my-3 py-3">Proceed To Checkout</button>
-            </div>
-                  </a>    
-
+                  </div>
+                  <a href="/Checkout" class="text-decoration-none">
+                      <button class="btn btn-block btn-primary font-weight-bold my-3 py-3">Proceed To Checkout</button>
+                  </a>
+              </div>
           </div>
       </div>
   </div>
-
 </div>
-
-
 
 <script>
     const updateCartSummary = (data) => {
@@ -161,7 +205,6 @@
     window.location.href = `/cart?page=${currentPage}`;
 };
 </script>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -253,8 +296,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.value = currentQuantity;
 
                 const row = quantityGroup.closest('tr');
-                const price = parseFloat(row.querySelector('td:nth-child(2)').textContent.replace('₹', ''));
-                updatePriceDisplay(row, newQuantity, price);
+                if (row) {
+                    const price = parseFloat(row.querySelector('td:nth-child(2)').textContent.replace('₹', ''));
+                    updatePriceDisplay(row, newQuantity, price);
+                }
+                
                 await updateCartSummary(data);
                 window.location.reload();
 
@@ -338,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             try {
                 const productId = e.currentTarget.dataset.productId;
-                const rowElement = e.currentTarget.closest('tr');
+                const rowElement = e.currentTarget.closest('tr') || e.currentTarget.closest('.card');
 
                 if (!rowElement) {
                     throw new Error('Could not find the product row');
@@ -398,5 +444,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
-<%- include("../../views/partials/user/footer") %>
 
+<style>
+@media (max-width: 767.98px) {
+    .table-responsive {
+        display: none;
+    }
+    
+    .quantity .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .breadcrumb {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 768px) {
+    .d-md-none {
+        display: none !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .px-xl-5 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+}
+</style>
+
+<%- include("../../views/partials/user/footer") %>
