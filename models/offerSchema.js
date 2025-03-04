@@ -24,7 +24,7 @@ const offerSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['active', 'pending', 'expired'],
-    default: 'pending'
+    default: 'active'
   },
   reference: {
     type: mongoose.Schema.Types.ObjectId,
