@@ -3,38 +3,34 @@ const Order = require('../models/orderSchema');
 
 
 const updateProductStock = async (items, increase = false) => {
+  
   for (const item of items) {
     try {
-      // First check if product exists
       const product = await Product.findById(item.product);
       if (!product) {
         throw new Error(`Product not found: ${item.product}`);
       }
 
-      // For decrease operations, check if enough stock is available
       if (!increase && product.quantity < item.quantity) {
         throw new Error(`Insufficient stock for product: ${product.productName}`);
       }
 
-      // Update quantity with $inc operator
       const updatedProduct = await Product.findByIdAndUpdate(
         item.product,
-        {
-          $inc: { quantity: increase ? item.quantity : -item.quantity }
-        },
-        { new: true }  // Return updated document
+        { $inc: { quantity: increase ? item.quantity : -item.quantity } },
+        { new: true } 
       );
 
-      // Update status based on new quantity
+ 
       if (updatedProduct.quantity <= 0) {
         await Product.findByIdAndUpdate(
           item.product,
-          { $set: { satatus: "out of stock" } }
+          { $set: { status: "out of stock" } } 
         );
-      } else if (updatedProduct.quantity > 0 && updatedProduct.satatus === "out of stock") {
+      } else if (updatedProduct.quantity > 0 && updatedProduct.status === "out of stock") {
         await Product.findByIdAndUpdate(
           item.product,
-          { $set: { satatus: "Available" } }
+          { $set: { status: "Available" } }
         );
       }
 
@@ -44,6 +40,7 @@ const updateProductStock = async (items, increase = false) => {
     }
   }
 };
+
 
 
 const handleReturnRequest = async (req, res) => {
@@ -68,7 +65,7 @@ const handleReturnRequest = async (req, res) => {
 
       if (status === 'Approved') {
           order.orderStatus = 'Returned';
-          // Increase product stock when return is approved
+          
           await updateProductStock(order.items, true);
       } else if (status === 'Rejected') {
           order.orderStatus = 'Delivered';

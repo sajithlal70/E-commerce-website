@@ -10,7 +10,7 @@ const passportConfig = require("./config/passportconfig")
 const adminRouter = require("./routes/adminRouter");
 const { error } = require('console');
 const methodOverride = require('method-override');
-const flash = require("express-flash");
+const flash = require('connect-flash');
 const nocache = require('nocache');
 const bcrypt = require('bcryptjs');
 
@@ -27,15 +27,14 @@ app.use(session({
 }));
 
 app.use(flash());
-
 app.use((req, res, next) => {
   res.locals.messages = {
     success: req.flash('success'),
     error: req.flash('error'),
     warning: req.flash('warning')
   };
-  res.locals.categories = [];  // Ensure categories is defined for 404 page
-  res.locals.user = req.user;  // Pass user info to 404 page
+  res.locals.categories = [];
+  res.locals.user = req.user;
   next();
 });
 

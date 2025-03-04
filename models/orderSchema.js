@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-
 const orderSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
@@ -25,39 +24,56 @@ const orderSchema = new Schema({
         },
         status: {
             type: String,
-            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Item Cancelled', 'Item Return Requested', 'Returned'],
             default: 'Pending'
         },
         cancellationDetails: {
             reason: {
                 type: String,
-                enum: ['wrong_item', 'damaged', 'size_issue', 'changed_mind', 'better_price', 'other'],
+                enum: ['Taking_too_long_to_ship', 'wrong_item', 'damaged', 'size_issue', 'changed_mind', 'better_price', 'other'],
             },
             comments: String,
-            date: Date
+            date: Date,
+            refundStatus: { 
+                type: String,
+                enum: ['Pending', 'Refunded', 'No Refund Required'],
+                default: 'Pending'
+            },
+            refundAmount: Number 
+        },
+        deliveredAt: { 
+            type: Date,
+            default: null
+        },
+        refundDetails: { 
+            amount: Number,
+            processedAt: Date,
+            transactionId: String,
+            refundMethod: {
+                type: String,
+                enum: ['wallet', 'razorpay', 'bank', 'cod'],
+                default: 'wallet'
+            }
+        },
+        returnRequest: { 
+            status: {
+                type: String,
+                enum: ['Pending', 'Approved', 'Rejected'],
+                default: 'Pending'
+            },
+            requestReason: String,
+            comments: String,
+            requestedAt: Date,
+            processedAt: Date,
+            refundAmount: Number
         }
     }],
     shippingAddress: {
-        name: {
-            type: String,
-            required: true
-        },
-        phone: {
-            type: String,
-            required: true
-        },
-        street: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        postalCode: {
-            type: String,
-            required: true
-        },
+        name: { type: String, required: true },
+        phone: { type: String, required: true },
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        postalCode: { type: String, required: true },
         landMark: String,
         addressType: {
             type: String,
@@ -71,27 +87,15 @@ const orderSchema = new Schema({
         required: true
     },
     razorpayOrderId: String,
-    subtotal: {
-        type: Number,
-        required: true
-    },
-    shippingCost: {
-        type: Number,
-        required: true
-    },
-    discountAmount: {
-        type: Number,
-        default: 0,
-    },
-    total: {
-        type: Number,
-        required: true
-    },
+    subtotal: { type: Number, required: true },
+    shippingCost: { type: Number, required: true },
+    discountAmount: { type: Number, default: 0 },
+    total: { type: Number, required: true },
     coupon: {
         code: String,
         discountAmount: Number,
         discountType: { type: String, enum: ['fixed', 'percentage'] },
-        appliedAt: Date, 
+        appliedAt: Date,
     },
     orderStatus: {
         type: String,
@@ -116,44 +120,38 @@ const orderSchema = new Schema({
         reason: String,
         comments: String,
         date: Date,
-        refundAmount: Number,
-        cancelledAt: {
-            status: String,
-            timestamp: Date
-        }
+        refundAmount: Number
     },
     returnDetails: {
         reason: String,
         comments: String,
-        date: Date,
-        status: String,
-        potentialRefundAmount: Number
+        requestedAt: Date, // Changed from 'date' to 'requestedAt' for consistency
+        status: {
+            type: String,
+            enum: ['Pending', 'Approved', 'Rejected'],
+            default: 'Pending'
+        },
+        potentialRefundAmount: Number,
+        processedAt: Date // Added to track when return is processed
     },
-    refundDetails: {
+    refundDetails: { 
         amount: Number,
         processedAt: Date,
         originalOrderTotal: Number,
         refundReason: String,
         transactionId: String,
+        refundMethod: {
+            type: String,
+            enum: ['wallet', 'razorpay', 'bank', 'cod'],
+            default: 'wallet'
+        },
         error: String,
         failedAt: Date
     },
-    shippedAt: {
-        type: Date,
-        default: null
-    },
-    deliveredAt: {
-        type: Date,
-        default: null
-    },
-    stockReserved: {
-        type: Boolean,
-        default: false
-    },
-    paymentAttempts: {
-        type: Number,
-        default: 0
-    },
+    shippedAt: { type: Date, default: null },
+    deliveredAt: { type: Date, default: null },
+    stockReserved: { type: Boolean, default: false },
+    paymentAttempts: { type: Number, default: 0 },
     actionsAllowed: [{
         type: String,
         enum: ['retry', 'abort'],

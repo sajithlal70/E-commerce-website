@@ -3,6 +3,68 @@
 
     <!-- Add this CSS after your header include -->
     <style>
+
+.out-of-stock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.out-of-stock-overlay .badge {
+    font-size: 1rem;
+    padding: 8px 16px;
+    background-color: #dc3545 !important;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-weight: bold;
+}
+
+.product-action .disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: #f8f9fa;
+}
+
+.stock-status {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 8px 0;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.stock-status.text-success {
+    color: #28a745 !important;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.stock-status.text-danger {
+    color: #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.offer-badge {
+        display: inline-block;
+        width: auto;
+        max-width: 90%;
+        margin: 5px auto;
+        font-size: 0.75rem;
+    }
+    
+    .offer-source {
+        font-size: 0.65rem;
+        opacity: 0.9;
+    }
+    
+
         .out-of-stock-overlay {
             position: absolute;
             top: 0;
@@ -247,19 +309,31 @@
                                 </div>
                             </div>
                             <div class="text-center py-4 px-4">
-                                <a class="product-name h6 text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id%>">  <strong><%= product.productName %></strong></a>
+                                <a class="product-name h4 fw-bold text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id %>">
+                                    <strong><%= product.productName %></strong>
+                                </a>
+                                
                                 <div class="d-flex align-items-center justify-content-center mt-2">
-                                    <h6>&#8377;<%= product.salePrice %></h6><h6 class="text-muted ml-2"><del>&#8377;<%= product.reqularPrice%></del></h6>
+                                    <h5 class="fw-bold mb-0">&#8377;<%= product.salePrice %></h5>
+                                    <h6 class="text-muted ml-2">
                                 </div>
-                                <div  class="bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small w-25 mx-auto">
-                                    <%= categories.offer %>
-                                 </div>
-                                <div class="d-flex align-items-center justify-content-center mb-1">
-        
+                                
+                                <div class="d-flex align-items-center justify-content-center mt-2">
+                                    <h6 class="text-muted text-decoration-line-through">&#8377;<%= product.reqularPrice %></h6>
                                 </div>
-                                <div class="stock-status <%= isOutOfStock ? 'text-danger' : 'text-success' %> small mt-2">
-                                    <%= isOutOfStock ? 'Out of Stock' : `In Stock (${stockValue} available)` %>
-                                </div>
+
+                                <% if (product.bestOffer > 0) { %>
+                                    <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
+                                        <%= product.bestOffer %>% off
+                                        <% if (product.offerSource === 'category') { %>
+                                            <span class="offer-source">(Category Offer)</span>
+                                        <% } else { %>
+                                            <span class="offer-source">(Product Offer)</span>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+
+
                             </div>
                         </div>
                     </div>
@@ -348,21 +422,31 @@
                                 </div>
                             </div>
                             <div class="text-center py-4 px-4">
-                                <a class="product-name h6 text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id%>">
+                                <a class="product-name h4 fw-bold text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id %>">
                                     <strong><%= product.productName %></strong>
                                 </a>
+                                
                                 <div class="d-flex align-items-center justify-content-center mt-2">
-                                    <h6>&#8377;<%= product.salePrice %></h6>
-                                    <h6 class="text-muted ml-2"><del>&#8377;<%= product.reqularPrice%></del></h6>
+                                    <h5 class="fw-bold mb-0">&#8377;<%= product.salePrice %></h5>
+                                    <h6 class="text-muted ml-2">
                                 </div>
-                                <div class="bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small w-25 mx-auto">
-                                    <%= product.offer || 'Sale' %>
+                                
+                                <div class="d-flex align-items-center justify-content-center mt-2">
+                                    <h6 class="text-muted text-decoration-line-through">&#8377;<%= product.reqularPrice %></h6>
                                 </div>
-                                <div class="d-flex align-items-center justify-content-center mb-1">
-                                </div>
-                                <div class="stock-status <%= isOutOfStock ? 'text-danger' : 'text-success' %> small mt-2">
-                                    <%= isOutOfStock ? 'Out of Stock' : `In Stock (${stockValue} available)` %>
-                                </div>
+
+                                <% if (product.bestOffer > 0) { %>
+                                    <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
+                                        <%= product.bestOffer %>% off
+                                        <% if (product.offerSource === 'category') { %>
+                                            <span class="offer-source">(Category Offer)</span>
+                                        <% } else { %>
+                                            <span class="offer-source">(Product Offer)</span>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+
+
                             </div>
                         </div>
                     </div>

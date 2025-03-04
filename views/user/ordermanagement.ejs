@@ -100,10 +100,17 @@
                                 </div>
                                 
                                 <div class="text-left sm:text-right mt-2 sm:mt-0">
-                                    <p class="text-base sm:text-lg font-semibold">₹<%= order.total.toFixed(2) %></p>
-                                    <p class="text-xs sm:text-sm text-gray-600">
-                                        <%= order.items.length %> item<%= order.items.length > 1 ? 's' : '' %>
-                                    </p>
+                                    <div class="text-left sm:text-right mt-2 sm:mt-0">
+                                        <p class="text-base sm:text-lg font-semibold">₹<%= order.total.toFixed(2) %></p>
+                                        <% if (order.couponInfo && order.couponInfo.discountAmount > 0) { %>
+                                            <p class="text-xs sm:text-sm text-green-600">
+                                                Saved: ₹<%= order.couponInfo.discountAmount.toFixed(2) %>
+                                            </p>
+                                        <% } %>
+                                        <p class="text-xs sm:text-sm text-gray-600">
+                                            <%= order.items.length %> item<%= order.items.length > 1 ? 's' : '' %>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -111,13 +118,13 @@
                             <div class="mt-4 border-t pt-4">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                     <% order.items.forEach(function(item, index) { %>
-                                        <% if (index < 3) { %> <!-- Limit to 3 items for preview -->
+                                        <% if (index < 3) { %>
                                             <div class="flex items-center gap-3">
                                                 <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
                                                     <img src="/uploads/products/<%= item.product.productImage[0] %>" 
-                                                         alt="<%= item.product.productName %>"
-                                                         class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg shadow"
-                                                         onerror="this.src='/img/default-product.jpg'">
+                                                        alt="<%= item.product.productName %>"
+                                                        class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg shadow"
+                                                        onerror="this.src='/img/default-product.jpg'">
                                                 <% } else { %>
                                                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                                                         <i class="fas fa-image text-gray-400 text-xl"></i>
@@ -136,8 +143,20 @@
                                 <% if (order.items.length > 3) { %>
                                     <p class="mt-2 text-xs text-gray-500 italic">+<%= order.items.length - 3 %> more items</p>
                                 <% } %>
+                                
+                                <!-- Coupon Information -->
+                                <% if (order.couponInfo && order.couponInfo.code) { %>
+                                    <div class="mt-3 text-sm">
+                                        <span class="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded">
+                                            <i class="fas fa-tag mr-1"></i>
+                                            Coupon: <%= order.couponInfo.code %>
+                                        </span>
+                                        <span class="text-green-600 ml-2">
+                                            -₹<%= order.couponInfo.discountAmount.toFixed(2) %> discount
+                                        </span>
+                                    </div>
+                                <% } %>
                             </div>
-
                             <!-- Payment Failed Actions -->
                             <% if (order.orderStatus === 'Payment Failed' || order.paymentStatus === 'Failed') { %>
                                 <div class="mt-4 p-3 sm:p-4 bg-red-50 rounded-lg border border-red-100">

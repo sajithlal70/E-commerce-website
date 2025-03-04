@@ -15,7 +15,7 @@ const processWalletTransaction = async (walletId, userId, type, amount, descript
             reference,
             status: 'completed',
             orderId,
-            paymentMethod: paymentMethod || 'wallet'  // Default to 'wallet' if not specified
+            paymentMethod: paymentMethod || 'wallet' 
         });
         return transaction;
     } catch (error) {

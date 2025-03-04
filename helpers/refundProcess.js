@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Razorpay = require('razorpay');
 const Wallet = require('../models/walletSchema');
+const Order = require('../models/orderSchema');
 const mongoose = require('mongoose');
 
 const razorpay = new Razorpay({
@@ -11,9 +12,13 @@ const razorpay = new Razorpay({
 const processRefund = async (paymentId, amount, metadata = {}) => {
     try {
         let refundResult;
-        
+
+  
+        if (metadata.orderTotal && metadata.discountTotal && metadata.itemPrice) {
+            const itemDiscount = Math.round((metadata.itemPrice / metadata.orderTotal) * metadata.discountTotal * 100);
+            amount = Math.max(amount - itemDiscount, 1);
+
         if (metadata.toWallet) {
-            // Process refund to wallet
             refundResult = await creditToWallet(
                 metadata.userId,
                 amount / 100, // Convert paise to rupees
@@ -26,7 +31,6 @@ const processRefund = async (paymentId, amount, metadata = {}) => {
                 }
             );
         } else {
-            // Process Razorpay refund
             refundResult = await razorpay.payments.refund(paymentId, {
                 amount: amount,
                 speed: 'normal',
@@ -49,14 +53,17 @@ const processRefund = async (paymentId, amount, metadata = {}) => {
             amount: refundResult.amount,
             status: refundResult.status
         };
-    } catch (error) {
+    }
+ } catch (error) {
         console.error('Refund processing error:', error);
         return {
             success: false,
             error: error.message
         };
     }
-};
+}
+
+
 
 const creditToWallet = async (userId, amount, metadata = {}) => {
     try {

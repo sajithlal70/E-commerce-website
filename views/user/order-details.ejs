@@ -9,9 +9,8 @@
 <!-- Main Content Container -->
 <div class="flex mx-10 flex-col md:flex-row bg-gray-50">
     <!-- Sidebar -->
-        <%- include("../partials/user/profileSidebar", { currentPage: 'orders' }) %>
+    <%- include("../partials/user/profileSidebar", { currentPage: 'orders' }) %>
 
-    
     <!-- Main content area -->
     <div class="flex-grow">
         <div class="max-w-7xl mx-auto">
@@ -30,6 +29,9 @@
                                 minute: '2-digit'
                             }) %>
                         </p>
+                        <p class="text-gray-600 text-md">
+                            <strong>Payment Method:</strong> <%= order.paymentMethod ? order.paymentMethod.toUpperCase() : 'N/A' %>
+                        </p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-medium
@@ -38,6 +40,8 @@
                                 order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' :
                                 order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
                                 order.orderStatus === 'Payment Failed' ? 'bg-red-100 text-red-800' :
+                                order.orderStatus === 'Return Requested' ? 'bg-orange-100 text-orange-800' :
+                                order.orderStatus === 'Returned' ? 'bg-red-100 text-red-800' :
                                 'bg-gray-100 text-gray-800' %>">
                             <i class="fas <%= 
                                 order.orderStatus === 'Processing' ? 'fa-cog fa-spin' :
@@ -45,82 +49,124 @@
                                 order.orderStatus === 'Delivered' ? 'fa-check-circle' :
                                 order.orderStatus === 'Cancelled' ? 'fa-times-circle' :
                                 order.orderStatus === 'Payment Failed' ? 'fa-exclamation-circle' :
+                                order.orderStatus === 'Return Requested' ? 'fa-undo' :
+                                order.orderStatus === 'Returned' ? 'fa-times-circle' :
                                 'fa-clock' %> mr-1"></i>
                             <%= order.orderStatus %>
                         </span>
                         <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-medium
                             <%= order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-800' :
                                 order.paymentStatus === 'Failed' ? 'bg-red-100 text-red-800' :
+                                order.paymentStatus === 'Refunded' ? 'bg-green-100 text-green-800' :
                                 'bg-gray-100 text-gray-800' %>">
                             <i class="fas <%= 
                                 order.paymentStatus === 'Paid' ? 'fa-check-circle' :
                                 order.paymentStatus === 'Failed' ? 'fa-times-circle' :
+                                order.paymentStatus === 'Refunded' ? 'fa-money-bill-wave' :
                                 'fa-clock' %> mr-1"></i>
                             <%= order.paymentStatus %>
                         </span>
                     </div>
+
+                    <!-- Download Invoice Button (Visible only when Delivered) -->
+                    <% if (order.orderStatus === 'Delivered') { %>
+                        <div class="flex justify-end">
+                            <button 
+                                onclick="downloadInvoice('<%= order._id %>')"
+                                class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center text-sm font-medium"
+                            >
+                                <i class="fas fa-download mr-2"></i> Download Invoice
+                            </button>
+                        </div>
+                    <% } %>
                 </div>
 
-                <!-- Order Timeline - Responsive with overflow handling -->
-<!-- Order Timeline - Responsive with overflow handling -->
-<div class="border-t border-b border-gray-100 py-6 mb-6">
-    <div class="overflow-x-auto pb-2">
-        <div class="flex justify-between relative min-w-[480px] px-4 md:min-w-0 md:px-8">
-            <!-- Progress Line -->
-            <div class="absolute top-4 left-8 right-8 h-1 bg-gray-200">
-                <div class="h-full bg-yellow-500" style="width: <%= 
-                    timeline.delivered.status ? '100%' :
-                    timeline.shipped.status ? '75%' :
-                    timeline.processing.status ? '50%' :
-                    '25%' %>"></div>
-            </div>
+                <!-- Order Timeline -->
+                <div class="border-t border-b border-gray-100 py-6 mb-6">
+                    <div class="overflow-x-auto pb-2">
+                        <div class="flex justify-between relative min-w-[480px] px-4 md:min-w-0 md:px-8">
+                            <div class="absolute top-4 left-8 right-8 h-1 bg-gray-200">
+                                <div class="h-full bg-yellow-500" style="width: <%= 
+                                    order.orderStatus === 'Cancelled' ? '25%' :
+                                    order.orderStatus === 'Returned' ? '100%' :
+                                    order.orderStatus === 'Return Requested' ? '90%' :
+                                    timeline.delivered.status ? '100%' :
+                                    timeline.shipped.status ? '75%' :
+                                    timeline.processing.status ? '50%' :
+                                    '25%' %>"></div>
+                            </div>
 
-            <!-- Timeline Points -->
-            <% const timelinePoints = [
-                { 
-                    icon: 'fa-shopping-cart',
-                    label: 'Ordered',
-                    status: timeline.ordered.status,
-                    date: timeline.ordered.date
-                },
-                {
-                    icon: 'fa-cog',
-                    label: 'Processing',
-                    status: timeline.processing.status,
-                    date: timeline.processing.date
-                },
-                {
-                    icon: 'fa-shipping-fast',
-                    label: 'Shipped',
-                    status: timeline.shipped.status,
-                    date: timeline.shipped.date
-                },
-                {
-                    icon: 'fa-home',
-                    label: 'Delivered',
-                    status: timeline.delivered.status,
-                    date: timeline.delivered.date
-                }
-            ] %>
+                            <% 
+                                let timelinePoints = [
+                                    { 
+                                        icon: 'fa-shopping-cart',
+                                        label: 'Ordered',
+                                        status: timeline.ordered.status,
+                                        date: timeline.ordered.date
+                                    },
+                                    {
+                                        icon: 'fa-cog',
+                                        label: 'Processing',
+                                        status: timeline.processing.status,
+                                        date: timeline.processing.date
+                                    },
+                                    {
+                                        icon: 'fa-shipping-fast',
+                                        label: 'Shipped',
+                                        status: timeline.shipped.status,
+                                        date: timeline.shipped.date
+                                    },
+                                    {
+                                        icon: 'fa-home',
+                                        label: 'Delivered',
+                                        status: timeline.delivered.status,
+                                        date: timeline.delivered.date
+                                    }
+                                ];
 
-            <% timelinePoints.forEach(point => { %>
-                <div class="flex flex-col items-center relative z-10 w-20 sm:w-24 md:w-28">
-                    <div class="w-8 h-8 sm:w-10 sm:h-10 <%= point.status ? 'bg-yellow-500' : 'bg-gray-300' %> 
-                                rounded-full flex items-center justify-center text-white shadow-lg
-                                <%= point.status ? 'animate-pulse' : '' %>">
-                        <i class="fas <%= point.icon %> text-xs sm:text-sm"></i>
+                                if (order.orderStatus === 'Cancelled') {
+                                    timelinePoints = [
+                                        { 
+                                            icon: 'fa-shopping-cart',
+                                            label: 'Ordered',
+                                            status: timeline.ordered.status,
+                                            date: timeline.ordered.date
+                                        },
+                                        {
+                                            icon: 'fa-times-circle',
+                                            label: 'Cancelled',
+                                            status: true,
+                                            date: order.cancellationDetails ? order.cancellationDetails.date : order.updatedAt
+                                        }
+                                    ];
+                                } else if (order.orderStatus === 'Return Requested' || order.orderStatus === 'Returned') {
+                                    timelinePoints.push({
+                                        icon: order.orderStatus === 'Return Requested' ? 'fa-undo' : 'fa-times-circle',
+                                        label: order.orderStatus,
+                                        status: true,
+                                        date: order.returnDetails ? order.returnDetails.date : order.updatedAt
+                                    });
+                                }
+                            %>
+
+                            <% timelinePoints.forEach(point => { %>
+                                <div class="flex flex-col items-center relative z-10 w-20 sm:w-24 md:w-28">
+                                    <div class="w-8 h-8 sm:w-10 sm:h-10 <%= point.status ? (point.label === 'Cancelled' || point.label === 'Returned' ? 'bg-red-500' : point.label === 'Return Requested' ? 'bg-orange-500' : 'bg-yellow-500') : 'bg-gray-300' %> 
+                                                rounded-full flex items-center justify-center text-white shadow-lg
+                                                <%= point.status ? 'animate-pulse' : '' %>">
+                                        <i class="fas <%= point.icon %> text-xs sm:text-sm"></i>
+                                    </div>
+                                    <p class="mt-2 text-xs sm:text-sm font-medium text-gray-800 text-center"><%= point.label %></p>
+                                    <p class="text-2xs sm:text-xs text-gray-500 text-center truncate max-w-full">
+                                        <%= point.date ? new Date(point.date).toLocaleDateString() : 'Pending' %>
+                                    </p>
+                                </div>
+                            <% }) %>
+                        </div>
                     </div>
-                    <p class="mt-2 text-xs sm:text-sm font-medium text-gray-800 text-center"><%= point.label %></p>
-                    <p class="text-2xs sm:text-xs text-gray-500 text-center truncate max-w-full">
-                        <%= point.date ? new Date(point.date).toLocaleDateString() : 'Pending' %>
-                    </p>
                 </div>
-            <% }) %>
-        </div>
-    </div>
-</div>
 
-                <!-- Order Items -->
+                <!-- Order Items with Cancel/Return Buttons -->
                 <div class="bg-gray-50 rounded-xl overflow-hidden mb-6">
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -130,6 +176,8 @@
                                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Qty</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
@@ -170,15 +218,67 @@
                                         <td class="px-4 py-3 text-right text-xs sm:text-sm font-medium text-gray-900 whitespace-nowrap">
                                             ₹<%= (item.price * item.quantity).toFixed(2) %>
                                         </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                              <%= item.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                                                  item.status === 'Shipped' ? 'bg-yellow-100 text-yellow-800' :
+                                                  item.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                                  item.status === 'Return Requested' ? 'bg-orange-100 text-orange-800' :
+                                                  (item.status === 'Cancelled' || item.status === 'Item Cancelled' || item.status === 'Returned') ? 'bg-red-100 text-red-800' :
+                                                  'bg-gray-100 text-gray-800' %>">
+                                              <%= item.status || 'Pending' %>
+                                            </span>
+                                          </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <% if (['Processing', 'Pending', 'Payment Failed'].includes(order.orderStatus)) { %>
+                                                <button 
+                                                    onclick="cancelProduct('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>)"
+                                                    class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors inline-flex items-center"
+                                                    <%= (item.status === 'Cancelled' || item.status === 'Item Cancelled' || item.status === 'Delivered' || item.status === 'Shipped' || item.status === 'Returned' || item.status === 'Return Requested') ? 'disabled class="opacity-50 cursor-not-allowed"' : '' %>
+                                                >
+                                                    <i class="fas fa-times mr-1"></i> 
+                                                    <%= (item.status === 'Cancelled' || item.status === 'Item Cancelled' || item.status === 'Returned' || item.status === 'Return Requested') ? 'Processed' : 'Cancel' %>
+                                                </button>
+                                            <% } else if (item.status === 'Delivered' && order.orderStatus !== 'Return Requested' && order.orderStatus !== 'Returned') { %>
+                                                <button 
+                                                    onclick="returnProduct('<%= order._id %>', '<%= item._id %>', <%= item.quantity %>)"
+                                                    class="text-xs px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors inline-flex items-center"
+                                                    <%= (item.status === 'Returned' || item.status === 'Return Requested') ? 'disabled class="opacity-50 cursor-not-allowed"' : '' %>
+                                                >
+                                                    <i class="fas fa-undo mr-1"></i> 
+                                                    <%= (item.status === 'Returned' || item.status === 'Return Requested') ? 'Processed' : 'Return' %>
+                                                </button>
+                                            <% } %>
+                                        </td>
                                     </tr>
                                 <% }); %>
                             </tbody>
                         </table>
                     </div>
                 </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end mb-4 gap-4">
+                    <% if (['Processing', 'Pending', 'Payment Failed'].includes(order.orderStatus) && order.items.length > 0) { %>
+                        <button 
+                            onclick="cancelEntireOrder('<%= order._id %>')"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center text-sm font-medium"
+                        >
+                            <i class="fas fa-times-circle mr-2"></i> Cancel Entire Order
+                        </button>
+                    <% } %>
+                    <% if (order.orderStatus === 'Delivered' && !order.items.some(item => item.status === 'Return Requested' || item.status === 'Returned')) { %>
+                        <button 
+                            onclick="returnEntireOrder('<%= order._id %>')"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center text-sm font-medium"
+                        >
+                            <i class="fas fa-undo mr-2"></i> Return Entire Order
+                        </button>
+                    <% } %>
+                </div>
             </div>
 
-            <!-- Order Details Grid - Improved for mobile -->
+            <!-- Order Details Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
                 <!-- Shipping Address -->
                 <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 h-full">
@@ -188,24 +288,16 @@
                     </h2>
                     <div class="space-y-2 sm:space-y-3">
                         <% if (order.shippingAddress) { %>
-                            <p class="font-medium text-gray-800 text-sm sm:text-base">
-                                <%= order.shippingAddress.name %>
-                            </p>
-                            <p class="text-gray-600 text-sm">
-                                <%= order.shippingAddress.street %>
-                            </p>
+                            <p class="font-medium text-gray-800 text-sm sm:text-base"><%= order.shippingAddress.name %></p>
+                            <p class="text-gray-600 text-sm"><%= order.shippingAddress.street %></p>
                             <% if (order.shippingAddress.landMark) { %>
                                 <p class="text-gray-600 text-sm">
                                     <i class="fas fa-map-marker-alt mr-2 text-yellow-500"></i>
                                     <%= order.shippingAddress.landMark %>
                                 </p>
                             <% } %>
-                            <p class="text-gray-600 text-sm">
-                                <%= order.shippingAddress.city %>
-                            </p>
-                            <p class="text-gray-600 text-sm">
-                                <%= order.shippingAddress.postalCode %>
-                            </p>
+                            <p class="text-gray-600 text-sm"><%= order.shippingAddress.city %></p>
+                            <p class="text-gray-600 text-sm"><%= order.shippingAddress.postalCode %></p>
                             <p class="flex items-center text-gray-600 text-sm">
                                 <i class="fas fa-phone-alt mr-2 text-yellow-500"></i>
                                 <%= order.shippingAddress.phone %>
@@ -261,9 +353,7 @@
                             <div>
                                 <h3 class="text-red-800 font-semibold text-sm sm:text-base">Payment Failed</h3>
                                 <% if (order.paymentDetails && order.paymentDetails.error) { %>
-                                    <p class="text-xs sm:text-sm text-red-600 mt-1">
-                                        <%= order.paymentDetails.error %>
-                                    </p>
+                                    <p class="text-xs sm:text-sm text-red-600 mt-1"><%= order.paymentDetails.error %></p>
                                 <% } %>
                             </div>
                         </div>
@@ -271,16 +361,140 @@
                             <button onclick="retryPayment('<%= order._id %>')" 
                                     class="px-4 py-2 sm:px-6 sm:py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
                                            transition-colors flex items-center justify-center font-medium text-sm w-full">
-                                <i class="fas fa-redo mr-2"></i>
-                                Retry Payment
+                                <i class="fas fa-redo mr-2"></i> Retry Payment
                             </button>
                             <button onclick="abortOrder('<%= order._id %>')"
                                     class="px-4 py-2 sm:px-6 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 
                                            transition-colors flex items-center justify-center font-medium text-sm w-full">
-                                <i class="fas fa-times mr-2"></i>
-                                Cancel Order
+                                <i class="fas fa-times mr-2"></i> Cancel Order
                             </button>
                         </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Cancellation/Return Details with Payment and Refund Info -->
+            <% if (order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned' || order.orderStatus === 'Return Requested' || order.items.some(item => item.status === 'Item Cancelled' || item.status === 'Returned' || item.status === 'Return Requested')) { %>
+                <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 mb-6">
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-ban mr-2 text-red-500"></i>
+                        Cancellation/Return Details
+                    </h2>
+                    <div class="space-y-2 sm:space-y-3">
+                        <!-- Order-Level Cancellation -->
+                        <% if (order.orderStatus === 'Cancelled') { %>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Reason:</span> <%= order.cancellationDetails.reason %>
+                            </p>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Date:</span> <%= order.cancellationDetails.date ? new Date(order.cancellationDetails.date).toLocaleDateString('en-US', { 
+                                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                            </p>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Payment Method:</span> <%= order.paymentMethod ? order.paymentMethod.toUpperCase() : 'N/A' %>
+                            </p>
+                            <% if (order.cancellationDetails.refundAmount > 0) { %>
+                                <p class="text-gray-600 text-sm">
+                                    <span class="font-medium">Refund Amount:</span> ₹<%= order.cancellationDetails.refundAmount.toFixed(2) %>
+                                </p>
+                            <% } %>
+                        <% } %>
+
+                        <!-- Order-Level Return Requested -->
+                        <% if (order.orderStatus === 'Return Requested') { %>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Reason:</span> <%= order.returnDetails?.reason || 'N/A' %>
+                            </p>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Requested Date:</span> <%= order.returnDetails?.date ? new Date(order.returnDetails.date).toLocaleDateString('en-US', { 
+                                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                            </p>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Status:</span> <%= order.returnDetails?.status || 'Pending' %>
+                            </p>
+                            <% if (order.returnDetails?.potentialRefundAmount > 0) { %>
+                                <p class="text-gray-600 text-sm">
+                                    <span class="font-medium">Potential Refund Amount:</span> ₹<%= order.returnDetails.potentialRefundAmount.toFixed(2) %>
+                                </p>
+                            <% } %>
+                        <% } %>
+
+                        <!-- Order-Level Returned -->
+                        <% if (order.orderStatus === 'Returned') { %>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Reason:</span> <%= order.returnDetails?.reason || 'N/A' %>
+                            </p>
+                            <p class="text-gray-600 text-sm">
+                                <span class="font-medium">Processed Date:</span> <%= order.returnRequest?.processedAt ? new Date(order.returnRequest.processedAt).toLocaleDateString('en-US', { 
+                                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                            </p>
+                            <% if (order.refundDetails && order.refundDetails.amount > 0) { %>
+                                <p class="text-gray-600 text-sm">
+                                    <span class="font-medium">Refund Amount:</span> ₹<%= order.refundDetails.amount.toFixed(2) %>
+                                </p>
+                                <p class="text-gray-600 text-sm">
+                                    <span class="font-medium">Refund Method:</span> <%= order.refundDetails.refundMethod || 'N/A' %>
+                                </p>
+                            <% } %>
+                        <% } %>
+
+                        <!-- Item-Level Cancellation/Returns -->
+                        <% order.items.forEach(item => { %>
+                            <% if (item.status === 'Item Cancelled' || item.status === 'Returned' || item.status === 'Return Requested') { %>
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <p class="text-gray-600 text-sm font-medium">
+                                        <%= item.status === 'Item Cancelled' ? 'Cancelled Item' : item.status === 'Return Requested' ? 'Return Requested Item' : 'Returned Item' %>: <%= item.product.productName %>
+                                    </p>
+                                    <p class="text-gray-600 text-sm">
+                                        <span class="font-medium">Reason:</span> <%= item.cancellationDetails?.reason || item.returnRequest?.requestReason || 'N/A' %>
+                                    </p>
+                                    <p class="text-gray-600 text-sm">
+                                        <span class="font-medium">Date:</span> <%= item.cancellationDetails?.date || item.returnRequest?.requestedAt ? new Date(item.cancellationDetails?.date || item.returnRequest.requestedAt).toLocaleDateString('en-US', { 
+                                            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                                    </p>
+                                    <p class="text-gray-600 text-sm">
+                                        <span class="font-medium">Payment Method:</span> <%= order.paymentMethod ? order.paymentMethod.toUpperCase() : 'N/A' %>
+                                    </p>
+                                    <% if (item.status === 'Return Requested') { %>
+                                        <p class="text-gray-600 text-sm">
+                                            <span class="font-medium">Status:</span> <%= item.returnRequest?.status || 'Pending' %>
+                                        </p>
+                                    <% } %>
+                                    <% if (item.refundDetails && item.refundDetails.amount > 0) { %>
+                                        <p class="text-gray-600 text-sm">
+                                            <span class="font-medium">Refund Amount:</span> ₹<%= item.refundDetails.amount.toFixed(2) %>
+                                        </p>
+                                        <p class="text-gray-600 text-sm">
+                                            <span class="font-medium">Refund Method:</span> <%= item.refundDetails.refundMethod || 'N/A' %>
+                                        </p>
+                                    <% } else if (item.cancellationDetails?.refundAmount > 0) { %>
+                                        <p class="text-gray-600 text-sm">
+                                            <span class="font-medium">Refund Amount:</span> ₹<%= item.cancellationDetails.refundAmount.toFixed(2) %>
+                                        </p>
+                                    <% } %>
+                                </div>
+                            <% } %>
+                        <% }); %>
+
+                        <!-- Order-Level Refund Details (if not already covered) -->
+                        <% if (order.refundDetails && (order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned') && !order.items.some(item => item.refundDetails)) { %>
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                                <p class="text-green-600 text-sm font-medium">Refund Details</p>
+                                <p class="text-gray-600 text-xs sm:text-sm mt-1">
+                                    <span class="font-medium">Processed:</span> <%= order.refundDetails.processedAt ? new Date(order.refundDetails.processedAt).toLocaleDateString('en-US', { 
+                                        year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                                </p>
+                                <p class="text-gray-600 text-xs sm:text-sm">
+                                    <span class="font-medium">Amount:</span> ₹<%= order.refundDetails.amount ? order.refundDetails.amount.toFixed(2) : '0.00' %>
+                                </p>
+                                <p class="text-gray-600 text-xs sm:text-sm">
+                                    <span class="font-medium">Reason:</span> <%= order.refundDetails.refundReason || 'N/A' %>
+                                </p>
+                                <p class="text-gray-600 text-xs sm:text-sm">
+                                    <span class="font-medium">Method:</span> <%= order.refundDetails.refundMethod || 'N/A' %>
+                                </p>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             <% } %>
@@ -288,9 +502,91 @@
     </div>
 </div>
 
-<!-- Include the payment handling scripts -->
+<!-- Cancel Product Modal -->
+<div id="cancelReasonModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+        <button type="button" onclick="closeCancelModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3 class="text-lg font-semibold text-gray-800 mb-4" id="cancelModalTitle">Cancel Product</h3>
+        <form id="cancelForm" onsubmit="submitCancellation(event)">
+            <input type="hidden" id="cancelOrderId" name="orderId">
+            <input type="hidden" id="cancelProductId" name="productId">
+            <input type="hidden" id="cancelQuantity" name="quantity">
+            <input type="hidden" id="cancelType" name="type" value="product">
+            
+            <div class="mb-4">
+                <label for="cancelReason" class="block text-sm font-medium text-gray-700 mb-1">Reason for cancellation</label>
+                <select id="cancelReason" name="reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                    <option value="changed_mind">Changed my mind</option>
+                    <option value="better_price">Found better price elsewhere</option>
+                    <option value="wrong_item">Ordered by mistake</option>
+                    <option value="Taking_too_long_to_ship">Taking too long to ship</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div id="otherReasonContainer" class="mb-4 hidden">
+                <label for="otherReason" class="block text-sm font-medium text-gray-700 mb-1">Please specify</label>
+                <textarea id="otherReason" name="otherReason" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"></textarea>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeCancelModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
+                    Confirm Cancellation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Return Product Modal -->
+<div id="returnReasonModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+        <button type="button" onclick="closeReturnModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3 class="text-lg font-semibold text-gray-800 mb-4" id="returnModalTitle">Return Product</h3>
+        <form id="returnForm" onsubmit="submitReturn(event)">
+            <input type="hidden" id="returnOrderId" name="orderId">
+            <input type="hidden" id="returnProductId" name="productId">
+            <input type="hidden" id="returnQuantity" name="quantity">
+            <input type="hidden" id="returnType" name="type" value="item">
+            
+            <div class="mb-4">
+                <label for="returnReason" class="block text-sm font-medium text-gray-700 mb-1">Reason for return</label>
+                <select id="returnReason" name="reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                    <option value="wrong_product">Wrong Product</option>
+                    <option value="damaged_product">Damaged Product</option>
+                    <option value="not_as_described">Not as Described</option>
+                    <option value="defective">Defective</option>
+                    <option value="size_fit_issue">Size/Fit Issue</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div id="otherReturnReasonContainer" class="mb-4 hidden">
+                <label for="otherReturnReason" class="block text-sm font-medium text-gray-700 mb-1">Please specify</label>
+                <textarea id="otherReturnReason" name="otherReason" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"></textarea>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm font-medium">
+                    Confirm Return
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Include script for payment handling and cancellation -->
 <script>
-    // Copy these functions from ordermanagement.ejs
     async function retryPayment(orderId) {
         try {
             const result = await Swal.fire({
@@ -328,7 +624,6 @@
                     throw new Error(data.message);
                 }
 
-                // Initialize Razorpay
                 const options = {
                     key: data.key_id,
                     amount: data.order.amount,
@@ -454,6 +749,298 @@
                 text: error.message || 'Failed to cancel order',
                 confirmButtonColor: '#EAB308'
             });
+        }
+    }
+</script>
+
+<script>
+    function cancelProduct(orderId, itemId, quantity) {
+        document.getElementById('cancelModalTitle').innerText = 'Cancel Product';
+        document.getElementById('cancelOrderId').value = orderId;
+        document.getElementById('cancelProductId').value = itemId;
+        document.getElementById('cancelQuantity').value = quantity;
+        document.getElementById('cancelType').value = 'item';
+        document.getElementById('cancelReasonModal').classList.remove('hidden');
+    }
+
+    function cancelEntireOrder(orderId) {
+        document.getElementById('cancelModalTitle').innerText = 'Cancel Entire Order';
+        document.getElementById('cancelOrderId').value = orderId;
+        document.getElementById('cancelType').value = 'order';
+        document.getElementById('cancelReasonModal').classList.remove('hidden');
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelReasonModal').classList.add('hidden');
+    }
+
+    document.getElementById('cancelReason').addEventListener('change', function() {
+        const otherReasonContainer = document.getElementById('otherReasonContainer');
+        if (this.value === 'other') {
+            otherReasonContainer.classList.remove('hidden');
+        } else {
+            otherReasonContainer.classList.add('hidden');
+        }
+    });
+
+    async function submitCancellation(event) {
+        event.preventDefault();
+        
+        try {
+            const loadingAlert = Swal.fire({
+                title: 'Processing',
+                text: 'Submitting your cancellation request...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const orderId = document.getElementById('cancelOrderId').value;
+            const cancelType = document.getElementById('cancelType').value;
+            const reason = document.getElementById('cancelReason').value;
+            const otherReason = document.getElementById('otherReason').value;
+            
+            const finalReason = reason === 'other' ? otherReason : reason;
+            
+            let response;
+            
+            if (cancelType === 'item') {
+                const itemId = document.getElementById('cancelProductId').value;
+                response = await fetch(`/orders/${orderId}/items/${itemId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        reason: finalReason,
+                        comments: finalReason
+                    })
+                });
+            } else {
+                response = await fetch(`/orders/cancel/${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        reason: finalReason,
+                        comments: finalReason
+                    })
+                });
+            }
+            
+            const data = await response.json();
+            loadingAlert.close();
+            
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Cancellation Successful',
+                    text: data.message,
+                    confirmButtonColor: '#EAB308'
+                });
+                window.location.reload();
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Cancellation error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to process cancellation',
+                confirmButtonColor: '#EAB308'
+            });
+        } finally {
+            closeCancelModal();
+        }
+    }
+
+    async function downloadInvoice(orderId) {
+        try {
+            const result = await Swal.fire({
+                title: 'Download Invoice',
+                text: 'Would you like to download the invoice for this order?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#EAB308',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, download'
+            });
+
+            if (result.isConfirmed) {
+                const loadingAlert = Swal.fire({
+                    title: 'Generating Invoice',
+                    text: 'Please wait while we prepare your invoice...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`/orders/invoice/${orderId}`, {
+                    method: 'GET',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate invoice');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `invoice-${orderId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                loadingAlert.close();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Invoice Downloaded',
+                    text: 'Your invoice has been downloaded successfully',
+                    confirmButtonColor: '#EAB308'
+                });
+            }
+        } catch (error) {
+            console.error('Invoice download error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to download invoice',
+                confirmButtonColor: '#EAB308'
+            });
+        }
+    }
+
+    function returnProduct(orderId, itemId, quantity) {
+        document.getElementById('returnModalTitle').innerText = 'Return Product';
+        document.getElementById('returnOrderId').value = orderId;
+        document.getElementById('returnProductId').value = itemId;
+        document.getElementById('returnQuantity').value = quantity;
+        document.getElementById('returnType').value = 'item';
+        document.getElementById('returnReasonModal').classList.remove('hidden');
+    }
+
+    function returnEntireOrder(orderId) {
+        document.getElementById('returnModalTitle').innerText = 'Return Entire Order';
+        document.getElementById('returnOrderId').value = orderId;
+        document.getElementById('returnProductId').value = '';
+        document.getElementById('returnQuantity').value = '';
+        document.getElementById('returnType').value = 'order';
+        document.getElementById('returnReasonModal').classList.remove('hidden');
+    }
+
+    function closeReturnModal() {
+        document.getElementById('returnReasonModal').classList.add('hidden');
+    }
+
+    document.getElementById('returnReason').addEventListener('change', function() {
+        const otherReasonContainer = document.getElementById('otherReturnReasonContainer');
+        if (this.value === 'other') {
+            otherReasonContainer.classList.remove('hidden');
+        } else {
+            otherReasonContainer.classList.add('hidden');
+        }
+    });
+
+    async function submitReturn(event) {
+        event.preventDefault();
+        
+        try {
+            const loadingAlert = Swal.fire({
+                title: 'Processing',
+                text: 'Submitting your return request...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const orderId = document.getElementById('returnOrderId').value;
+            const itemId = document.getElementById('returnProductId').value;
+            const returnType = document.getElementById('returnType').value;
+            const reason = document.getElementById('returnReason').value;
+            const otherReason = document.getElementById('otherReturnReason').value;
+            
+            const finalReason = reason === 'other' ? otherReason : reason;
+            
+            console.log('Submitting return request:', { orderId, itemId, returnType, reason: finalReason }); // Debug log
+            
+            let response;
+            if (returnType === 'item') {
+                response = await fetch(`/orders/${orderId}/items/${itemId}/return-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        reason: finalReason,
+                        comments: finalReason
+                    })
+                });
+            } else {
+                response = await fetch(`/orders/return/${orderId}`, { // Adjust endpoint as per your backend
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        reason: finalReason,
+                        comments: finalReason
+                    })
+                });
+            }
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}...`);
+            }
+
+            const data = await response.json();
+            loadingAlert.close();
+            
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Return Request Submitted',
+                    text: data.message,
+                    confirmButtonColor: '#EAB308'
+                });
+                window.location.reload();
+            } else {
+                throw new Error(data.message || 'Return request failed');
+            }
+        } catch (error) {
+            console.error('Return error details:', {
+                message: error.message,
+                stack: error.stack
+            });
+            
+            let errorMessage = error.message;
+            if (error.message.includes('Unexpected token')) {
+                errorMessage = 'Server returned an invalid response. Please contact support.';
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                confirmButtonColor: '#EAB308',
+                footer: 'Check console for more details'
+            });
+        } finally {
+            closeReturnModal();
         }
     }
 </script>

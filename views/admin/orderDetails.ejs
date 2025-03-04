@@ -22,7 +22,7 @@
                 <p class="mt-2 text-gray-600">Order Status: <span class="font-semibold"><%= order.orderStatus %></span></p><br>
                 <h4 class="text-xl font-semibold mb-4">Payment Details</h4>
                 <p><span class="font-medium">Payment Method:</span> <%= order.paymentMethod.toUpperCase() %></p>
-                 <p><span class="font-medium">Payment Status:</span> 
+                <p><span class="font-medium">Payment Status:</span> 
                   <span class="px-2 py-1 text-sm rounded-full 
                     <%= order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-800' :
                         order.paymentStatus === 'Failed' ? 'bg-red-100 text-red-800' :
@@ -59,6 +59,8 @@
                                 <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                                 <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                                 <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -66,71 +68,191 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= item.product.productName %></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right"><%= item.quantity %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">₹<%= item.price %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">₹<%= item.price * item.quantity %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">₹<%= item.price.toFixed(2) %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">₹<%= (item.price * item.quantity).toFixed(2) %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                    <span id="status-<%= item._id %>" class="px-2 py-1 rounded-full text-xs font-medium
+                                        <%= item.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                                            item.status === 'Shipped' ? 'bg-yellow-100 text-yellow-800' :
+                                            item.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                            item.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                            item.status === 'Item Cancelled' ? 'bg-red-200 text-red-900' :
+                                            item.status === 'Returned' ? 'bg-orange-100 text-orange-800' :
+                                            item.status === 'Item Return Requested' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-gray-100 text-gray-800' %>">
+                                        <%= item.status %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                    <% if (!['Cancelled', 'Item Cancelled', 'Delivered', 'Returned'].includes(item.status)) { %>
+                                        <form class="update-item-status-form" data-item-id="<%= item._id %>">
+                                            <select name="itemStatus" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                                <option value="Pending" <%= item.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                                <option value="Processing" <%= item.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                                <option value="Shipped" <%= item.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                <option value="Delivered" <%= item.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                <option value="Item Cancelled" <%= item.status === 'Item Cancelled' ? 'selected' : '' %>>Item Cancelled</option>
+                                                <option value="Item Return Requested" <%= item.status === 'Item Return Requested' ? 'selected' : '' %>>Item Return Requested</option>
+                                            </select>
+                                            <button type="button" onclick="updateItemStatus('<%= order._id %>', '<%= item._id %>', this)" 
+                                                    class="ml-2 bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs">
+                                                Update
+                                            </button>
+                                        </form>
+                                    <% } %>
+                                </td>
                             </tr>
                             <% }); %>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-right font-medium">Subtotal:</td>
-                                <td class="px-6 py-4 text-right">₹<%= order.subtotal %></td>
+                                <td colspan="4" class="px-6 py-4 text-right font-medium">Subtotal:</td>
+                                <td class="px-6 py-4 text-right">₹<%= order.subtotal.toFixed(2) %></td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-right font-medium">Discount Amount:</td>
+                                <td colspan="4" class="px-6 py-4 text-right font-medium">Discount Amount:</td>
                                 <td class="px-6 py-4 text-green-600 text-right">-₹<%= order.discountAmount.toFixed(2) %></td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-right font-medium">Shipping:</td>
-                                <td class="px-6 py-4 text-right">₹<%= order.shippingCost %></td>
+                                <td colspan="4" class="px-6 py-4 text-right font-medium">Shipping:</td>
+                                <td class="px-6 py-4 text-right">₹<%= order.shippingCost.toFixed(2) %></td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-right font-medium">Total:</td>
-                                <td class="px-6 py-4 text-right font-bold">₹<%= order.total %></td>
+                                <td colspan="4" class="px-6 py-4 text-right font-medium">Total:</td>
+                                <td class="px-6 py-4 text-right font-bold">₹<%= order.total.toFixed(2) %></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
 
-            <!-- Return Request Section (if applicable) -->
-            <% if (order.orderStatus === 'Return Requested') { %>
-              <div class="mb-6 bg-yellow-50 p-4 rounded-lg">
-                  <h3 class="text-xl font-semibold mb-4">Return Request</h3>
-                  <p class="mb-2"><strong>Reason:</strong> <%= order.returnDetails.reason %></p>
-                  <p class="mb-2"><strong>Customer Comments:</strong> <%= order.returnDetails.comments %></p>
-                  <p class="mb-4"><strong>Request Date:</strong> <%= new Date(order.returnDetails.date).toLocaleDateString() %></p>
-                  
-                  <form id="returnForm" class="space-y-4">
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700">Admin Comments</label>
-                          <textarea name="adminComments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3"></textarea>
-                      </div>
-                      <div class="flex space-x-4">
-                          <button type="button" onclick="handleReturn('Approved')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                              Approve Return
-                          </button>
-                          <button type="button" onclick="handleReturn('Rejected')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                              Reject Return
-                          </button>
-                      </div>
-                  </form>
-              </div>
-              <% } %>
+          <!-- Order-Level Return Request -->
+<% if (order.orderStatus === 'Return Requested') { %>
+    <div class="mb-6 bg-yellow-50 p-4 rounded-lg">
+        <h3 class="text-xl font-semibold mb-4">Pending Order-Level Return Request</h3>
+        <p class="mb-2"><strong>Reason:</strong> <%= order.returnDetails?.reason || 'N/A' %></p>
+        <p class="mb-2"><strong>Customer Comments:</strong> <%= order.returnDetails?.comments || 'N/A' %></p>
+        <p class="mb-4"><strong>Request Date:</strong> <%= order.returnDetails?.requestedAt ? new Date(order.returnDetails.requestedAt).toLocaleDateString() : 'N/A' %></p>
+        
+        <form id="orderReturnForm" data-order-id="<%= order._id %>">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Admin Comments</label>
+                <textarea name="adminComments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3"></textarea>
+            </div>
+            <div class="flex space-x-4 mt-4">
+                <button type="button" onclick="processOrderReturn('<%= order._id %>', 'Approved')" 
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Approve Return
+                </button>
+                <button type="button" onclick="processOrderReturn('<%= order._id %>', 'Rejected')" 
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Reject Return
+                </button>
+            </div>
+        </form>
+    </div>
+<% } %>
 
-            <!-- Status Update Form -->
+<!-- Item-Level Return Requests -->
+<% if (order.items.some(item => item.status === 'Item Return Requested')) { %>
+    <div class="mb-6 bg-yellow-50 p-4 rounded-lg">
+        <h3 class="text-xl font-semibold mb-4">Pending Item-Level Return Requests</h3>
+        <% order.items.forEach(item => { %>
+            <% if (item.status === 'Item Return Requested') { %>
+                <div class="mb-4 p-4 bg-white rounded-md shadow">
+                    <p class="mb-2"><strong>Item:</strong> <%= item.product.productName %></p>
+                    <p class="mb-2"><strong>Reason:</strong> <%= item.returnRequest?.requestReason || 'N/A' %></p>
+                    <p class="mb-2"><strong>Customer Comments:</strong> <%= item.returnRequest?.requestComments || 'N/A' %></p>
+                    <p class="mb-4"><strong>Request Date:</strong> <%= item.returnRequest?.requestedAt ? new Date(item.returnRequest.requestedAt).toLocaleDateString() : 'N/A' %></p>
+                    
+                    <form class="return-item-form" data-order-id="<%= order._id %>" data-item-id="<%= item._id %>">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Admin Comments</label>
+                            <textarea name="adminComments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3"></textarea>
+                        </div>
+                        <div class="flex space-x-4 mt-4">
+                            <button type="button" onclick="processItemReturn('<%= order._id %>', '<%= item._id %>', 'Approved')" 
+                                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve Return
+                            </button>
+                            <button type="button" onclick="processItemReturn('<%= order._id %>', '<%= item._id %>', 'Rejected')" 
+                                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject Return
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            <% } %>
+        <% }) %>
+    </div>
+<% } %>
+            <!-- Cancellation and Return Details -->
+            <% if (order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned' || order.items.some(item => item.status === 'Item Cancelled' || item.status === 'Returned')) { %>
+                <div class="mb-6 bg-red-50 p-4 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Cancellation/Return Details</h3>
+                    
+                    <!-- Order-Level Cancellation -->
+                    <% if (order.orderStatus === 'Cancelled') { %>
+                        <div class="mb-4">
+                            <p class="mb-2"><strong>Order Cancelled</strong></p>
+                            <p class="mb-2"><strong>Reason:</strong> <%= order.cancellationDetails.reason %></p>
+                            <p class="mb-2"><strong>Cancellation Date:</strong> <%= order.cancellationDetails.date ? new Date(order.cancellationDetails.date).toLocaleDateString() : 'N/A' %></p>
+                            <p class="mb-2"><strong>Refund Status:</strong> <%= order.cancellationDetails.refundStatus || 'N/A' %></p>
+                            <% if (order.refundDetails) { %>
+                                <p class="mb-2"><strong>Refund Amount:</strong> ₹<%= order.refundDetails.amount ? order.refundDetails.amount.toFixed(2) : '0.00' %></p>
+                                <p class="mb-2"><strong>Refund Method:</strong> <%= order.refundDetails.refundMethod || 'N/A' %></p>
+                                <p class="mb-2"><strong>Refund Processed At:</strong> <%= order.refundDetails.processedAt ? new Date(order.refundDetails.processedAt).toLocaleDateString() : 'N/A' %></p>
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                    <!-- Order-Level Return -->
+                    <% if (order.orderStatus === 'Returned') { %>
+                        <div class="mb-4">
+                            <p class="mb-2"><strong>Order Returned</strong></p>
+                            <p class="mb-2"><strong>Reason:</strong> <%= order.returnDetails?.reason || 'N/A' %></p>
+                            <p class="mb-2"><strong>Return Processed At:</strong> <%= order.returnDetails?.processedAt ? new Date(order.returnDetails.processedAt).toLocaleDateString() : 'N/A' %></p>
+                            <% if (order.refundDetails) { %>
+                                <p class="mb-2"><strong>Refund Amount:</strong> ₹<%= order.refundDetails.amount ? order.refundDetails.amount.toFixed(2) : '0.00' %></p>
+                                <p class="mb-2"><strong>Refund Method:</strong> <%= order.refundDetails.refundMethod || 'N/A' %></p>
+                                <p class="mb-2"><strong>Refund Processed At:</strong> <%= order.refundDetails.processedAt ? new Date(order.refundDetails.processedAt).toLocaleDateString() : 'N/A' %></p>
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                    <!-- Item-Level Cancellation/Returns -->
+                    <% order.items.forEach(item => { %>
+                        <% if (item.status === 'Item Cancelled' || item.status === 'Returned') { %>
+                            <div class="mt-4 border-t pt-4">
+                                <p class="mb-2"><strong><%= item.status === 'Item Cancelled' ? 'Cancelled Item' : 'Returned Item' %>:</strong> <%= item.product.productName %></p>
+                                <p class="mb-2"><strong>Reason:</strong> <%= item.cancellationDetails?.reason || item.returnRequest?.requestReason || 'N/A' %></p>
+                                <p class="mb-2"><strong>Date:</strong> <%= item.cancellationDetails?.date || item.returnRequest?.processedAt ? new Date(item.cancellationDetails.date || item.returnRequest.processedAt).toLocaleDateString() : 'N/A' %></p>
+                                <% if (item.status === 'Item Cancelled') { %>
+                                    <p class="mb-2"><strong>Refund Status:</strong> <%= item.cancellationDetails?.refundStatus || 'N/A' %></p>
+                                <% } %>
+                                <% if (item.refundDetails) { %>
+                                    <p class="mb-2"><strong>Refund Amount:</strong> ₹<%= item.refundDetails.amount ? item.refundDetails.amount.toFixed(2) : '0.00' %></p>
+                                    <p class="mb-2"><strong>Refund Method:</strong> <%= item.refundDetails.refundMethod || 'N/A' %></p>
+                                    <p class="mb-2"><strong>Refund Processed At:</strong> <%= item.refundDetails.processedAt ? new Date(item.refundDetails.processedAt).toLocaleDateString() : 'N/A' %></p>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    <% }); %>
+                </div>
+            <% } %>
+            
+            <!-- Status Update Form for Overall Order -->
             <% if (!['Returned', 'Cancelled'].includes(order.orderStatus)) { %>
               <form id="statusUpdateForm" action="/admin/order/<%= order._id %>/update-status" method="POST" class="mt-6" onsubmit="return handleStatusUpdate(event)">
                   <div class="flex items-center space-x-4">
                       <select name="orderStatus" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                           <option value="Pending" <%= order.orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
-                          <option value="Pending" <%= order.orderStatus === 'Return Requested' ? 'selected' : '' %>>Return Requested</option>
                           <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
                           <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                           <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                       </select>
                       <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                          Update Status
+                          Update Order Status
                       </button>
                   </div>
               </form>
@@ -139,7 +261,6 @@
     </div>
 
     <script>
-
         function showLoading(message) {
             return Swal.fire({
                 title: message,
@@ -150,15 +271,81 @@
             });
         }
 
+        async function updateItemStatus(orderId, itemId, button) {
+    const form = button.closest('form');
+    const newStatus = form.elements.itemStatus.value;
+
+    const result = await Swal.fire({
+        title: 'Confirm Item Status Update',
+        text: `Are you sure you want to update this item's status to ${newStatus}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        const loadingAlert = showLoading('Updating item status...');
+
+        try {
+            const response = await fetch(`/admin/order/${orderId}/item/${itemId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    itemStatus: newStatus
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const statusSpan = document.getElementById(`status-${itemId}`);
+                statusSpan.textContent = newStatus;
+                statusSpan.className = `px-2 py-1 rounded-full text-xs font-medium ${
+                    newStatus === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                    newStatus === 'Shipped' ? 'bg-yellow-100 text-yellow-800' :
+                    newStatus === 'Delivered' ? 'bg-green-100 text-green-800' :
+                    newStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                    newStatus === 'Item Cancelled' ? 'bg-red-200 text-red-900' :
+                    newStatus === 'Returned' ? 'bg-orange-100 text-orange-800' :
+                    newStatus === 'Item Return Requested' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                }`;
+
+                if (['Delivered', 'Item Cancelled', 'Returned'].includes(newStatus)) {
+                    form.remove();
+                }
+
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Item status updated successfully',
+                    icon: 'success'
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            await Swal.fire({
+                title: 'Error!',
+                text: error.message || 'Failed to update item status',
+                icon: 'error'
+            });
+        } finally {
+            loadingAlert.close();
+        }
+    }
+}
+
         async function handleStatusUpdate(event) {
             event.preventDefault();
-            
             const form = event.target;
             const newStatus = form.orderStatus.value;
             
-            // Show confirmation dialog
             const result = await Swal.fire({
-                title: 'Confirm Status Update',
+                title: 'Confirm Order Status Update',
                 text: `Are you sure you want to update the order status to ${newStatus}?`,
                 icon: 'question',
                 showCancelButton: true,
@@ -183,7 +370,7 @@
                     if (response.ok) {
                         await Swal.fire({
                             title: 'Success!',
-                            text: 'Order status has been updated successfully',
+                            text: 'Order status updated successfully',
                             icon: 'success'
                         });
                         window.location.reload();
@@ -202,9 +389,8 @@
             return false;
         }
 
-        // Function to handle return requests
-        async function handleReturn(status) {
-            const form = document.getElementById('returnForm');
+        async function processItemReturn(orderId, itemId, status) {
+            const form = document.querySelector(`.return-item-form[data-item-id="${itemId}"]`);
             const adminComments = form.elements.adminComments.value;
 
             if (!adminComments.trim()) {
@@ -216,7 +402,6 @@
                 return;
             }
 
-            // Show confirmation dialog
             const result = await Swal.fire({
                 title: `Confirm Return ${status}`,
                 text: `Are you sure you want to ${status.toLowerCase()} this return request?`,
@@ -230,7 +415,7 @@
                 const loadingAlert = showLoading('Processing return request...');
                 
                 try {
-                    const response = await fetch(`/admin/order/<%= order._id %>/return`, {
+                    const response = await fetch(`/admin/order/${orderId}/item/${itemId}/return-request`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -260,11 +445,74 @@
                         text: error.message || 'Failed to process return request',
                         icon: 'error'
                     });
+                } finally {
+                    loadingAlert.close();
                 }
             }
         }
 
-        // Show success message if redirected after an action
+        async function processOrderReturn(orderId, status) {
+            const form = document.getElementById('orderReturnForm');
+            const adminComments = form.elements.adminComments.value;
+
+            if (!adminComments.trim()) {
+                await Swal.fire({
+                    title: 'Error!',
+                    text: 'Please provide admin comments before processing the return',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            const result = await Swal.fire({
+                title: `Confirm Order Return ${status}`,
+                text: `Are you sure you want to ${status.toLowerCase()} this order return request?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: `Yes, ${status.toLowerCase()} it!`,
+                cancelButtonText: 'Cancel'
+            });
+
+            if (result.isConfirmed) {
+                const loadingAlert = showLoading('Processing order return request...');
+                
+                try {
+                    const response = await fetch(`/admin/order/${orderId}/return`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            status,
+                            adminComments
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        await Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success'
+                        });
+                        window.location.reload();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    await Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Failed to process order return request',
+                        icon: 'error'
+                    });
+                } finally {
+                    loadingAlert.close();
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const successMessage = urlParams.get('success');

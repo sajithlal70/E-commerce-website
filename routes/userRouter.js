@@ -49,10 +49,10 @@ router.get("/shop",userController.loadshopping);
 router.get("/productdetails/:id",userController.loadSingleProduct);
 
 // Cart routes
-router.post('/add-to-cart', cartController.addToCart);
+router.post('/add-to-cart',isAuth,cartController.addToCart);
 router.get('/cart',isAuth, cartController.getCartPage);
-router.post('/cart/update', cartController.updateCartItem);
-router.post('/cart/remove', cartController.removeFromCart);
+router.post('/cart/update',isAuth, cartController.updateCartItem);
+router.post('/cart/remove',isAuth,cartController.removeFromCart);
 router.get('/api/cart/count', isAuth, cartController.getCartCount);
 router.get('/cart/details', isAuth, cartController.getCartDetails);
 router.get('/cart/get-items', isAuth, checkoutController.getCartItems);
@@ -60,9 +60,9 @@ router.post('/cart/clear', isAuth, cartController.clearCart);
 router.post('/checkout/cod-payment', isAuth, checkoutController.handleCodPayment);
 
 // Wishlist routes
-router.post('/toggle-wishlist', wishlistController.toggleWishlist);
+router.post('/toggle-wishlist',isAuth,wishlistController.toggleWishlist);
 router.get('/wishlist',isAuth, wishlistController.getWishlist);
-router.delete('/wishlist/:productId',wishlistController.removeFromWishlist);
+router.delete('/wishlist/:productId',isAuth,wishlistController.removeFromWishlist);
 router.get('/api/wishlist/count', isAuth, wishlistController.getWishlistCount);
 
 // Profile routes
@@ -91,21 +91,23 @@ router.get('/checkout/address/edit/:id', isAuth, (req, res) => {
   req.query.checkout = 'true';
   addressController.getEditAddress(req, res);
 });
-router.post('/checkout/address/edit/:id', checkoutController.editAddress);
+router.post('/checkout/address/edit/:id',isAuth,checkoutController.editAddress);
 router.post('/checkout/address/select/:id', isAuth, addressController.selectAddress);
 
 // Add this route for setting default address
-router.post('/checkout/address/set-default/:id', checkoutController.setDefaultAddress);
+router.post('/checkout/address/set-default/:id',isAuth,checkoutController.setDefaultAddress);
 
 // Order Management routes
 router.get('/checkout',isAuth,checkoutController.getCheckoutPage);
-router.post('/add-address',checkoutController.addNewAddress);
+router.post('/add-address',isAuth,checkoutController.addNewAddress);
 
 router.get('/orders',isAuth,orderController.getOrderMangement);
 router.get('/orderconfirmation',isAuth,orderController.getOrderConfirmation);
-router.post('/confirm-order', orderController.confirmOrder);
-router.post('/orders/cancel/:id',orderController.cancelOrder);
-router.post('/orders/return/:id',orderController.returnOrder);
+router.post('/confirm-order', isAuth,orderController.confirmOrder);
+router.post('/orders/cancel/:id',isAuth,orderController.cancelOrder);
+router.post('/orders/:orderId/items/:itemId/cancel',isAuth, orderController.cancelOrderItem);
+router.post('/orders/return/:id',isAuth,orderController.returnOrder);
+router.post('/orders/:orderId/items/:itemId/return-request', isAuth,orderController.requestItemReturn);
 router.get('/orders/:orderId/status',isAuth,orderController.getOrderStatus);
 
 router.post('/initiate-payment', isAuth, orderController.initiatePayment);
@@ -138,13 +140,14 @@ router.get("/auth/google/callback", passport.authenticate("google", {failureRedi
   res.redirect("/");
 });
 
-router.post('/checkout/remove-coupon', checkoutController.removeCoupon);
-router.get('/checkout/order-summary', checkoutController.getOrderSummary);
+router.post('/checkout/remove-coupon', isAuth,checkoutController.removeCoupon);
+router.get('/checkout/order-summary', isAuth,checkoutController.getOrderSummary);
 
 // Payment failure handling route
 router.post('/payment/failure', isAuth, orderController.handlePaymentFailure);
 
 // Order detail route
 router.get('/orders/:orderId', isAuth, orderController.getOrderDetails);
+router.get('/orders/invoice/:id', generateInvoice);
 
 module.exports = router;

@@ -163,6 +163,18 @@
                         </button>
                     </div>
 
+
+                    <% if (product.bestOffer > 0) { %>
+                        <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
+                            <%= product.bestOffer %>% off
+                            <% if (product.offerSource === 'category') { %>
+                                <span class="offer-source">(Category Offer)</span>
+                            <% } else { %>
+                                <span class="offer-source">(Product Offer)</span>
+                            <% } %>
+                        </div>
+                    <% } %>
+
                     <div class="d-flex pt-2">
                         <strong class="text-dark mr-2">Share on:</strong>
                         <div class="d-inline-flex">
@@ -331,19 +343,26 @@
                             </div>
                         </div>
                         <div class="text-center py-4 px-4">
-                            <a class="product-name h6 text-decoration-none text-dark d-block text-truncate mb-2" 
-                               href="/productdetails/<%= relatedProduct._id %>">
-                                <strong><%= relatedProduct.productName %></strong>
+                            <a class="product-name h4 fw-bold text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id %>">
+                                <strong><%= product.productName %></strong>
                             </a>
+                            
                             <div class="d-flex align-items-center justify-content-center mt-2">
-                                <h6>&#8377;<%= relatedProduct.salePrice %>/-</h6>
+                                <h5 class="fw-bold mb-0">&#8377;<%= product.salePrice %></h5>
                                 <h6 class="text-muted ml-2">
-                                    <del>&#8377;<%= relatedProduct.reqularPrice %>/-</del>
-                                </h6>
                             </div>
-                            <% if (relatedProduct.offer) { %>
-                                <div class="bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small w-25 mx-auto">
-                                    <%= relatedProduct.offer %>
+                            
+                            <div class="d-flex align-items-center justify-content-center mt-2">
+                                <h6 style="text-decoration: line-through; text-decoration-color: red; font-size: 1rem; color: gray;">&#8377;<%= product.reqularPrice %></h6>
+                            </div>
+                            <% if (product.bestOffer > 0) { %>
+                                <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
+                                    <%= product.bestOffer %>% off
+                                    <% if (product.offerSource === 'category') { %>
+                                        <span class="offer-source">(Category Offer)</span>
+                                    <% } else { %>
+                                        <span class="offer-source">(Product Offer)</span>
+                                    <% } %>
                                 </div>
                             <% } %>
                         </div>
@@ -764,6 +783,19 @@
     <%-include("../../views/partials/user/footer")%>
 
 <style>
+    .offer-badge {
+        display: inline-block;
+        width: auto;
+        max-width: 90%;
+        margin: 5px auto;
+        font-size: 0.75rem;
+    }
+    
+    .offer-source {
+        font-size: 0.65rem;
+        opacity: 0.9;
+    }
+    
 .custom-swal-popup {
     font-size: 1.1rem;
     padding: 20px;

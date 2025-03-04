@@ -54,7 +54,9 @@ router.get("/products/view/:id",adminAuth,productController.viewProducts)
 router.get('/order',adminAuth,orderController.getAllOrders);
 router.get('/order/:id',adminAuth,orderController.getOrderDetails);
 router.post('/order/:id/update-status',adminAuth,orderController.updateOrderStatus);
+router.post('/order/:orderId/item/:itemId/update-status',orderController.updateOrderItemStatus);
 router.post('/order/:orderId/return',adminAuth,orderController.handleReturnRequest);
+router.post('/order/:orderId/item/:itemId/return-request', adminAuth, orderController.processReturnRequest);
 
 router.get('/coupons',adminAuth,couponController.getCouponPage);
 router.post('/add-coupon',couponController.createCoupon);

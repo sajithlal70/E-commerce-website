@@ -1,33 +1,28 @@
 <%- include("../../views/partials/user/header") %>
 
 <div class="container">
-  <form class="login-form" method="post" action="/signin" id="loginForm">
+  <form class="login-form" method="post" action="/signin" id="loginForm" onsubmit="return validateForm()">
     <h2 class="form-title">Login to Your Account</h2>
-    
-    <% if (errorMessage && errorMessage.length > 0) { %>
-      <div class="error-message3" id="error-message">
-        <%= errorMessage %>
-      </div>
-    <% } %>
-    
+
+    <!-- Single error message container -->
+    <div id="error-message" class="error-message" style="color: red; display: none; font-size: 1rem;"></div>
+
     <div class="form-group">
       <label for="email">Email Address</label>
-      <input type="email" name="email" id="email">
+      <input type="email" name="email" id="email" onblur="validateEmail()" required>
     </div>
 
     <div class="form-group">
       <label for="password">Password</label>
-      <input type="password" name="password" id="password">
+      <input type="password" name="password" id="password" onblur="validatePassword()" required>
     </div>
-    
-    <div id="error-message" class="error-message" style="color: red; display: none;"></div>
 
     <div class="form-options">
       <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
     </div>
-    
+
     <button type="submit" class="submit-btn">Login</button>
-    
+
     <div class="form-footer">
       <p>Don't have an account? <a href="/signup">Sign up</a></p>
       <a href="<%= googleAuthUrl %>">
@@ -37,36 +32,72 @@
   </form>
 </div>
 
-<!-- Add SweetAlert2 CSS and JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-   
-    const urlParams = new URLSearchParams(window.location.search);
-    const isBlocked = urlParams.get('blocked');
-    const blockMessage = urlParams.get('message');
+    console.log("DOM fully loaded");
+
+    // Handle flash messages from server
+    const flashMessages = <%- JSON.stringify(messages && messages.error ? messages.error : []) %>;
+    const errorMessage = document.getElementById('error-message');
     
-    if (isBlocked === 'true' && blockMessage) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Account Blocked',
-        text: decodeURIComponent(blockMessage),
-        confirmButtonColor: '#3085d6',
-        allowOutsideClick: false
-      }).then(() => {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      });
+    if (flashMessages.length > 0) {
+      errorMessage.textContent = flashMessages[0];
+      errorMessage.style.display = 'block';
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000); // Hide after 5 seconds
     }
 
-    const errorMessage = document.getElementById("error-message");
-    if (errorMessage && errorMessage.style.display !== 'none') {
-      setTimeout(() => {
-        errorMessage.style.display = "none";
-      }, 5000);
-    }
+    document.getElementById('email').focus();
   });
+
+  function validateEmail() {
+    const email = document.getElementById('email').value.trim();
+    const errorMessage = document.getElementById('error-message');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email) {
+      errorMessage.textContent = "Email address is required";
+      errorMessage.style.display = "block";
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+      return false;
+    } else if (!emailRegex.test(email)) {
+      errorMessage.textContent = "Please enter a valid email address";
+      errorMessage.style.display = "block";
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+      return false;
+    }
+    return true;
+  }
+
+  function validatePassword() {
+    const password = document.getElementById('password').value;
+    const errorMessage = document.getElementById('error-message');
+
+    if (!password) {
+      errorMessage.textContent = "Password is required";
+      errorMessage.style.display = "block";
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+      return false;
+    }
+    return true;
+  }
+
+  function validateForm() {
+    const isEmailValid = validateEmail();
+    const isPasswordValid = validatePassword();
+
+    if (!isEmailValid || !isPasswordValid) {
+      return false; // Error message is already set in validateEmail or validatePassword
+    }
+    return true;
+  }
 </script>
 
 <%- include("../../views/partials/user/footer") %>

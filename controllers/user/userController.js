@@ -4,8 +4,9 @@ const nodemailer = require("nodemailer");
 const bcrypt = require('bcryptjs');
 const Product = require("../../models/productSchema")
 const Category =require("../../models/categorySchema")
-const Cart = require("../../models/cartSchema")
-const { generatePaginationLinks, getQueryString } = require('../../helpers/shopPagination')
+const Cart = require("../../models/cartSchema");
+const {calculateBestOffer} = require('../../helpers/productOfferCalculation');
+const { generatePaginationLinks} = require('../../helpers/shopPagination')
 const { getActiveOffersForProducts, getActiveCategoryOffers } = require('./offerHelper');
 const Offer = require('../../models/offerSchema');
 const mongoose = require('mongoose');
@@ -16,53 +17,58 @@ const loadHomepage = async (req, res) => {
     const user = req.user || req.session.user;
     const products = await Product.find({ isBlocked: false })
       .select('productName productImage stock quantity salePrice reqularPrice offer')
+      .populate('category') // Populate category to access category offer
       .limit(8);
+    
     const category = await Category.find({ status: 'Listed' });
+    
     const recentProducts = await Product.find({ isBlocked: false })
       .select('productName productImage stock quantity salePrice reqularPrice offer')
+      .populate('category') // Populate category to access category offer
       .sort({ createdAt: -1 })
       .limit(4);
 
-    // Get active offers for all products
-    const offersMap = await getActiveOffersForProducts(products);
-    
-    // Get active category offers
-    const categoryOffers = await getActiveCategoryOffers();
-    
-    // Enhance products with offer information
+    // Apply offer calculations to products
     const productsWithOffers = products.map(prod => {
-      const offerInfo = offersMap.get(prod._id.toString()) || {
-        bestOffer: 0,
-        discountedPrice: prod.salePrice
-      };
+      // Use calculateBestOffer to determine the best offer
+      const { bestOffer, offerSource } = calculateBestOffer(prod);
+      
+      // Calculate discounted price
+      const discountedPrice = bestOffer > 0 
+        ? prod.salePrice - (prod.salePrice * (bestOffer / 100))
+        : prod.salePrice;
+        
       return {
         ...prod.toObject(),
-        offer: offerInfo.bestOffer,
-        discountedPrice: offerInfo.discountedPrice
+        bestOffer,
+        offerSource,
+        discountedPrice
       };
     });
 
-    // Enhance recent products with offer information
+    // Apply offer calculations to recent products
     const recentProductsWithOffers = recentProducts.map(prod => {
-      const offerInfo = offersMap.get(prod._id.toString()) || {
-        bestOffer: 0,
-        discountedPrice: prod.salePrice
-      };
+      // Use calculateBestOffer to determine the best offer
+      const { bestOffer, offerSource } = calculateBestOffer(prod);
+      
+      // Calculate discounted price
+      const discountedPrice = bestOffer > 0 
+        ? prod.salePrice - (prod.salePrice * (bestOffer / 100))
+        : prod.salePrice;
+        
       return {
         ...prod.toObject(),
-        offer: offerInfo.bestOffer,
-        discountedPrice: offerInfo.discountedPrice
+        bestOffer,
+        offerSource,
+        discountedPrice
       };
     });
 
-    // Enhance categories with offer information
+    // For categories, keep the original logic if you need to display category offers
     const categoriesWithOffers = category.map(cat => {
-      const categoryOffer = categoryOffers.find(offer => 
-        offer.reference._id.toString() === cat._id.toString()
-      );
       return {
         ...cat.toObject(),
-        offer: categoryOffer ? categoryOffer.discount : 0
+        offer: cat.offer || 0  // Use category offer directly if it exists
       };
     });
 
@@ -122,80 +128,83 @@ const loadsignin = async (req, res) => {
   }
 }
 
-
-
- const signin = async (req, res) => {
-
+const signin = async (req, res) => {
   try {
-
     const product = await Product.find({ isBlocked: false }).limit(8);
-    const category = await Category.find({ status: 'Listed'});
+    const category = await Category.find({ status: 'Listed' });
 
     const { email, password } = req.body;
 
+    // Server-side validation
     if (!email || !password) {
-      return res.render("signin", { errorMessage: "Email and password are required.",googleAuthUrl: process.env.GOOGLE_AUTH_URL ,
-        products:product,
-        categories:category
+      req.flash("error", "Email and password are required.");
+      return res.render("signin", {
+        messages: req.flash(),
+        product,
+        category,
+        googleAuthUrl: process.env.GOOGLE_AUTH_URL
       });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-
-      return res.render("signin", { errorMessage: "Invalid email or password",googleAuthUrl: process.env.GOOGLE_AUTH_URL ,
-        products:product,
-        categories:category
+      req.flash("error", "Invalid email or password.");
+      return res.render("signin", {
+        messages: req.flash(),
+        product,
+        category,
+        googleAuthUrl: process.env.GOOGLE_AUTH_URL
       });
-
-    }
-
-    if(!password){
-      return res.render("signin",{
-        products:product,
-        categories:category,
-      errorMessage: 'please login with Goolgle Id'
-      })
     }
 
     if (!user.password) {
-      console.error("User password is missing in the database.");
-      return res.render("signin", { errorMessage: "Invalid email or password.",googleAuthUrl: process.env.GOOGLE_AUTH_URL ,
-        products:product,
-        categories:category
+      req.flash("error", "Please log in with Google.");
+      return res.render("signin", {
+        messages: req.flash(),
+        product,
+        category,
+        googleAuthUrl: process.env.GOOGLE_AUTH_URL
       });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
-
-      return res.render("signin", { errorMessage: "Invalid email or password" ,googleAuthUrl: process.env.GOOGLE_AUTH_URL,
-        products:product,
-        categories:category
+      req.flash("error", "Invalid email or password.");
+      return res.render("signin", {
+        messages: req.flash(),
+        product,
+        category,
+        googleAuthUrl: process.env.GOOGLE_AUTH_URL
       });
-
     }
 
+    if (user.IsBlocked) {
+      req.flash("error", "User is blocked by admin.");
+      return res.render("signin", {
+        messages: req.flash(),
+        product,
+        category,
+        googleAuthUrl: process.env.GOOGLE_AUTH_URL
+      });
+    }
+
+    // Set session and redirect
     req.session.user = user;
-
-    if(user.IsBlocked === true ){
-      return res.render("signin", { errorMessage: "User is Blocked By Admin" ,googleAuthUrl: process.env.GOOGLE_AUTH_URL,
-        products:product,
-        categories:category
-      });
-    }
-    
     return res.redirect("/");
 
   } catch (error) {
-
-    console.error("Signin error", error);
-    return res.render("signin", { errorMessage: "An error occurred while signing in. Please try again later.",googleAuthUrl: process.env.GOOGLE_AUTH_URL });
-  
+    console.error("Signin error:", error);
+    req.flash("error", "An error occurred while signing in. Please try again later.");
+    return res.render("signin", {
+      messages: req.flash(),
+      product: [],
+      category: [],
+      googleAuthUrl: process.env.GOOGLE_AUTH_URL
+    });
   }
 };
+
 
 const logout = (req,res) => {
   req.session.destroy((error) =>{
@@ -456,153 +465,172 @@ const logOut = async (req,res) =>{
 });
 };
 
- const loadshopping = async (req, res, next) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 8;
-        const searchQuery = req.query.search || '';
-        const category = req.query.category || '';
-        const sort = req.query.sort || 'default';  // Set default sort
-        const selectedPriceRange = req.query.price || 'all';
-        const minPrice = parseFloat(req.query.minPrice) || 0;
-        const maxPrice = parseFloat(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
+const loadshopping = async (req, res, next) => {
+  try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 8;
+      const searchQuery = req.query.search || '';
+      const category = req.query.category || '';
+      const sort = req.query.sort || 'default';  // Set default sort
+      const selectedPriceRange = req.query.price || 'all';
+      const minPrice = parseFloat(req.query.minPrice) || 0;
+      const maxPrice = parseFloat(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
 
-        // Build query object
-        let query = { isBlocked: false };
+      // Build query object
+      let query = { isBlocked: false };
 
-        // Add search condition if present
-        if (searchQuery) {
-            query.productName = { $regex: searchQuery, $options: 'i' };
-        }
+      // Add search condition if present
+      if (searchQuery) {
+          query.productName = { $regex: searchQuery, $options: 'i' };
+      }
 
-        // Add category filter if present and valid
-        if (category) {
-            if (mongoose.Types.ObjectId.isValid(category)) {
-                query.category = category;
-            } else {
-                return res.status(404).render('404', {
-                    message: 'Invalid category'
-                });
-            }
-        }
+      // Add category filter if present and valid
+      if (category) {
+          if (mongoose.Types.ObjectId.isValid(category)) {
+              query.category = category;
+          } else {
+              return res.status(404).render('404', {
+                  message: 'Invalid category'
+              });
+          }
+      }
 
-        // Add price range filter
-        if (selectedPriceRange !== 'all') {
-            const [min, max] = selectedPriceRange.split('-').map(Number);
-            query.salePrice = { $gte: min, $lte: max };
-        } else {
-            query.salePrice = { $gte: minPrice, $lte: maxPrice };
-        }
+      // Add price range filter
+      if (selectedPriceRange !== 'all') {
+          const [min, max] = selectedPriceRange.split('-').map(Number);
+          query.salePrice = { $gte: min, $lte: max };
+      } else {
+          query.salePrice = { $gte: minPrice, $lte: maxPrice };
+      }
 
-        // Sort options for dropdown
-        const sortOptions = [
-            { value: 'default', label: 'Latest' },
-            { value: 'price_desc', label: 'Price: High to Low' },
-            { value: 'price_asc', label: 'Price: Low to High' },
-            { value: 'name_asc', label: 'Name: A to Z' },
-            { value: 'name_desc', label: 'Name: Z to A' }
-        ];
+      // Sort options for dropdown
+      const sortOptions = [
+          { value: 'default', label: 'Latest' },
+          { value: 'price_desc', label: 'Price: High to Low' },
+          { value: 'price_asc', label: 'Price: Low to High' },
+          { value: 'name_asc', label: 'Name: A to Z' },
+          { value: 'name_desc', label: 'Name: Z to A' }
+      ];
 
-        // Build sort object
-        let sortQuery = {};
-        switch (sort) {
-            case 'price_asc':
-                sortQuery = { salePrice: 1 };
-                break;
-            case 'price_desc':
-                sortQuery = { salePrice: -1 };
-                break;
-            case 'name_asc':
-                sortQuery = { productName: 1 };
-                break;
-            case 'name_desc':
-                sortQuery = { productName: -1 };
-                break;
-            default:
-                sortQuery = { createdAt: -1 };
-        }
+      // Build sort object
+      let sortQuery = {};
+      switch (sort) {
+          case 'price_asc':
+              sortQuery = { salePrice: 1 };
+              break;
+          case 'price_desc':
+              sortQuery = { salePrice: -1 };
+              break;
+          case 'name_asc':
+              sortQuery = { productName: 1 };
+              break;
+          case 'name_desc':
+              sortQuery = { productName: -1 };
+              break;
+          default:
+              sortQuery = { createdAt: -1 };
+      }
 
-        // Define price ranges for filter
-        const priceRanges = [
-            { range: '0-10000', label: '₹0 - ₹10,000' },
-            { range: '10000-50000', label: '₹10,000 - ₹50,000' },
-            { range: '50000-100000', label: '₹50,000 - ₹1,00,000' },
-            { range: '100000-500000', label: '₹1,00,000 - ₹5,00,000' },
-            { range: '500000-1000000', label: '₹5,00,000 - ₹10,00,000' }
-        ];
+      // Define price ranges for filter
+      const priceRanges = [
+          { range: '0-10000', label: '₹0 - ₹10,000' },
+          { range: '10000-50000', label: '₹10,000 - ₹50,000' },
+          { range: '50000-100000', label: '₹50,000 - ₹1,00,000' },
+          { range: '100000-500000', label: '₹1,00,000 - ₹5,00,000' },
+          { range: '500000-1000000', label: '₹5,00,000 - ₹10,00,000' }
+      ];
 
-        // Get counts for each price range
-        const priceRangeCounts = await Promise.all(
-            priceRanges.map(async ({ range }) => {
-                const [min, max] = range.split('-').map(Number);
-                const count = await Product.countDocuments({
-                    ...query,
-                    salePrice: { $gte: min, $lte: max }
-                });
-                return { range, count };
-            })
-        );
+      // Get counts for each price range
+      const priceRangeCounts = await Promise.all(
+          priceRanges.map(async ({ range }) => {
+              const [min, max] = range.split('-').map(Number);
+              const count = await Product.countDocuments({
+                  ...query,
+                  salePrice: { $gte: min, $lte: max }
+              });
+              return { range, count };
+          })
+      );
 
-        // Execute main queries in parallel
-        const [products, totalProducts, categories] = await Promise.all([
-            Product.find(query)
-                .sort(sortQuery)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .populate('category')
-                .catch(err => {
-                    console.error('Product query error:', err);
-                    return [];
-                }),
-            Product.countDocuments(query).catch(err => {
-                console.error('Count query error:', err);
-                return 0;
-            }),
-            Category.find({ status: 'Listed' }).catch(err => {
-                console.error('Category query error:', err);
-                return [];
-            })
-        ]);
-        console.log("categories",categories);
-        const totalPages = Math.ceil(totalProducts / limit) || 1; 
+      // Execute main queries in parallel
+      const [products, totalProducts, categories] = await Promise.all([
+          Product.find(query)
+              .sort(sortQuery)
+              .skip((page - 1) * limit)
+              .limit(limit)
+              .populate('category')
+              .catch(err => {
+                  console.error('Product query error:', err);
+                  return [];
+              }),
+          Product.countDocuments(query).catch(err => {
+              console.error('Count query error:', err);
+              return 0;
+          }),
+          Category.find({ status: 'Listed' }).catch(err => {
+              console.error('Category query error:', err);
+              return [];
+          })
+      ]);
+      console.log("categories", categories);
       
-        if (page > totalPages) {
-            return res.redirect(`/shop?page=1${searchQuery ? `&search=${searchQuery}` : ''}${category ? `&category=${category}` : ''}`);
-        }
+      // Calculate best offers for each product
+      const productsWithOffers = products.map(product => {
+          const productData = product.toObject();
+          const offerDetails = calculateBestOffer(productData);
+          
+          // Calculate the display price after applying the best offer
+          const discountAmount = (productData.salePrice * offerDetails.bestOffer) / 100;
+          const displayPrice = productData.salePrice - discountAmount;
+          
+          return {
+              ...productData,
+              bestOffer: offerDetails.bestOffer,
+              offerSource: offerDetails.offerSource,
+              displayPrice: displayPrice
+          };
+      });
+      
+      const totalPages = Math.ceil(totalProducts / limit) || 1; 
+    
+      if (page > totalPages) {
+          return res.redirect(`/shop?page=1${searchQuery ? `&search=${searchQuery}` : ''}${category ? `&category=${category}` : ''}`);
+      }
 
-        // Update the pagination links generation
-        const paginationData = generatePaginationLinks(page, totalPages, {
-            search: searchQuery,
-            category,
-            sort,
-            price: selectedPriceRange
-        });
+      // Update the pagination links generation
+      const paginationData = generatePaginationLinks(page, totalPages, {
+          search: searchQuery,
+          category,
+          sort,
+          price: selectedPriceRange
+      });
 
-        res.render('shop', {
-            products: products || [],
-            categories: categories || [],
-            currentPage: page,
-            totalPages,
-            searchQuery,
-            selectedCategory: category,
-            sort,
-            minPrice,
-            maxPrice,
-            user: req.session.user || null,
-            selectedPriceRange,
-            priceRanges,
-            priceRangeCounts: priceRangeCounts || [],
-            totalProducts,
-            sortOptions,
-            paginationLinks: paginationData,
-            limit
-        });
+      res.render('shop', {
+          products: productsWithOffers || [], 
+          categories: categories || [],
+          currentPage: page,
+          totalPages,
+          searchQuery,
+          selectedCategory: category,
+          sort,
+          minPrice,
+          maxPrice,
+          user: req.session.user || null,
+          selectedPriceRange,
+          priceRanges,
+          priceRangeCounts: priceRangeCounts || [],
+          totalProducts,
+          sortOptions,
+          paginationLinks: paginationData,
+          limit
+      });
 
-    } catch (error) {
-        console.error('Shop page error:', error);
-        next(error);
-    }
+  } catch (error) {
+      console.error('Shop page error:', error);
+      next(error);
+  }
 };
+
 
 const loadSingleProduct = async (req, res) => {
   try {
@@ -625,6 +653,20 @@ const loadSingleProduct = async (req, res) => {
     const isBlocked = Boolean(product.isBlocked);
     const isAvailable = !isBlocked && currentStock > 0;
 
+    // Calculate best offer for the main product
+    const { bestOffer, offerSource } = calculateBestOffer(product);
+    
+    // Apply best offer information to the product
+    product.bestOffer = bestOffer;
+    product.offerSource = offerSource;
+    
+    // Calculate discounted price if there's an offer
+    if (bestOffer > 0) {
+      product.discountedPrice = product.salePrice - (product.salePrice * (bestOffer / 100));
+    } else {
+      product.discountedPrice = product.salePrice;
+    }
+
     // Get user's wishlist status if logged in
     let isInWishlist = false;
     if (user) {
@@ -646,15 +688,24 @@ const loadSingleProduct = async (req, res) => {
     .populate('category')
     .limit(4)
     .lean(); 
-    console.log('releted product>>>>',relatedProducts);
     
-
     // Process related products to ensure consistent stock handling
-    const processedRelatedProducts = relatedProducts.map(prod => ({
-      ...prod,
-      currentStock: Math.max(0, Number(prod.stock || prod.quantity || 0)),
-      isAvailable: !prod.isBlocked && (prod.stock > 0 || prod.quantity > 0)
-    }));
+    // and calculate offers for each related product
+    const processedRelatedProducts = relatedProducts.map(prod => {
+      // Calculate best offer for each related product
+      const offerInfo = calculateBestOffer(prod);
+      
+      return {
+        ...prod,
+        currentStock: Math.max(0, Number(prod.stock || prod.quantity || 0)),
+        isAvailable: !prod.isBlocked && (prod.stock > 0 || prod.quantity > 0),
+        bestOffer: offerInfo.bestOffer,
+        offerSource: offerInfo.offerSource,
+        discountedPrice: offerInfo.bestOffer > 0 
+          ? prod.salePrice - (prod.salePrice * (offerInfo.bestOffer / 100))
+          : prod.salePrice
+      };
+    });
 
     // Fetch categories for navigation
     const categories = await Category.find({ status: 'Listed' });

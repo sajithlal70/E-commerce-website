@@ -99,7 +99,7 @@ const processWalletPayment = async (req, res) => {
             throw new Error('Insufficient wallet balance');
         }
 
-        // Get and validate address - Modified address handling
+        // Get and validate address
         const addressDoc = await Address.findOne({ 
             userId,
             'address._id': addressId 
@@ -109,16 +109,13 @@ const processWalletPayment = async (req, res) => {
             throw new Error('Address not found');
         }
 
-        // Find the specific address from the addresses array
         const selectedAddress = addressDoc.address.find(addr => 
             addr._id.toString() === addressId
         );
-
         if (!selectedAddress) {
             throw new Error('Selected address not found');
         }
 
-        // Format shipping address for order
         const shippingAddress = {
             name: selectedAddress.name,
             phone: selectedAddress.phone,
@@ -132,7 +129,7 @@ const processWalletPayment = async (req, res) => {
         // Calculate new balance
         const newBalance = wallet.balance - amount;
 
-        // Create transaction record with all required fields
+        // Create transaction record
         const transaction = await Transaction.create({
             walletId: wallet._id,
             userId,
@@ -141,16 +138,35 @@ const processWalletPayment = async (req, res) => {
             description: 'Order payment',
             reference: generateTransactionReference(),
             status: 'completed',
-            paymentMethod: 'wallet', // Add required field
-            transactionType: 'purchase', // Add required field
-            balance: newBalance, // Add required field
+            paymentMethod: 'wallet',
+            transactionType: 'purchase',
+            balance: newBalance,
         });
 
         // Update wallet balance
         wallet.balance = newBalance;
         await wallet.save();
 
-        // Create order with properly formatted shipping address
+        // Calculate subtotal
+        const subtotal = cart.items.reduce((sum, item) => 
+            sum + (item.product.salePrice * item.quantity), 0
+        );
+        
+        const shippingCost = 50;
+        
+        let discountAmount = 0;
+        if (couponCode && req.session.appliedCoupon) {
+            if (typeof req.session.appliedCoupon.discountAmount === 'number') {
+                discountAmount = req.session.appliedCoupon.discountAmount;
+            } else if (typeof req.session.appliedCoupon.discountPercentage === 'number') {
+                discountAmount = subtotal * (req.session.appliedCoupon.discountPercentage / 100);
+            }
+            if (isNaN(discountAmount)) {
+                discountAmount = 0;
+            }
+        }
+
+        // Create order
         const order = await Order.create({
             user: userId,
             items: cart.items.map(item => ({
@@ -158,12 +174,11 @@ const processWalletPayment = async (req, res) => {
                 quantity: item.quantity,
                 price: item.product.salePrice
             })),
-            shippingAddress: shippingAddress, // Use the formatted address
+            shippingAddress,
             paymentMethod: 'wallet',
-            subtotal: cart.items.reduce((sum, item) => 
-                sum + (item.product.salePrice * item.quantity), 0
-            ),
-            shippingCost: 50,
+            subtotal,
+            shippingCost,
+            discountAmount, 
             total: amount,
             orderStatus: 'Processing',
             paymentStatus: 'Paid',
@@ -174,15 +189,10 @@ const processWalletPayment = async (req, res) => {
             }
         });
 
-        // Update product quantities
-        for (const item of cart.items) {
-            await Product.findByIdAndUpdate(
-                item.product._id,
-                { $inc: { quantity: -item.quantity } }
-            );
-        }
 
-        // Clear cart
+        await updateProductStock(order.items, false); 
+
+
         await Cart.findOneAndUpdate(
             { user: userId },
             { $set: { items: [] } }
@@ -192,9 +202,6 @@ const processWalletPayment = async (req, res) => {
         if (req.session.appliedCoupon) {
             delete req.session.appliedCoupon;
         }
-
-        // After order is created successfully
-        await updateProductStock(order.items, false); // false means decrease quantity
 
         res.json({
             success: true,
@@ -211,32 +218,19 @@ const processWalletPayment = async (req, res) => {
     }
 };
 
-// Add this helper function to validate coupon
+
 const validateCoupon = async (couponCode, userId, subtotal) => {
-    const currentDate = new Date();
-    
-    const coupon = await Coupon.findOne({
-        code: couponCode,
-        validFrom: { $lte: currentDate },
-        validUntil: { $gt: currentDate },
-        status: 'active'
-    });
+    const coupon = await Coupon.findOne({ code: couponCode });
 
     if (!coupon) {
-        return { valid: false, message: 'Invalid or expired coupon code' };
+        return { valid: false, message: 'Invalid coupon code' };
     }
 
-    const hasUsed = await Order.findOne({
-        user: userId,
-        'coupon.code': couponCode
-    });
-
-    if (hasUsed) {
-        return { valid: false, message: 'You have already used this coupon' };
-    }
-
-    if (subtotal < coupon.minPurchase) {
-        return { valid: false, message: `Minimum purchase of ₹${coupon.minPurchase} required` };
+    // Use the built-in method from your schema to validate
+    const validationResult = await coupon.isValidForUser(userId, subtotal);
+    
+    if (!validationResult.isValid) {
+        return { valid: false, message: validationResult.message };
     }
 
     return { valid: true, coupon };
@@ -259,38 +253,38 @@ const applyCoupon = async (req, res) => {
             return acc + item.product.salePrice * item.quantity;
         }, 0);
 
-        // Validate coupon
-        const validation = await validateCoupon(couponCode, userId, subtotal);
-        if (!validation.valid) {
+        const coupon = await Coupon.findOne({ code: couponCode });
+        if (!coupon) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid coupon code'
+            });
+        }
+
+        // Use the validateForOrder method that includes discount calculation
+        const validation = await coupon.validateForOrder(userId, subtotal);
+        
+        if (!validation.isValid) {
             return res.status(400).json({
                 success: false,
                 message: validation.message
             });
         }
 
-        const coupon = validation.coupon;
-        
-        // Calculate discount
-        let discount = 0;
-        if (coupon.discountType === 'percentage') {
-            discount = (subtotal * coupon.discountAmount) / 100;
-        } else {
-            discount = coupon.discountAmount;
-        }
-
-        // Store coupon info in session
+        // Store applied coupon in session
         req.session.appliedCoupon = {
-            code: coupon.code,
-            discount: discount,
-            discountType: coupon.discountType,
-            discountAmount: coupon.discountAmount
+            code: validation.code,
+            discount: validation.discountAmount,
+            discountType: validation.discountType
         };
+        
         
         return res.status(200).json({
             success: true,
             message: 'Coupon applied successfully!',
-            discount: discount,
-            total: subtotal - discount + 50
+            discount: validation.discountAmount,
+            // Assuming shipping cost is 50
+            total: validation.finalPrice + 50
         });
 
     } catch (error) {

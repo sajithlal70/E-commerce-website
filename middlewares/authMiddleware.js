@@ -1,6 +1,9 @@
 const User = require('../models/userSchema');
 
 const isAuth = (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
     if (req.session.user) {
         next();
     } else {
@@ -57,11 +60,11 @@ const adminAuth = (req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-
+    req.admin = req.session.admin;
     if (req.session.admin) {
       next(); 
     } else {
-      // Check if it's an AJAX request
+    
       if (req.xhr || req.headers.accept.indexOf('json') > -1) {
         res.status(401).json({
           success: false,
