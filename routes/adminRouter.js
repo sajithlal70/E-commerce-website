@@ -24,6 +24,7 @@ router.get("/admin/logout",adminAuth,adminController.logout);
 
 
 router.get("/dashboard",adminAuth,dashboardController.getDashboard);
+router.post("/dashboard",adminAuth,dashboardController.getDashboard);
 
 // Customer Management section
 

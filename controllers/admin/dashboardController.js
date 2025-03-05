@@ -1,184 +1,210 @@
+const Order = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
-const Order = require('../../models/orderSchema');
 
-const getDashboard = async (req,res) => {
-  try {
-    const today = new Date();
-    const startOfToday = new Date(today.setHours(0, 0, 0, 0));
-    const yesterdayStart = new Date(today);
-    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-    const lastWeekStart = new Date(today);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-
-    // Get orders statistics
-    const orderStats = await Order.aggregate([
-        {
-            $facet: {
-                'today': [
-                    { $match: { createdAt: { $gte: startOfToday } } },
-                    {
-                        $group: {
-                            _id: null,
-                            revenue: { $sum: '$total' },
-                            count: { $sum: 1 }
-                        }
-                    }
-                ],
-                'yesterday': [
-                    { 
-                        $match: { 
-                            createdAt: { 
-                                $gte: yesterdayStart,
-                                $lt: startOfToday 
-                            } 
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: null,
-                            revenue: { $sum: '$total' },
-                            count: { $sum: 1 }
-                        }
-                    }
-                ],
-                'orderStatus': [
-                    {
-                        $group: {
-                            _id: '$orderStatus',
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]
-            }
+const getDashboard = async (req, res) => {
+    try {
+       
+        let startDate, endDate;
+        
+       
+        if (req.method === 'POST' && req.body.startDate && req.body.endDate) {
+            startDate = new Date(req.body.startDate);
+            endDate = new Date(req.body.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            // Store in session
+            req.session.dashboardFilter = { startDate, endDate };
+        } 
+        // Check session for previous filter
+        else if (req.session.dashboardFilter) {
+            startDate = new Date(req.session.dashboardFilter.startDate);
+            endDate = new Date(req.session.dashboardFilter.endDate);
+        } 
+        // Default to today
+        else {
+            const today = new Date();
+            startDate = new Date(today.setHours(0, 0, 0, 0));
+            endDate = new Date(today.setHours(23, 59, 59, 999));
         }
-    ]);
 
-    // Get top products
-    const topProducts = await Order.aggregate([
-        { $unwind: '$items' },
-        {
-            $group: {
-                _id: '$items.product',
-                totalSales: { $sum: '$items.quantity' },
-                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        const previousStart = new Date(startDate);
+        previousStart.setDate(previousStart.getDate() - (endDate.getDate() - startDate.getDate() + 1));
+        const previousEnd = new Date(startDate);
+        previousEnd.setHours(23, 59, 59, 999);
+
+        // Order statistics with item-level consideration
+        const orderStats = await Order.aggregate([
+            {
+                $facet: {
+                    'currentPeriod': [
+                        { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+                        { $unwind: '$items' },
+                        {
+                            $match: {
+                                'items.status': { $nin: ['Cancelled', 'Returned', 'Item Cancelled'] }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ],
+                    'previousPeriod': [
+                        { $match: { createdAt: { $gte: previousStart, $lte: previousEnd } } },
+                        { $unwind: '$items' },
+                        {
+                            $match: {
+                                'items.status': { $nin: ['Cancelled', 'Returned', 'Item Cancelled'] }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ],
+                    'statusCounts': [
+                        { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+                        { $unwind: '$items' },
+                        {
+                            $group: {
+                                _id: '$items.status',
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]
+                }
             }
-        },
-        { $sort: { revenue: -1 } },
-        { $limit: 5 }, // Increased from 3 to 5 for better chart display
-        {
-            $lookup: {
-                from: 'products',
-                localField: '_id',
-                foreignField: '_id',
-                as: 'productInfo'
-            }
-        },
-        { $unwind: '$productInfo' }
-    ]);
+        ]);
 
-    // Get top categories
-    const topCategories = await Order.aggregate([
-        { $unwind: '$items' },
-        {
-            $lookup: {
-                from: 'products',
-                localField: 'items.product',
-                foreignField: '_id',
-                as: 'product'
-            }
-        },
-        { $unwind: '$product' },
-        {
-            $lookup: {
-                from: 'categories',
-                localField: 'product.category',
-                foreignField: '_id',
-                as: 'category'
-            }
-        },
-        { $unwind: '$category' },
-        {
-            $group: {
-                _id: '$category._id',
-                categoryName: { $first: '$category.name' },
-                revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
-            }
-        },
-        { $sort: { revenue: -1 } },
-        { $limit: 5 } // Increased from 3 to 5 for better chart display
-    ]);
+        // Rest of the aggregations remain the same
+        const topProducts = await Order.aggregate([
+            { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+            { $unwind: '$items' },
+            { $match: { 'items.status': { $nin: ['Cancelled', 'Returned', 'Item Cancelled'] } } },
+            {
+                $group: {
+                    _id: '$items.product',
+                    totalSales: { $sum: '$items.quantity' },
+                    revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+                }
+            },
+            { $sort: { revenue: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' }
+        ]);
 
-    // Get recent orders
-    const recentOrders = await Order.find()
-        .sort({ createdAt: -1 })
-        .limit(3)
-        .populate('user', 'name')
-        .populate('items.product', 'productName');
+        const topCategories = await Order.aggregate([
+            { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+            { $unwind: '$items' },
+            { $match: { 'items.status': { $nin: ['Cancelled', 'Returned', 'Item Cancelled'] } } },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'items.product',
+                    foreignField: '_id',
+                    as: 'product'
+                }
+            },
+            { $unwind: '$product' },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'product.category',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
+            { $unwind: '$category' },
+            {
+                $group: {
+                    _id: '$category._id',
+                    categoryName: { $first: '$category.name' },
+                    revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+                }
+            },
+            { $sort: { revenue: -1 } },
+            { $limit: 5 }
+        ]);
 
-    // Get low stock products
-    const lowStockProducts = await Product.find({
-        quantity: { $lt: 3 },
-        isBlocked: false
-    })
-    .sort({quantity:1})
-    .select('productName quantity')
-    .limit(3);
+        const recentOrders = await Order.find({
+            createdAt: { $gte: startDate, $lte: endDate },
+            orderStatus: { $nin: ['Cancelled', 'Returned', 'Payment Failed'] }
+        })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate('user', 'name')
+            .populate('items.product', 'productName');
 
-    // Get sales data for chart (last 7 days)
-    const salesChart = await Order.aggregate([
-        {
-            $match: {
-                createdAt: { $gte: lastWeekStart },
-                orderStatus: { $nin: ['Cancelled', 'Returned'] }
-            }
-        },
-        {
-            $group: {
-                _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                revenue: { $sum: "$total" },
-                orders: { $sum: 1 }
-            }
-        },
-        { $sort: { _id: 1 } }
-    ]);
+        const lowStockProducts = await Product.find({
+            quantity: { $lt: 10 },
+            isBlocked: false,
+            status: 'Available'
+        })
+            .sort({ quantity: 1 })
+            .select('productName quantity salePrice')
+            .limit(5);
 
-    // Calculate percentage changes
-    const todayRevenue = orderStats[0].today[0]?.revenue || 0;
-    const yesterdayRevenue = orderStats[0].yesterday[0]?.revenue || 1; // Prevent division by zero
-    const revenueChange = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1);
+        const salesChart = await Order.aggregate([
+            { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+            { $unwind: '$items' },
+            { $match: { 'items.status': { $nin: ['Cancelled', 'Returned', 'Item Cancelled'] } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                    orders: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
 
-    // Get order status counts
-    const statusCounts = orderStats[0].orderStatus.reduce((acc, curr) => {
-        acc[curr._id] = curr.count;
-        return acc;
-    }, {});
+        const currentRevenue = orderStats[0].currentPeriod[0]?.revenue || 0;
+        const previousRevenue = orderStats[0].previousPeriod[0]?.revenue || 1;
+        const revenueChange = ((currentRevenue - previousRevenue) / previousRevenue * 100).toFixed(1);
 
-    return res.render('dashboard', {
-        stats: {
-            todayRevenue,
-            revenueChange,
-            pendingOrders: statusCounts['Pending'] || 0,
-            processingOrders: statusCounts['Processing'] || 0,
-            cancelledOrders: statusCounts['Cancelled'] || 0,
-            shippedOrders: statusCounts['Shipped'] || 0,
-            deliveredOrders: statusCounts['Delivered'] || 0
-        },
-        topProducts,
-        topCategories,
-        recentOrders,
-        lowStockProducts,
-        salesChart
-    });
+        const statusCounts = orderStats[0].statusCounts.reduce((acc, curr) => {
+            acc[curr._id] = curr.count;
+            return acc;
+        }, {});
 
-} catch (error) {
-    console.error('Dashboard Error:', error);
-    return res.status(500).render('error', { 
-        message: 'Error loading dashboard' 
-    });
-}
+        res.render('dashboard', {
+            stats: {
+                currentRevenue,
+                revenueChange,
+                pendingOrders: statusCounts['Pending'] || 0,
+                processingOrders: statusCounts['Processing'] || 0,
+                shippedOrders: statusCounts['Shipped'] || 0,
+                deliveredOrders: statusCounts['Delivered'] || 0,
+                cancelledOrders: (statusCounts['Cancelled'] || 0) + (statusCounts['Item Cancelled'] || 0),
+                returnedOrders: (statusCounts['Returned'] || 0) + (statusCounts['Item Return Requested'] || 0)
+            },
+            topProducts,
+            topCategories,
+            recentOrders,
+            lowStockProducts,
+            salesChart,
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+        });
+
+    } catch (error) {
+        console.error('Dashboard Error:', error);
+        res.status(500).render('error', { message: 'Error loading dashboard' });
+    }
 };
 
-module.exports = {
-  getDashboard
-}
+module.exports = { getDashboard };

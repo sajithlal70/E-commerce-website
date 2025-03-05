@@ -20,12 +20,12 @@
                     <p class="text-gray-600"><%= dateRange.start %> - <%= dateRange.end %></p>
                 </div>
                 <div class="flex gap-4 w-full sm:w-auto">
-                    <a href="/admin/sales-report/export?format=excel&startDate=<%= dateRange.start %>&endDate=<%= dateRange.end %>&filter=<%= activeFilter %>" 
-                        class="w-full sm:w-auto bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center">
-                         <i class="fas fa-file-excel mr-2"></i>
-                         Export Excel
-                     </a>
-                    <a href="/admin/sales-report/export?format=pdf&startDate=<%= dateRange.start %>&endDate=<%= dateRange.end %>"
+                    <a href="#" data-export="excel" 
+                       class="w-full sm:w-auto bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </a>
+                    <a href="#" data-export="pdf"
                        class="w-full sm:w-auto bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center">
                         <i class="fas fa-file-pdf mr-2"></i>
                         Export PDF
@@ -35,7 +35,7 @@
 
             <!-- Date Range and Generate Button Row -->
             <form action="/admin/reports" method="GET" class="flex flex-col gap-4">
-                <!-- Add Filter Buttons -->
+                <!-- Filter Buttons -->
                 <div class="flex flex-wrap gap-4 mb-4">
                     <button type="submit" name="filter" value="daily" 
                             class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center <%= activeFilter === 'daily' ? 'ring-2 ring-blue-500 ring-offset-2' : '' %>">
@@ -94,15 +94,15 @@
             <!-- Total Sales -->
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <div class="flex items-center">
-                    <div class="bg-blue-100 rounded-lg p-3">
-                        <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                    <div class="bg-green-100 rounded-lg p-3">
+                        <i class="fas fa-rupee-sign text-green-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-3xl font-bold text-gray-800"><%= stats?.totalOrders || 0 %></h3>
-                        <p class="text-gray-600">Total Orders</p>
-                        <p class="<%= (growth?.orders || 0) >= 0 ? 'text-green-500' : 'text-red-500' %> text-sm mt-1">
-                            <i class="fas fa-arrow-<%= (growth?.orders || 0) >= 0 ? 'up' : 'down' %> mr-1"></i>
-                            <%= Math.abs(growth?.orders || 0) %>%
+                        <h3 class="text-3xl font-bold text-gray-800 currency-value">₹<%= stats.totalSales.toFixed(2) %></h3>
+                        <p class="text-gray-600">Total Sales</p>
+                        <p class="<%= growth.sales >= 0 ? 'text-green-500' : 'text-red-500' %> text-sm mt-1">
+                            <i class="fas fa-arrow-<%= growth.sales >= 0 ? 'up' : 'down' %> mr-1"></i>
+                            <%= Math.abs(growth.sales) %>%
                         </p>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
                         <i class="fas fa-tags text-red-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-3xl font-bold text-gray-800">₹<%= stats.totalDiscount.toFixed(2) %></h3>
+                        <h3 class="text-3xl font-bold text-gray-800 currency-value">₹<%= stats.totalDiscount.toFixed(2) %></h3>
                         <p class="text-gray-600">Total Discount</p>
                         <p class="<%= growth.discount >= 0 ? 'text-green-500' : 'text-red-500' %> text-sm mt-1">
                             <i class="fas fa-arrow-<%= growth.discount >= 0 ? 'up' : 'down' %> mr-1"></i>
@@ -132,7 +132,7 @@
                         <i class="fas fa-hand-holding-usd text-purple-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-3xl font-bold text-gray-800">₹<%= stats.netSales.toFixed(2) %></h3>
+                        <h3 class="text-3xl font-bold text-gray-800 currency-value">₹<%= stats.netSales.toFixed(2) %></h3>
                         <p class="text-gray-600">Net Sales</p>
                         <p class="<%= growth.netSales >= 0 ? 'text-green-500' : 'text-red-500' %> text-sm mt-1">
                             <i class="fas fa-arrow-<%= growth.netSales >= 0 ? 'up' : 'down' %> mr-1"></i>
@@ -160,30 +160,29 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <% orders.forEach(order => { %>
+                        <% if (orders.length === 0) { %>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order._id %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= new Date(order.createdAt).toLocaleDateString() %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.items ? order.items.length : 0 %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹<%= order.total.toFixed(2) %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹<%= order.discountAmount.toFixed(2) %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.coupon?.code || '-' %></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹<%= (order.total - order.discountAmount).toFixed(2) %></td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        <%= order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' : 
-                                           order.orderStatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                           order.orderStatus === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                                           order.orderStatus === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                                           order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                                           order.orderStatus === 'Return Requested' ? 'bg-orange-100 text-orange-800' :
-                                           order.orderStatus === 'Returned' ? 'bg-gray-100 text-gray-800' :
-                                           'bg-gray-100 text-gray-800' %>">
-                                        <%= order.orderStatus %>
-                                    </span>
-                                </td>
+                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">No delivered orders found for this period.</td>
                             </tr>
-                        <% }); %>
+                        <% } else { %>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order._id %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.items ? order.items.length : 0 %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 currency-value">₹<%= order.total.toFixed(2) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 currency-value">₹<%= order.discountAmount.toFixed(2) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.coupon?.code || '-' %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 currency-value">₹<%= (order.total - order.discountAmount).toFixed(2) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            <%= order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                                            <%= order.orderStatus %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
@@ -195,9 +194,9 @@
                         <div>
                             <p class="text-sm text-gray-700">
                                 Showing
-                                <span class="font-medium"><%= (pagination.current - 1) * 10 + 1 %></span>
+                                <span class="font-medium"><%= (pagination.current - 1) * pagination.limit + 1 %></span>
                                 to
-                                <span class="font-medium"><%= Math.min(pagination.current * 10, pagination.total) %></span>
+                                <span class="font-medium"><%= Math.min(pagination.current * pagination.limit, pagination.total) %></span>
                                 of
                                 <span class="font-medium"><%= pagination.total %></span>
                                 results
@@ -245,14 +244,13 @@
        </div>
    </div>
 
-   <!-- Add this before closing body tag -->
+   <!-- JavaScript -->
    <script>
        document.addEventListener('DOMContentLoaded', function() {
-           // Handle date range selection
            const startDateInput = document.querySelector('input[name="startDate"]');
            const endDateInput = document.querySelector('input[name="endDate"]');
-           
-           // Ensure end date is not before start date
+
+           // Date range validation
            startDateInput.addEventListener('change', function() {
                if (endDateInput.value && this.value > endDateInput.value) {
                    endDateInput.value = this.value;
@@ -260,7 +258,6 @@
                endDateInput.min = this.value;
            });
 
-           // Ensure start date is not after end date
            endDateInput.addEventListener('change', function() {
                if (startDateInput.value && this.value < startDateInput.value) {
                    startDateInput.value = this.value;
@@ -268,7 +265,7 @@
                startDateInput.max = this.value;
            });
 
-           // Handle export buttons
+           // Export buttons
            const exportButtons = document.querySelectorAll('[data-export]');
            exportButtons.forEach(button => {
                button.addEventListener('click', function(e) {
@@ -276,51 +273,20 @@
                    const format = this.dataset.export;
                    const startDate = startDateInput.value;
                    const endDate = endDateInput.value;
-                   
                    window.location.href = `/admin/sales-report/export?format=${format}&startDate=${startDate}&endDate=${endDate}`;
                });
            });
 
-           // Format currency values
+           // Currency formatting
            const formatCurrency = (value) => {
-               return new Intl.NumberFormat('en-IN', {
-                   style: 'currency',
-                   currency: 'INR',
-                   minimumFractionDigits: 2
-               }).format(value);
+               return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
            };
 
-           // Format all currency values in the table
            document.querySelectorAll('.currency-value').forEach(element => {
                const value = parseFloat(element.textContent.replace('₹', ''));
-               element.textContent = formatCurrency(value);
+               if (!isNaN(value)) element.textContent = formatCurrency(value);
            });
-
-
-           const urlParams = new URLSearchParams(window.location.search);
-    const activeFilter = urlParams.get('filter');
-    if (activeFilter) {
-        const activeButton = document.querySelector(`button[value="${activeFilter}"]`);
-        if (activeButton) {
-            // Remove hover effects and add active state
-            activeButton.classList.remove('hover:bg-blue-600', 'hover:bg-green-600', 'hover:bg-purple-600');
-            activeButton.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-100');
-            
-            switch (activeFilter) {
-                case 'daily':
-                    activeButton.classList.add('ring-blue-500');
-                    break;
-                case 'weekly':
-                    activeButton.classList.add('ring-green-500');
-                    break;
-                case 'monthly':
-                    activeButton.classList.add('ring-purple-500');
-                    break;
-            }
-        }
-    }
        });
    </script>
-   <script src="/js/salesReport.js"></script>
 </body>
 </html>

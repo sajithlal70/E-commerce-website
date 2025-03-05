@@ -125,28 +125,14 @@ const orderSchema = new Schema({
     returnDetails: {
         reason: String,
         comments: String,
-        requestedAt: Date, // Changed from 'date' to 'requestedAt' for consistency
+        requestedAt: Date,
         status: {
             type: String,
             enum: ['Pending', 'Approved', 'Rejected'],
             default: 'Pending'
         },
         potentialRefundAmount: Number,
-        processedAt: Date // Added to track when return is processed
-    },
-    refundDetails: { 
-        amount: Number,
-        processedAt: Date,
-        originalOrderTotal: Number,
-        refundReason: String,
-        transactionId: String,
-        refundMethod: {
-            type: String,
-            enum: ['wallet', 'razorpay', 'bank', 'cod'],
-            default: 'wallet'
-        },
-        error: String,
-        failedAt: Date
+        processedAt: Date
     },
     shippedAt: { type: Date, default: null },
     deliveredAt: { type: Date, default: null },
@@ -158,7 +144,12 @@ const orderSchema = new Schema({
         default: []
     }]
 }, {
-    timestamps: true
+    timestamps: true,
+    indexes: [
+        { key: { createdAt: -1 } }, 
+        { key: { orderStatus: 1 } }, 
+        { key: { 'items.product': 1 } } 
+    ]
 });
 
 const Order = mongoose.model('Order', orderSchema);
