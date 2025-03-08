@@ -89,9 +89,7 @@ const getCartPage = async (req, res) => {
         }
 
         const userId = req.session.user._id;
-        const baseUrl = 'http://localhost:3000'; 
 
-        // Clear any applied coupon when viewing cart
         if (req.session.appliedCoupon) {
             delete req.session.appliedCoupon;
         }
@@ -100,15 +98,21 @@ const getCartPage = async (req, res) => {
         const cart = await Cart.findOne({ user: userId })
             .populate({
                 path: 'items.product',
-                select: 'productName salePrice reqularPrice images productImage'
+                select: 'productName salePrice reqularPrice productImage' 
             });
+            
 
         const categories = await Category.find();
         const cartData = cart || { items: [], totalPrice: 0 };
+        console.log('CartData',cartData);
+        
 
         // Get all products from cart items
         const cartProducts = cartData.items.map(item => item.product).filter(Boolean);
+
+        console.log('cartProducts:',cartProducts);
         
+
         // Get active offers for cart products
         const offersMap = await getActiveOffersForProducts(cartProducts);
 
@@ -126,27 +130,21 @@ const getCartPage = async (req, res) => {
                     discountedPrice: item.product.salePrice
                 };
 
-                // Handle both productImage and images arrays
-                const productImages = item.product.images || [];
-                const imageUrl = productImages.length > 0
-                    ? `${baseUrl}/uploads/products/${productImages[0]}`
-                    : '/path/to/default/image.jpg';
-
+   
                 return {
                     ...item.toObject(),
-                    productImage: imageUrl,
                     product: {
                         ...item.product.toObject(),
                         name: item.product.productName,
                         offer: offerInfo.bestOffer,
-                        originalPrice: item.product.reqularPrice,
+                        originalPrice: item.product.reqularPrice, 
                         discountedPrice: offerInfo.discountedPrice
                     }
                 };
             }).filter(Boolean);
         }
 
-        // Calculate totals using discounted prices
+       
         const subtotal = cartData.items.reduce((sum, item) => {
             const price = item.product.discountedPrice || item.product.salePrice;
             return sum + (price * item.quantity);
@@ -162,8 +160,7 @@ const getCartPage = async (req, res) => {
             total,
             categories,
             user: req.session.user,
-            offersMap,
-            baseUrl 
+            offersMap
         });
     } catch (error) {
         console.error('Cart Page Error:', error);

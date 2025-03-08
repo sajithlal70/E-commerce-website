@@ -36,15 +36,9 @@
                       <% cart.items.forEach((item) => { %>
                           <tr>
                               <td class="align-middle pl-4">
-                                  <% 
-                                  const productImage = item.product && (item.product.productImage || item.product.images);
-                                  const imageUrl = productImage && productImage.length > 0 
-                                      ? `${baseUrl}/uploads/products/${productImage[0]}` 
-                                      : '/path/to/default/image.jpg';
-                                  %>
                                   <div class="d-flex align-items-center flex-wrap">
-                                      <img src="<%= imageUrl %>" 
-                                           alt="<%= item.product ? item.product.name : 'Product' %>" 
+                                      <img src="/uploads/products/<%= item.product.productImage[0] %>" 
+                                           alt="<%= item.product ? item.product.productName : 'Product' %>" 
                                            class="object-cover rounded" 
                                            style="width: 50px; height: 50px; margin-right: 8px;">
                                       <span class="text-gray-800 font-medium text-base" style="font-size: 14px;">
@@ -105,15 +99,9 @@
               <% cart.items.forEach((item) => { %>
                   <div class="card mb-3">
                       <div class="card-body">
-                          <% 
-                          const productImage = item.product && (item.product.productImage || item.product.images);
-                          const imageUrl = productImage && productImage.length > 0 
-                              ? `${baseUrl}/uploads/products/${productImage[0]}` 
-                              : '/path/to/default/image.jpg';
-                          %>
                           <div class="d-flex mb-2">
-                            <img src="<%= imageUrl %>" 
-                            alt="<%= item.product ? item.product.name : 'Product' %>" 
+                            <img src="/uploads/products/<%= item.product.productImage[0] %>" 
+                            alt="<%= item.product ? item.product.productName : 'Product' %>" 
                             class="object-cover rounded" 
                             style="width: 50px; height: 50px; margin-right: 8px;">
                               <div>

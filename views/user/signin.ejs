@@ -5,16 +5,30 @@
     <h2 class="form-title">Login to Your Account</h2>
 
     <!-- Single error message container -->
-    <div id="error-message" class="error-message" style="color: red; display: none; font-size: 1rem;"></div>
+    <div id="error-message" class="error-message" style="
+    color: #fff;
+    background: linear-gradient(135deg, #ff4155 0%, #d32f2f 100%);
+    border-radius: 8px;
+    padding: 15px 20px;
+    font-size: 1rem;
+    font-family: 'Arial', sans-serif;
+    display: none;
+    box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+    margin: 15px 0;
+    text-align: center;
+    max-width: 100%;
+    word-wrap: break-word;
+    transition: all 0.3s ease-in-out;
+"></div>
 
     <div class="form-group">
       <label for="email">Email Address</label>
-      <input type="email" name="email" id="email" onblur="validateEmail()" required>
+      <input type="email" name="email" id="email" >
     </div>
 
     <div class="form-group">
       <label for="password">Password</label>
-      <input type="password" name="password" id="password" onblur="validatePassword()" required>
+      <input type="password" name="password" id="password" >
     </div>
 
     <div class="form-options">
@@ -24,10 +38,13 @@
     <button type="submit" class="submit-btn">Login</button>
 
     <div class="form-footer">
-      <p>Don't have an account? <a href="/signup">Sign up</a></p>
-      <a href="<%= googleAuthUrl %>">
-        <img class="google-signin-btn-img" src="img/google_icon.png" alt="">Sign in with Google
-      </a>
+      <p>Don't have an account? <a href="/signup" style="text-decoration: none;font-weight: 600">Sign up</a></p>
+      <a href="<%= googleAuthUrl %>" 
+        style="display: flex; align-items: center; justify-content: center; gap: 8px; background: white; color: #444; font-weight: 600; padding: 10px 16px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); border: 2px solid yellow; text-decoration: none;">
+         <img style="width: 20px; height: 20px;" src="img/google_icon.png" alt=""> 
+         Sign in with Google
+     </a>
+     
     </div>
   </form>
 </div>
@@ -45,7 +62,7 @@
       errorMessage.style.display = 'block';
       setTimeout(() => {
         errorMessage.style.display = 'none';
-      }, 5000); // Hide after 5 seconds
+      }, 5000); 
     }
 
     document.getElementById('email').focus();
@@ -53,49 +70,47 @@
 
   function validateEmail() {
     const email = document.getElementById('email').value.trim();
-    const errorMessage = document.getElementById('error-message');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!email) {
-      errorMessage.textContent = "Email address is required";
-      errorMessage.style.display = "block";
-      setTimeout(() => {
-        errorMessage.style.display = 'none';
-      }, 5000);
-      return false;
-    } else if (!emailRegex.test(email)) {
-      errorMessage.textContent = "Please enter a valid email address";
-      errorMessage.style.display = "block";
-      setTimeout(() => {
-        errorMessage.style.display = 'none';
-      }, 5000);
-      return false;
-    }
-    return true;
+    return email && emailRegex.test(email);
   }
 
   function validatePassword() {
     const password = document.getElementById('password').value;
+    return !!password; // Converts to boolean
+  }
+
+  function validateForm() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
     const errorMessage = document.getElementById('error-message');
+    const isEmailValid = validateEmail();
+    const isPasswordValid = validatePassword();
+    
+    // Clear previous error message
+    errorMessage.textContent = "";
+    
+    // Array to collect error messages
+    let errors = [];
+
+    if (!email) {
+      errors.push("Email address is required");
+    } else if (!validateEmail()) {
+      errors.push("Please enter a valid email address");
+    }
 
     if (!password) {
-      errorMessage.textContent = "Password is required";
+      errors.push("Password is required");
+    }
+
+    if (errors.length > 0) {
+      errorMessage.textContent = errors.join(" and ");
       errorMessage.style.display = "block";
       setTimeout(() => {
         errorMessage.style.display = 'none';
       }, 5000);
       return false;
     }
-    return true;
-  }
 
-  function validateForm() {
-    const isEmailValid = validateEmail();
-    const isPasswordValid = validatePassword();
-
-    if (!isEmailValid || !isPasswordValid) {
-      return false; // Error message is already set in validateEmail or validatePassword
-    }
     return true;
   }
 </script>
