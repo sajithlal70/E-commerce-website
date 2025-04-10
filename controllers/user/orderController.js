@@ -623,7 +623,7 @@ const cancelOrderItem = async (req, res) => {
     try {    
         const { orderId, itemId } = req.params;
         const userId = req.session.user._id;
-        const { reason } = req.body;
+        const { reason,comments } = req.body;
 
         const order = await Order.findOne({ _id: orderId, user: userId })
             .populate('items.product');

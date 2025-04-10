@@ -1,316 +1,167 @@
-<%-include("../../views/partials/user/header")%>
-    <!-- Navbar End -->
+<%- include("../../views/partials/user/header") %>
+<!-- Navbar End -->
 
-
-    <!-- Breadcrumb Start -->
-    <div class="container-fluid">
-        <div class="row px-xl-5">
-            <div class="col-12">
-                <nav class="breadcrumb bg-light mb-30">
-                    <a class="breadcrumb-item text-dark" href="/">Home</a>
-                    <a class="breadcrumb-item text-dark" href="/shop">Shop</a>
-                    <span class="breadcrumb-item active">Shop Detail</span>
-                </nav>
-            </div>
+<!-- Breadcrumb Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="/">Home</a>
+                <a class="breadcrumb-item text-dark" href="/shop">Shop</a>
+                <span class="breadcrumb-item active">Shop Detail</span>
+            </nav>
         </div>
     </div>
-    <!-- Breadcrumb End -->
+</div>
+<!-- Breadcrumb End -->
 
-
-    <!-- Shop Detail Start -->
-    <div class="container-fluid pb-5">
-        <div class="row px-xl-5">
-            <div class="col-lg-5 mb-30">
-                <div id="product-carousel" class="carousel slide" data-ride="carousel">
-                    <div class="carousel-inner bg-light">
-                        <% if(product.productImage && product.productImage.length > 0) { %>
-                            <% product.productImage.forEach((image, index) => { %>
-                                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                                    <div class="product-image-zoom-container">
-                                        <div class="product-image-zoom">
-                                            <img 
-                                                src="/uploads/products/<%= image %>" 
-                                                alt="<%= product.productName %> - Image <%= index + 1 %>" 
-                                                class="product-image"
-                                                data-zoom-src="/uploads/products/<%= image %>"
-                                            >
-                                        </div>
-                                        <div class="product-image-magnifier"></div>
-                                    </div>
-                                </div>
-                            <% }); %>
-                        <% } else { %>
-                            <div class="carousel-item active">
+<!-- Shop Detail Start -->
+<div class="container-fluid pb-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-5 mb-30">
+            <div id="product-carousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner bg-light">
+                    <% if(product.productImage && product.productImage.length > 0) { %>
+                        <% product.productImage.forEach((image, index) => { %>
+                            <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
                                 <div class="product-image-zoom-container">
                                     <div class="product-image-zoom">
                                         <img 
-                                            src="/images/placeholder.jpg" 
-                                            alt="No image" 
+                                            src="/uploads/products/<%= image %>" 
+                                            alt="<%= product.productName %> - Image <%= index + 1 %>" 
                                             class="product-image"
-                                            data-zoom-src="/images/placeholder.jpg"
+                                            data-zoom-src="/uploads/products/<%= image %>"
                                         >
                                     </div>
                                     <div class="product-image-magnifier"></div>
                                 </div>
                             </div>
-                        <% } %>
-                    </div>
-                    <a class="carousel-control-prev" href="#product-carousel" data-slide="prev">
-                        <i class="fa fa-2x fa-angle-left text-dark"></i>
-                    </a>
-                    <a class="carousel-control-next" href="#product-carousel" data-slide="next">
-                        <i class="fa fa-2x fa-angle-right text-dark"></i>
-                    </a>
-                </div>
-            </div>
-        
-
-            <div class="col-lg-7 h-auto mb-30">
-                <div class="h-100 bg-light p-30">
-                    <h3>  <%= product.productName %></h3>
-                    <div class="d-flex mb-3">
-                    </div>
-                    <h3 name="salePrice" class="font-weight-semi-bold mb-4">&#8377;<%= product.salePrice %>/-</h3>
-                    <h4 style="text-decoration: line-through; text-decoration-color: red; font-size: 1rem; color: gray;">
-                         &#8377;<%= product.reqularPrice%>/-
-                    </h4>
-                    <p class="mb-4"><%= product.description || 'No description available' %></p>
-                    
-                    <!-- <div class="d-flex mb-3">
-                        <strong class="text-dark mr-3">Sizes:</strong>
-                        <form>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" id="size-1" name="size">
-                                <label class="custom-control-label" for="size-1">XS</label>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="carousel-item active">
+                            <div class="product-image-zoom-container">
+                                <div class="product-image-zoom">
+                                    <img 
+                                        src="/images/placeholder.jpg" 
+                                        alt="No image" 
+                                        class="product-image"
+                                        data-zoom-src="/images/placeholder.jpg"
+                                    >
+                                </div>
+                                <div class="product-image-magnifier"></div>
                             </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" id="size-2" name="size">
-                                <label class="custom-control-label" for="size-2">S</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" id="size-3" name="size">
-                                <label class="custom-control-label" for="size-3">M</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" id="size-4" name="size">
-                                <label class="custom-control-label" for="size-4">L</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" id="size-5" name="size">
-                                <label class="custom-control-label" for="size-5">XL</label>
-                            </div>
-                        </form>
-                    </div> -->
-                    <!-- <div class="d-flex mb-4">
-                        <strong class="text-dark mr-3">Colors:</strong>
-                        <form>
-                           
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" id="color-1" name="color">
-                                <label class="custom-control-label" for="color-1"><%= product.color%></label>
-                            </div>
-                        
-                        </form>
-                    </div> -->
-                    <div class="d-flex align-items-center mb-4 pt-2">
-                        <div class="input-group quantity mr-3" style="width: 130px;">
-                            <div class="input-group-btn">
-                                <button class="btn btn-primary btn-minus" 
-                                        <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
-                                    <i class="fa fa-minus"></i>
-                                </button>
-                            </div>
-                            <input type="text" 
-                                   name="quantity" 
-                                   class="form-control bg-secondary border-0 text-center" 
-                                   value="1"
-                                   min="1"
-                                   max="<%= productStatus.maxAllowed %>"
-                                   <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
-                            <div class="input-group-btn">
-                                <button class="btn btn-primary btn-plus"
-                                        <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
-                                    <i class="fa fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <button class="btn px-3 <%= productStatus.isAvailable && productStatus.currentStock > 0 ? 'btn-primary' : 'btn-danger' %> btn-add-to-cart"
-                                <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
-                            <i class="fa fa-shopping-cart mr-1"></i> 
-                            <% if (productStatus.isBlocked) { %>
-                                Product Discontinued
-                            <% } else if (productStatus.currentStock === 0) { %>
-                                Out of Stock
-                            <% } else if (!productStatus.isAvailable) { %>
-                                Not Available
-                            <% } else { %>
-                                Add To Cart
-                            <% } %>
-                        </button>
-                    
-                        <button class="btn <%= productStatus.isBlocked ? 'btn-danger' : 'btn-primary' %> px-3 ml-3 wishlist-toggle" 
-                                data-product-id="<%= product._id %>"
-                                <%= productStatus.isBlocked ? 'disabled' : '' %>>
-                            <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart mr-2"></i> 
-                            <% if (productStatus.isBlocked) { %>
-                                Product Unavailable
-                            <% } else { %>
-                                <%= isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' %>
-                            <% } %>
-                        </button>
-                    </div>
-
-
-                    <% if (product.bestOffer > 0) { %>
-                        <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
-                            <%= product.bestOffer %>% off
-                            <% if (product.offerSource === 'category') { %>
-                                <span class="offer-source">(Category Offer)</span>
-                            <% } else { %>
-                                <span class="offer-source">(Product Offer)</span>
-                            <% } %>
                         </div>
                     <% } %>
-
-                    <div class="d-flex pt-2">
-                        <strong class="text-dark mr-2">Share on:</strong>
-                        <div class="d-inline-flex">
-                            <a class="text-dark px-2" href="">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a class="text-dark px-2" href="">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a class="text-dark px-2" href="">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                            <a class="text-dark px-2" href="">
-                                <i class="fab fa-pinterest"></i>
-                            </a>
-                        </div>
-                    </div>
                 </div>
+                <a class="carousel-control-prev" href="#product-carousel" data-slide="prev">
+                    <i class="fa fa-2x fa-angle-left text-dark"></i>
+                </a>
+                <a class="carousel-control-next" href="#product-carousel" data-slide="next">
+                    <i class="fa fa-2x fa-angle-right text-dark"></i>
+                </a>
             </div>
-
-       
-
-
-
         </div>
-        <div class="row px-xl-5">
-            <div class="col">
-                <div class="bg-light p-30">
-                    <div class="nav nav-tabs mb-4">
-                        <a class="nav-item nav-link text-dark active" data-toggle="tab" href="#tab-pane-1">Description</a>
-                        <!-- <a class="nav-item nav-link text-dark" data-toggle="tab" href="#tab-pane-2">Information</a> -->
-                        <!-- <a class="nav-item nav-link text-dark" data-toggle="tab" href="#tab-pane-3">Reviews (0)</a> -->
+
+        <div class="col-lg-7 h-auto mb-30">
+            <div class="h-100 bg-light p-30">
+                <h3><%= product.productName %></h3>
+                <div class="d-flex mb-3"></div>
+                <h3 name="salePrice" class="font-weight-semi-bold mb-4">₹<%= product.salePrice %>/-</h3>
+                <h4 style="text-decoration: line-through; text-decoration-color: red; font-size: 1rem; color: gray;">
+                    ₹<%= product.regularPrice %>/-
+                </h4>
+                <p class="mb-4"><%= product.description || 'No description available' %></p>
+
+                <div class="d-flex align-items-center mb-4 pt-2">
+                    <div class="input-group quantity mr-3" style="width: 130px;">
+                        <div class="input-group-btn">
+                            <button class="btn btn-primary btn-minus" 
+                                    <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                        <input type="text" 
+                               name="quantity" 
+                               class="form-control bg-secondary border-0 text-center" 
+                               value="1"
+                               min="1"
+                               max="<%= productStatus.maxAllowed %>"
+                               <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
+                        <div class="input-group-btn">
+                            <button class="btn btn-primary btn-plus"
+                                    <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="tab-pane-1">
-                            <h4 class="mb-3">Product Description</h4>
-                            <p><%= product.description || 'No description available' %></p>
-                            <p><%= product.description || 'No description available' %></p>
-                        </div>
-                        <!-- <div class="tab-pane fade" id="tab-pane-2">
-                            <h4 class="mb-3">Additional Information</h4>
-                            <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item px-0">
-                                            Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                        </li>
-                                        <li class="list-group-item px-0">
-                                            Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                        </li>
-                                        <li class="list-group-item px-0">
-                                            Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                        </li>
-                                        <li class="list-group-item px-0">
-                                            Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                        </li>
-                                      </ul> 
-                                </div>
-                                <div class="col-md-6">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item px-0">
-                                            Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                        </li>
-                                        <li class="list-group-item px-0">
-                                            Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                        </li>
-                                        <li class="list-group-item px-0">
-                                            Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                        </li>
-                                        <li class="list-group-item px-0">
-                                            Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                        </li>
-                                      </ul> 
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="tab-pane-3">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h4 class="mb-4">1 review for "Product Name"</h4>
-                                    <div class="media mb-4">
-                                        <img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;">
-                                        <div class="media-body">
-                                            <h6>John Doe<small> - <i>01 Jan 2045</i></small></h6>
-                                            <div class="text-primary mb-2">
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star-half-alt"></i>
-                                                <i class="far fa-star"></i>
-                                            </div>
-                                            <p>Diam amet duo labore stet elitr ea clita ipsum, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum.</p>
-                                        </div>
-                                    </div>
-                                </div> -->
-                                <!-- <div class="col-md-6">
-                                    <h4 class="mb-4">Leave a review</h4>
-                                    <small>Your email address will not be published. Required fields are marked *</small>
-                                    <div class="d-flex my-3">
-                                        <p class="mb-0 mr-2">Your Rating * :</p>
-                                        <div class="text-primary">
-                                            <i class="far fa-star"></i>
-                                            <i class="far fa-star"></i>
-                                            <i class="far fa-star"></i>
-                                            <i class="far fa-star"></i>
-                                            <i class="far fa-star"></i>
-                                        </div>
-                                    </div>
-                                    <form>
-                                        <div class="form-group">
-                                            <label for="message">Your Review *</label>
-                                            <textarea id="message" cols="30" rows="5" class="form-control"></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="name">Your Name *</label>
-                                            <input type="text" class="form-control" id="name">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="email">Your Email *</label>
-                                            <input type="email" class="form-control" id="email">
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <input type="submit" value="Leave Your Review" class="btn btn-primary px-3">
-                                        </div>
-                                    </form>
-                                </div> -->
-                            </div>
-                        </div>
+                    
+                    <button class="btn px-3 <%= productStatus.isAvailable && productStatus.currentStock > 0 ? 'btn-primary' : 'btn-danger' %> btn-add-to-cart"
+                            <%= !productStatus.isAvailable || productStatus.currentStock === 0 ? 'disabled' : '' %>>
+                        <i class="fa fa-shopping-cart mr-1"></i> 
+                        <% if (productStatus.isBlocked) { %>
+                            Product Discontinued
+                        <% } else if (productStatus.currentStock === 0) { %>
+                            Out of Stock
+                        <% } else if (!productStatus.isAvailable) { %>
+                            Not Available
+                        <% } else { %>
+                            Add To Cart
+                        <% } %>
+                    </button>
+                
+                    <button class="btn <%= productStatus.isBlocked ? 'btn-danger' : 'btn-primary' %> px-3 ml-3 wishlist-toggle" 
+                            data-product-id="<%= product._id %>"
+                            <%= productStatus.isBlocked ? 'disabled' : '' %>>
+                        <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart mr-2"></i> 
+                        <% if (productStatus.isBlocked) { %>
+                            Product Unavailable
+                        <% } else { %>
+                            <%= isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' %>
+                        <% } %>
+                    </button>
+                </div>
+
+                <% if (product.bestOffer > 0) { %>
+                    <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
+                        <%= product.bestOffer %>% off
+                        <% if (product.offerSource === 'category') { %>
+                            <span class="offer-source">(Category Offer)</span>
+                        <% } else { %>
+                            <span class="offer-source">(Product Offer)</span>
+                        <% } %>
+                    </div>
+                <% } %>
+
+                <div class="d-flex pt-2">
+                    <strong class="text-dark mr-2">Share on:</strong>
+                    <div class="d-inline-flex">
+                        <a class="text-dark px-2" href=""><i class="fab fa-facebook-f"></i></a>
+                        <a class="text-dark px-2" href=""><i class="fab fa-twitter"></i></a>
+                        <a class="text-dark px-2" href=""><i class="fab fa-linkedin-in"></i></a>
+                        <a class="text-dark px-2" href=""><i class="fab fa-pinterest"></i></a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Shop Detail End -->
 
-
-    <!-- Products Start -->
+    <div class="row px-xl-5">
+        <div class="col">
+            <div class="bg-light p-30">
+                <div class="nav nav-tabs mb-4">
+                    <a class="nav-item nav-link text-dark active" data-toggle="tab" href="#tab-pane-1">Description</a>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tab-pane-1">
+                        <h4 class="mb-3">Product Description</h4>
+                        <p><%= product.description || 'No description available' %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Shop Detail End -->
 
 <!-- Products Start -->
 <div class="container-fluid pt-5 pb-3">
@@ -329,7 +180,7 @@
                                         : '/images/placeholder.jpg' %>" 
                                  alt="<%= relatedProduct.productName %>">
                             <div class="product-action">
-                                <a class="btn btn-outline-dark btn-square add-to-cart-link" href="#" data-product-id="<%= product._id %>">
+                                <a class="btn btn-outline-dark btn-square add-to-cart-link" href="#" data-product-id="<%= relatedProduct._id %>">
                                     <i class="fa fa-shopping-cart"></i>
                                 </a>
                                 <a class="btn btn-outline-dark btn-square" href="/wishlist/<%= relatedProduct._id %>">
@@ -341,22 +192,22 @@
                             </div>
                         </div>
                         <div class="text-center py-4 px-4">
-                            <a class="product-name h4 fw-bold text-decoration-none text-dark d-block text-truncate mb-2" href="productdetails/<%= product._id %>">
-                                <strong><%= product.productName %></strong>
+                            <a class="product-name h4 fw-bold text-decoration-none text-dark d-block text-truncate mb-2" 
+                               href="/productdetails/<%= relatedProduct._id %>">
+                                <strong><%= relatedProduct.productName %></strong>
                             </a>
-                            
                             <div class="d-flex align-items-center justify-content-center mt-2">
-                                <h5 class="fw-bold mb-0">&#8377;<%= product.salePrice %></h5>
-                                <h6 class="text-muted ml-2">
+                                <h5 class="fw-bold mb-0">₹<%= relatedProduct.salePrice %></h5>
                             </div>
-                            
                             <div class="d-flex align-items-center justify-content-center mt-2">
-                                <h6 style="text-decoration: line-through; text-decoration-color: red; font-size: 1rem; color: gray;">&#8377;<%= product.reqularPrice %></h6>
+                                <h6 style="text-decoration: line-through; text-decoration-color: red; font-size: 1rem; color: gray;">
+                                    ₹<%= relatedProduct.regularPrice %>
+                                </h6>
                             </div>
-                            <% if (product.bestOffer > 0) { %>
+                            <% if (relatedProduct.bestOffer > 0) { %>
                                 <div class="offer-badge bg-warning text-white px-2 py-1 rounded fw-bold text-uppercase mb-1 mt-1 small mx-auto">
-                                    <%= product.bestOffer %>% off
-                                    <% if (product.offerSource === 'category') { %>
+                                    <%= relatedProduct.bestOffer %>% off
+                                    <% if (relatedProduct.offerSource === 'category') { %>
                                         <span class="offer-source">(Category Offer)</span>
                                     <% } else { %>
                                         <span class="offer-source">(Product Offer)</span>
@@ -376,186 +227,145 @@
 </div>
 <!-- Products End -->
 
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   <script>
-   
-   document.addEventListener('DOMContentLoaded', () => {
-        // Get DOM elements
-        const addToCartBtn = document.querySelector('.btn-add-to-cart');
-        const quantityInput = document.querySelector('input[name="quantity"]');
-        const minusBtn = document.querySelector('.btn-minus');
-        const plusBtn = document.querySelector('.btn-plus');
-        
-        // Get product status data
-        const productStatus = {
-            isAvailable: <%= productStatus.isAvailable %>,
-            currentStock: <%= productStatus.currentStock %>,
-            maxAllowed: <%= productStatus.maxAllowed %>,
-            isBlocked: <%= productStatus.isBlocked %>
-        };
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addToCartBtn = document.querySelector('.btn-add-to-cart');
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const minusBtn = document.querySelector('.btn-minus');
+    const plusBtn = document.querySelector('.btn-plus');
+    const isLoggedIn = <%= user ? 'true' : 'false' %>;
 
-        const isLoggedIn = <%= user ? 'true' : 'false' %>;
+    const productStatus = {
+        isAvailable: <%= productStatus.isAvailable %>,
+        currentStock: <%= productStatus.currentStock %>,
+        maxAllowed: <%= productStatus.maxAllowed %>,
+        isBlocked: <%= productStatus.isBlocked %>
+    };
 
-        // Show SweetAlert notification
-        function showAlert(options) {
-            return Swal.fire({
-                icon: options.icon || 'info',
-                title: options.title || '',
-                text: options.text || '',
-                position: 'center',
-                showConfirmButton: options.showConfirmButton !== false,
-                confirmButtonText: options.confirmButtonText || 'OK',
-                timer: options.timer || null,
-                timerProgressBar: options.timer ? true : false,
-                customClass: {
-                    popup: 'custom-swal-popup',
-                    title: 'custom-swal-title',
-                    content: 'custom-swal-content'
-                }
+    function showAlert(options) {
+        return Swal.fire({
+            icon: options.icon || 'info',
+            title: options.title || '',
+            text: options.text || '',
+            position: 'center',
+            showConfirmButton: options.showConfirmButton !== false,
+            confirmButtonText: options.confirmButtonText || 'OK',
+            timer: options.timer || null,
+            timerProgressBar: options.timer ? true : false,
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                content: 'custom-swal-content'
+            }
+        });
+    }
+
+    function validateQuantity(value) {
+        const qty = parseInt(value);
+        if (isNaN(qty) || qty < 1) return 1;
+        if (qty > productStatus.currentStock) return productStatus.currentStock;
+        if (qty > 5) return 5;
+        return qty;
+    }
+
+    minusBtn.addEventListener('click', () => {
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) quantityInput.value = currentValue - 1;
+        else showAlert({ icon: 'warning', title: 'Minimum Quantity', text: 'Quantity cannot be less than 1', timer: 2000 });
+    });
+
+    plusBtn.addEventListener('click', () => {
+        let currentValue = parseInt(quantityInput.value);
+        const newValue = currentValue + 1;
+        if (newValue > productStatus.currentStock || newValue > 5) {
+            showAlert({
+                icon: 'warning',
+                title: newValue > productStatus.currentStock ? 'Limited Stock' : 'Maximum Limit',
+                text: newValue > productStatus.currentStock ? `Only ${productStatus.currentStock} units available` : 'Maximum 5 units allowed',
+                showConfirmButton: true
             });
+            return;
+        }
+        quantityInput.value = newValue;
+    });
+
+    quantityInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/[^\d]/g, '');
+        e.target.value = validateQuantity(value);
+    });
+
+    quantityInput.addEventListener('blur', (e) => {
+        if (!e.target.value || parseInt(e.target.value) < 1) e.target.value = '1';
+        else e.target.value = validateQuantity(e.target.value);
+    });
+
+    addToCartBtn.addEventListener('click', async () => {
+        if (!isLoggedIn) {
+            const result = await showAlert({
+                icon: 'warning',
+                title: 'Login Required',
+                text: 'Please login to add items to cart',
+                showConfirmButton: true,
+                confirmButtonText: 'Login Now',
+                showCancelButton: true
+            });
+            if (result.isConfirmed) {
+                sessionStorage.setItem('returnTo', window.location.href);
+                window.location.href = '/signin';
+            }
+            return;
         }
 
-        // Validate quantity
-        function validateQuantity(value) {
-            const qty = parseInt(value);
-            
-            if (isNaN(qty) || qty < 1) {
-                showAlert({
-                    icon: 'warning',
-                    title: 'Invalid Quantity',
-                    text: 'Minimum quantity is 1',
-                    position: 'center',
-                    showConfirmButton: true,
-                    timer: 2000
-                });
-                return 1;
-            }
-            
-            // Check if requested quantity exceeds available stock
-            if (qty > productStatus.currentStock) {
-                showAlert({
-                    icon: 'warning',
-                    title: 'Limited Stock',
-                    text: `Only ${productStatus.currentStock} units available in stock`,
-                    position: 'center',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                });
-                return productStatus.currentStock;
-            }
-            
-            // Check if quantity exceeds maximum allowed (5)
-            if (qty > 5) {
-                showAlert({
-                    icon: 'info',
-                    title: 'Maximum Limit',
-                    text: 'Maximum 5 units allowed per order',
-                    position: 'center',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                });
-                return 5;
-            }
-            
-            return qty;
+        if (!productStatus.isAvailable || productStatus.currentStock === 0) {
+            showAlert({
+                icon: 'error',
+                title: productStatus.currentStock === 0 ? 'Out of Stock' : 'Not Available',
+                text: 'This product is currently unavailable',
+                showConfirmButton: true
+            });
+            return;
         }
 
-        // Handle quantity buttons
-        minusBtn.addEventListener('click', () => {
-            let currentValue = parseInt(quantityInput.value);
-            if (currentValue > 1) {
-                quantityInput.value = currentValue - 1;
-            } else {
+        const quantity = validateQuantity(quantityInput.value);
+        try {
+            const response = await fetch('/add-to-cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: '<%= product._id %>', quantity })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
                 showAlert({
-                    icon: 'warning',
-                    title: 'Minimum Quantity',
-                    text: 'Quantity cannot be less than 1',
+                    icon: 'success',
+                    title: 'Added to Cart!',
+                    text: `Added ${quantity} units to cart`,
                     timer: 2000
                 });
-            }
-        });
-
-        // Handle plus button click
-        plusBtn.addEventListener('click', () => {
-            let currentValue = parseInt(quantityInput.value);
-            const newValue = currentValue + 1;
-
-            // Check stock limit
-            if (newValue > productStatus.currentStock) {
-                showAlert({
-                    icon: 'warning',
-                    title: 'Limited Stock',
-                    text: `Only ${productStatus.currentStock} units available in stock`,
-                    position: 'center',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
-
-            // Check maximum order limit
-            if (newValue > 5) {
-                showAlert({
-                    icon: 'warning',
-                    title: 'Maximum Limit',
-                    text: 'Maximum 5 units allowed per order',
-                    position: 'center',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
-
-            quantityInput.value = newValue;
-        });
-
-        // Add direct input validation
-        quantityInput.addEventListener('input', (e) => {
-            const value = e.target.value;
-            // Allow only numbers
-            if (!/^\d*$/.test(value)) {
-                e.target.value = value.replace(/[^\d]/g, '');
-                return;
-            }
-            
-            const validatedQuantity = validateQuantity(value);
-            if (parseInt(value) !== validatedQuantity) {
-                e.target.value = validatedQuantity;
-            }
-        });
-
-        // Prevent non-numeric input
-        quantityInput.addEventListener('keypress', (e) => {
-            if (!/^\d$/.test(e.key)) {
-                e.preventDefault();
-            }
-        });
-
-        // Validate on blur
-        quantityInput.addEventListener('blur', (e) => {
-            const value = e.target.value;
-            if (value === '' || parseInt(value) < 1) {
-                e.target.value = '1';
+                if (typeof updateCartCount === 'function') updateCartCount();
             } else {
-                const validatedQuantity = validateQuantity(value);
-                e.target.value = validatedQuantity;
+                showAlert({ icon: 'error', title: 'Error', text: data.message || 'Failed to add to cart' });
             }
-        });
+        } catch (error) {
+            showAlert({ icon: 'error', title: 'Error', text: 'An error occurred while adding to cart' });
+        }
+    });
 
-        // Handle Add to Cart
-        addToCartBtn.addEventListener('click', async () => {
+    document.querySelectorAll('.add-to-cart-link').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const productId = btn.getAttribute('data-product-id');
+
             if (!isLoggedIn) {
                 const result = await showAlert({
                     icon: 'warning',
                     title: 'Login Required',
                     text: 'Please login to add items to cart',
-                    position: 'center',
                     showConfirmButton: true,
                     confirmButtonText: 'Login Now',
-                    showCancelButton: true,
-                    cancelButtonText: 'Cancel'
+                    showCancelButton: true
                 });
-
                 if (result.isConfirmed) {
                     sessionStorage.setItem('returnTo', window.location.href);
                     window.location.href = '/signin';
@@ -563,222 +373,93 @@
                 return;
             }
 
-            if (productStatus.currentStock === 0) {
-                showAlert({
-                    icon: 'error',
-                    title: 'Out of Stock',
-                    text: 'This product is currently out of stock',
-                    position: 'center',
-                    showConfirmButton: true
-                });
-                return;
-            }
-
-            if (!productStatus.isAvailable) {
-                showAlert({
-                    icon: 'error',
-                    title: 'Not Available',
-                    text: 'This product is currently not available',
-                    position: 'center',
-                    showConfirmButton: true
-                });
-                return;
-            }
-
-            const quantity = validateQuantity(quantityInput.value);
-            
-            // Show stock warning if stock is low (less than 5)
-            if (productStatus.currentStock < 5 && quantity === productStatus.currentStock) {
-                await showAlert({
-                    icon: 'warning',
-                    title: 'Limited Stock',
-                    text: `Only ${productStatus.currentStock} units remaining in stock`,
-                    position: 'center',
-                    showConfirmButton: true,
-                    confirmButtonText: 'Continue'
-                });
-            }
-
             try {
                 const response = await fetch('/add-to-cart', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        productId: '<%= product._id %>',
-                        quantity
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity: 1 })
                 });
-
                 const data = await response.json();
 
                 if (response.ok) {
-                    await showAlert({
+                    showAlert({
                         icon: 'success',
                         title: 'Added to Cart!',
-                        text: quantity === productStatus.currentStock ? 
-                            `Added ${quantity} units (maximum available stock)` : 
-                            `Added ${quantity} units to cart`,
-                        position: 'center',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
-                    
-                    if (typeof updateCartCount === 'function') {
-                        updateCartCount();
-                    } else {
-                        location.reload();
-                    }
-                } else {
-                    if (data.message.includes('login')) {
-                        // Handle session timeout
-                        const result = await showAlert({
-                            icon: 'warning',
-                            title: 'Session Expired',
-                            text: 'Your session has expired. Please login again.',
-                            showConfirmButton: true,
-                            confirmButtonText: 'Login Now'
-                        });
-
-                        if (result.isConfirmed) {
-                            window.location.href = '/signin';
-                        }
-                    } else {
-                        showAlert({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message || 'Failed to add product to cart'
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Add to cart error:', error);
-                showAlert({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while adding to cart'
-                });
-            }
-        });
-
-        // Initialize quantity input
-        function initializeQuantityInput() {
-            quantityInput.value = "1";
-            
-            if (!productStatus.isAvailable || productStatus.currentStock === 0) {
-                quantityInput.disabled = true;
-                minusBtn.disabled = true;
-                plusBtn.disabled = true;
-                addToCartBtn.disabled = true;
-                addToCartBtn.classList.remove('btn-primary');
-                addToCartBtn.classList.add('btn-danger');
-            }
-        }
-
-        // Initialize the page
-        initializeQuantityInput();
-
-        // Handle Wishlist Toggle
-        const wishlistBtn = document.querySelector('.wishlist-toggle');
-        if (wishlistBtn) {
-            wishlistBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                
-                if (!isLoggedIn) {
-                    const result = await showAlert({
-                        icon: 'warning',
-                        title: 'Login Required',
-                        text: 'Please login to manage wishlist',
-                        showConfirmButton: true,
-                        confirmButtonText: 'Login Now',
-                        showCancelButton: true,
-                        cancelButtonText: 'Cancel'
-                    });
-
-                    if (result.isConfirmed) {
-                        sessionStorage.setItem('returnTo', window.location.href);
-                        window.location.href = '/signin';
-                    }
-                    return;
-                }
-
-                if (productStatus.isBlocked) {
-                    showAlert({
-                        icon: 'error',
-                        title: 'Not Available',
-                        text: 'This product is currently not available',
+                        text: 'Product added to cart successfully',
                         timer: 2000
                     });
-                    return;
+                    if (typeof updateCartCount === 'function') updateCartCount();
+                } else {
+                    showAlert({ icon: 'error', title: 'Error', text: data.message || 'Failed to add to cart' });
                 }
-
-                try {
-                    const response = await fetch('/toggle-wishlist', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            productId: '<%= product._id %>'
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        const icon = wishlistBtn.querySelector('i');
-                        icon.classList.toggle('fas');
-                        icon.classList.toggle('far');
-                        
-                        wishlistBtn.innerHTML = data.inWishlist ? 
-                            '<i class="fas fa-heart mr-2"></i> Remove from Wishlist' :
-                            '<i class="far fa-heart mr-2"></i> Add to Wishlist';
-                        
-                        showAlert({
-                            icon: 'success',
-                            title: 'Success',
-                            text: data.message,
-                            timer: 1500
-                        });
-                    } else {
-                        if (data.message.includes('login')) {
-                            const result = await showAlert({
-                                icon: 'warning',
-                                title: 'Session Expired',
-                                text: 'Your session has expired. Please login again.',
-                                showConfirmButton: true,
-                                confirmButtonText: 'Login Now'
-                            });
-
-                            if (result.isConfirmed) {
-                                window.location.href = '/signin';
-                            }
-                        } else {
-                            showAlert({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message || 'Failed to update wishlist'
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.error('Wishlist toggle error:', error);
-                    showAlert({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to update wishlist'
-                    });
-                }
-            });
-        }
+            } catch (error) {
+                showAlert({ icon: 'error', title: 'Error', text: 'An error occurred while adding to cart' });
+            }
+        });
     });
 
-   </script>
-  
+    const wishlistBtn = document.querySelector('.wishlist-toggle');
+    if (wishlistBtn) {
+        wishlistBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (!isLoggedIn) {
+                const result = await showAlert({
+                    icon: 'warning',
+                    title: 'Login Required',
+                    text: 'Please login to manage wishlist',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Login Now',
+                    showCancelButton: true
+                });
+                if (result.isConfirmed) {
+                    sessionStorage.setItem('returnTo', window.location.href);
+                    window.location.href = '/signin';
+                }
+                return;
+            }
 
-    <!-- Footer Start -->
-    <%-include("../../views/partials/user/footer")%>
+            try {
+                const response = await fetch('/toggle-wishlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: '<%= product._id %>' })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const icon = wishlistBtn.querySelector('i');
+                    icon.classList.toggle('fas');
+                    icon.classList.toggle('far');
+                    wishlistBtn.innerHTML = data.inWishlist ? 
+                        '<i class="fas fa-heart mr-2"></i> Remove from Wishlist' :
+                        '<i class="far fa-heart mr-2"></i> Add to Wishlist';
+                    showAlert({ icon: 'success', title: 'Success', text: data.message, timer: 1500 });
+                } else {
+                    showAlert({ icon: 'error', title: 'Error', text: data.message || 'Failed to update wishlist' });
+                }
+            } catch (error) {
+                showAlert({ icon: 'error', title: 'Error', text: 'Failed to update wishlist' });
+            }
+        });
+    }
+
+    function initializeQuantityInput() {
+        quantityInput.value = "1";
+        if (!productStatus.isAvailable || productStatus.currentStock === 0) {
+            quantityInput.disabled = true;
+            minusBtn.disabled = true;
+            plusBtn.disabled = true;
+            addToCartBtn.disabled = true;
+            addToCartBtn.classList.remove('btn-primary');
+            addToCartBtn.classList.add('btn-danger');
+        }
+    }
+    initializeQuantityInput();
+});
+</script>
+
+<!-- Footer Start -->
+<%- include("../../views/partials/user/footer") %>
 
 <style>
     .offer-badge {
@@ -788,45 +469,38 @@
         margin: 5px auto;
         font-size: 0.75rem;
     }
-    
     .offer-source {
         font-size: 0.65rem;
         opacity: 0.9;
     }
-    
-.custom-swal-popup {
-    font-size: 1.1rem;
-    padding: 20px;
-    border-radius: 15px;
-}
-
-.custom-swal-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.custom-swal-content {
-    font-size: 1.1rem;
-    color: #666;
-}
-
-.swal2-confirm {
-    background-color: #007bff !important;
-    border-color: #007bff !important;
-    padding: 8px 20px !important;
-}
-
-.swal2-cancel {
-    background-color: #6c757d !important;
-    border-color: #6c757d !important;
-    padding: 8px 20px !important;
-}
-
-.swal2-popup {
-    width: auto !important;
-    min-width: 320px !important;
-    max-width: 400px !important;
-}
+    .custom-swal-popup {
+        font-size: 1.1rem;
+        padding: 20px;
+        border-radius: 15px;
+    }
+    .custom-swal-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .custom-swal-content {
+        font-size: 1.1rem;
+        color: #666;
+    }
+    .swal2-confirm {
+        background-color: #007bff !important;
+        border-color: #007bff !important;
+        padding: 8px 20px !important;
+    }
+    .swal2-cancel {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        padding: 8px 20px !important;
+    }
+    .swal2-popup {
+        width: auto !important;
+        min-width: 320px !important;
+        max-width: 400px !important;
+    }
 </style>

@@ -1,11 +1,65 @@
 <%- include("../../views/partials/user/header") %>
 
-<div class="container">
-  <form class="login-form" method="post" action="/signin" id="loginForm" onsubmit="return validateForm()">
-    <h2 class="form-title">Login to Your Account</h2>
-
-    <!-- Single error message container -->
-    <div id="error-message" class="error-message" style="
+<style>
+  .login-container {
+    display: flex;
+    max-width: 1000px;
+    margin: 50px auto;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .image-container {
+    flex: 1;
+    background-color: #f9ecbc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    position: relative;
+  }
+  
+  .dental-image {
+    max-width: 100%;
+    max-height: 350px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .image-text {
+    margin-top: 30px;
+    text-align: center;
+  }
+  
+  .image-heading {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+  
+  .image-description {
+    color: #7f8c8d;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  .form-container {
+    flex: 1;
+    padding: 40px;
+    background-color: white;
+  }
+  
+  .form-title {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 28px;
+    text-align: center;
+  }
+  
+  .error-message {
     color: #fff;
     background: linear-gradient(135deg, #ff4155 0%, #d32f2f 100%);
     border-radius: 8px;
@@ -19,34 +73,196 @@
     max-width: 100%;
     word-wrap: break-word;
     transition: all 0.3s ease-in-out;
-"></div>
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #34495e;
+    font-weight: 500;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border 0.3s;
+  }
+  
+  .form-options {
+    margin-bottom: 25px;
+    text-align: right;
+  }
+  
+  
+  .form-footer {
+    margin-top: 30px;
+    text-align: center;
+  }
+  
+  .signup-text {
+    margin-bottom: 20px;
+    color: #7f8c8d;
+  }
+  
+  .signup-link {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: white;
+    color: #444;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid #ffd700;
+    text-decoration: none;
+    margin: 0 auto;
+    max-width: 250px;
+  }
+  
+  .google-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 900px) {
+    .login-container {
+      margin: 30px auto;
+      max-width: 90%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .login-container {
+      flex-direction: column;
+      margin: 20px auto;
+    }
+    
+    .image-container {
+      padding: 20px;
+    }
+    
+    .dental-image {
+      max-height: 200px;
+    }
+    
+    .image-heading {
+      font-size: 22px;
+    }
+    
+    .form-container {
+      padding: 25px;
+    }
+    
+    .form-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .login-container {
+      max-width: 95%;
+      margin: 10px auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .image-container {
+      padding: 15px;
+    }
+    
+    .dental-image {
+      max-height: 150px;
+    }
+    
+    .image-heading {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .image-description {
+      font-size: 14px;
+    }
+    
+    .form-container {
+      padding: 20px 15px;
+    }
+    
+    .form-title {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    
+    .form-group input {
+      padding: 10px;
+      font-size: 14px;
+    }
+    
+    .submit-btn {
+      padding: 12px;
+      font-size: 15px;
+    }
+  }
+</style>
 
-    <div class="form-group">
-      <label for="email">Email Address</label>
-      <input type="email" name="email" id="email" >
+<div class="login-container">
+  <!-- Dental Image Section (Left Side) -->
+  <div class="image-container">
+    <img src="/img/sign in page image8 2.jpg" alt="Dental Products" class="dental-image">
+    <div class="image-text">
+      <h3 class="image-heading">Your Dental Shop</h3>
+      <p class="image-description">Quality dental products delivered to your doorstep. Shop professional-grade supplies for your practice or home care.</p>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" name="password" id="password" >
-    </div>
+  <!-- Login Form Section (Right Side) -->
+  <div class="form-container">
+    <form class="login-form" method="post" action="/signin" id="loginForm" onsubmit="return validateForm()">
+      <h2 class="form-title">Login to Your Account</h2>
 
-    <div class="form-options">
-      <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
-    </div>
+      <!-- Single error message container -->
+      <div id="error-message" class="error-message"></div>
 
-    <button type="submit" class="submit-btn">Login</button>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" name="email" id="email">
+      </div>
 
-    <div class="form-footer">
-      <p>Don't have an account? <a href="/signup" style="text-decoration: none;font-weight: 600">Sign up</a></p>
-      <a href="<%= googleAuthUrl %>" 
-        style="display: flex; align-items: center; justify-content: center; gap: 8px; background: white; color: #444; font-weight: 600; padding: 10px 16px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); border: 2px solid yellow; text-decoration: none;">
-         <img style="width: 20px; height: 20px;" src="img/google_icon.png" alt=""> 
-         Sign in with Google
-     </a>
-     
-    </div>
-  </form>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password">
+      </div>
+
+      <div class="form-options">
+        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="submit-btn">Login</button>
+
+      <div class="form-footer">
+        <p class="signup-text">Don't have an account? <a href="/signup" class="signup-link">Sign up</a></p>
+        <a href="<%= googleAuthUrl %>" class="google-btn">
+          <img src="img/google_icon.png" alt="" class="google-icon"> 
+          Sign in with Google
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>

@@ -1,7 +1,7 @@
 <%- include("../../views/partials/admin/header") %>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
-<script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
 <!-- Add SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -130,6 +130,17 @@
             let currentFileIndex = 0;
             const croppedImages = [];
 
+
+            if (typeof Cropper === 'undefined') {
+        console.error('Cropper library is not loaded. Please check your script imports.');
+        // Add a visual warning to the page
+        const warning = document.createElement('div');
+        warning.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+        warning.innerHTML = '<strong>Warning:</strong> Image cropping functionality is not available. Please check your internet connection and refresh the page.';
+        form.parentNode.insertBefore(warning, form);
+    }
+
+
             // Form Validation
             function validateForm() {
                 let isValid = true;
@@ -207,110 +218,178 @@
 
             // Image Cropping Functionality
             function openCropModal(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    cropperImage.src = e.target.result;
-                    cropModal.classList.remove('hidden');
-                    
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-                    
+        // Check if Cropper is defined
+        if (typeof Cropper === 'undefined') {
+            console.error('Cropper library is not loaded. Please check your script imports.');
+            alert('Image cropping is not available. Please refresh the page or try a different browser.');
+            processNextImage(); // Skip to next image
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            cropperImage.src = e.target.result;
+            cropModal.classList.remove('hidden');
+            
+            // Add a small delay to ensure the image is loaded and modal is visible
+            setTimeout(() => {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                
+                try {
                     cropper = new Cropper(cropperImage, {
                         aspectRatio: 1, // Square crop
                         viewMode: 1,
                     });
-                };
-                reader.readAsDataURL(file);
-            }
-
-            // Event Listeners for Crop Modal
-            document.getElementById('cancelCrop').addEventListener('click', function() {
-                cropModal.classList.add('hidden');
-                cropper.destroy();
-            });
-
-            document.getElementById('cropImage').addEventListener('click', function() {
-                const croppedCanvas = cropper.getCroppedCanvas();
-                croppedCanvas.toBlob(function(blob) {
-                    // Create a new File object from the blob
-                    const croppedFile = new File([blob], 'cropped-image.png', {type: 'image/png'});
-                    
-                    // Store the cropped image
-                    croppedImages.push(croppedFile);
-                    
-                    // Create image preview
-                    const imgPreview = document.createElement('img');
-                    imgPreview.src = croppedCanvas.toDataURL();
-                    imgPreview.classList.add('w-24', 'h-24', 'object-cover', 'rounded');
-                    imagePreview.appendChild(imgPreview);
-                    
-                    // Close modal
+                } catch (error) {
+                    console.error('Error initializing Cropper:', error);
+                    alert('There was an error initializing the image cropper. Please try again.');
                     cropModal.classList.add('hidden');
-                    cropper.destroy();
+                    processNextImage(); // Move to next image
+                }
+            }, 200);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Event Listeners for Crop Modal
+    document.getElementById('cancelCrop').addEventListener('click', function() {
+        cropModal.classList.add('hidden');
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        processNextImage(); // Move to next image
+    });
+
+    document.getElementById('cropImage').addEventListener('click', function() {
+        if (!cropper) {
+            console.error('Cropper object is not initialized');
+            cropModal.classList.add('hidden');
+            processNextImage(); // Move to next image
+            return;
+        }
+        
+        try {
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: 600,
+                height: 600
+            });
+            
+            if (!croppedCanvas) {
+                throw new Error('Could not create cropped canvas');
+            }
+            
+            croppedCanvas.toBlob(function(blob) {
+                // Create a new File object from the blob
+                const croppedFile = new File([blob], `cropped-image-${currentFileIndex}.png`, {type: 'image/png'});
+                
+                // Store the cropped image
+                croppedImages.push(croppedFile);
+                
+                // Create image preview
+                const imgPreview = document.createElement('div');
+                imgPreview.className = 'relative';
+                imgPreview.innerHTML = `
+                    <img src="${croppedCanvas.toDataURL()}" class="w-24 h-24 object-cover rounded" />
+                    <button type="button" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                            data-index="${croppedImages.length - 1}">×</button>
+                `;
+                imagePreview.appendChild(imgPreview);
+                
+                // Add remove functionality to the button
+                const removeButton = imgPreview.querySelector('button');
+                removeButton.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'), 10);
+                    croppedImages.splice(index, 1);
+                    imgPreview.remove();
                     
-                    // Process next image if any
-                    processNextImage();
-                }, 'image/png');
-            });
-
-            // Image Processing
-            function processNextImage() {
-                if (currentFileIndex < productImagesInput.files.length) {
-                    openCropModal(productImagesInput.files[currentFileIndex]);
-                    currentFileIndex++;
-                } else {
-                    // All images processed
-                    currentFileIndex = 0;
-                }
-            }
-
-            // Add these functions after the existing validateField function
-
-            function validateImageUpload(files) {
-                const errors = [];
-                const maxFiles = 4;
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-
-                if (files.length > maxFiles) {
-                    errors.push(`Maximum ${maxFiles} images allowed`);
-                    return errors;
-                }
-
-                Array.from(files).forEach(file => {
-                    if (!allowedTypes.includes(file.type)) {
-                        errors.push(`${file.name}: Invalid file type. Only JPG, PNG and WebP allowed`);
-                    }
-                    if (file.size > maxSize) {
-                        errors.push(`${file.name}: File size exceeds 5MB limit`);
-                    }
+                    // Update all remaining buttons with correct indices
+                    document.querySelectorAll('#imagePreview button').forEach((btn, idx) => {
+                        btn.setAttribute('data-index', idx);
+                    });
                 });
-
-                return errors;
-            }
-
-            // Update the productImagesInput event listener
-            productImagesInput.addEventListener('change', function() {
-                const errors = validateImageUpload(this.files);
-                const errorSpan = document.getElementById('imagesError');
                 
-                if (errors.length > 0) {
-                    errorSpan.textContent = errors.join('. ');
-                    this.value = ''; // Clear the input
-                    imagePreview.innerHTML = ''; // Clear preview
-                    croppedImages.length = 0; // Clear cropped images
-                    return;
+                // Close modal
+                cropModal.classList.add('hidden');
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
                 }
                 
-                // Clear previous preview and cropped images
-                imagePreview.innerHTML = '';
-                croppedImages.length = 0;
-                currentFileIndex = 0;
-                
-                // Start processing images
+                // Process next image if any
                 processNextImage();
-            });
+            }, 'image/png', 0.95); // 0.95 quality
+        } catch (error) {
+            console.error('Error cropping image:', error);
+            alert('There was an error processing the image. Please try again.');
+            cropModal.classList.add('hidden');
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            processNextImage(); // Move to next image
+        }
+    });
+
+    // Image Processing
+    function processNextImage() {
+        if (currentFileIndex < productImagesInput.files.length) {
+            openCropModal(productImagesInput.files[currentFileIndex]);
+            currentFileIndex++;
+        } else {
+            // All images processed
+            currentFileIndex = 0;
+        }
+    }
+
+    // Validate image upload
+    function validateImageUpload(files) {
+        const errors = [];
+        const maxFiles = 4;
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (files.length > maxFiles) {
+            errors.push(`Maximum ${maxFiles} images allowed`);
+            return errors;
+        }
+
+        Array.from(files).forEach(file => {
+            if (!allowedTypes.includes(file.type)) {
+                errors.push(`${file.name}: Invalid file type. Only JPG, PNG and WebP allowed`);
+            }
+            if (file.size > maxSize) {
+                errors.push(`${file.name}: File size exceeds 5MB limit`);
+            }
+        });
+
+        return errors;
+    }
+
+    // Update the productImagesInput event listener
+    productImagesInput.addEventListener('change', function() {
+        const errors = validateImageUpload(this.files);
+        const errorSpan = document.getElementById('imagesError');
+        
+        if (errors.length > 0) {
+            errorSpan.textContent = errors.join('. ');
+            this.value = ''; // Clear the input
+            imagePreview.innerHTML = ''; // Clear preview
+            croppedImages.length = 0; // Clear cropped images
+            return;
+        }
+        
+        // Clear previous preview and cropped images
+        imagePreview.innerHTML = '';
+        croppedImages.length = 0;
+        currentFileIndex = 0;
+        
+        // Start processing images
+        processNextImage();
+    });
 
             // Form submit event
             form.addEventListener('submit', function(e) {
