@@ -30,8 +30,8 @@ router.post("/dashboard",adminAuth,dashboardController.getDashboard);
 
 router.get("/users",adminAuth,customerController.customerInfo);
 router.get("/users/:id",adminAuth,customerController.viewCustomer);
-router.get("/blockCustomer",adminAuth,customerController.blockCustomer);
-router.get("/unblockCustomer",adminAuth,customerController.unblockCustomer);
+router.post("/blockCustomer",adminAuth,customerController.blockCustomer);
+router.post("/unblockCustomer",adminAuth,customerController.unblockCustomer);
 
 //Category Management section
 
