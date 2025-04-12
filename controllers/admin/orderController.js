@@ -126,6 +126,9 @@ const updateOrderStatus = async (req, res) => {
     // Order-level updates
     if (config.setDeliveredAt && previousStatus !== 'Delivered') {
       order.deliveredAt = new Date();
+      if (order.paymentMethod.toLowerCase() === 'cod' && order.paymentStatus !== 'Paid') {
+        order.paymentStatus = 'Paid';
+      }
     }
 
     // Refund logic for Cancelled status

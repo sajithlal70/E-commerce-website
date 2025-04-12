@@ -11,9 +11,8 @@ const calculateDiscountedPrice = (originalPrice, discountPercentage) => {
 // Get offers page with all offers
 const getOffers = async (req, res) => {
     try {
-        const currentTab = req.query.tab || 'product'; // Default to 'product' if no tab specified
+        const currentTab = req.query.tab || 'product';
         
-        // Fetch and populate product offers, excluding those with null references
         const productOffers = await Offer.find({ 
             type: 'product',
             reference: { $ne: null } 
@@ -23,10 +22,8 @@ const getOffers = async (req, res) => {
             match: { _id: { $ne: null } }
         });
 
-        // Filter out any offers where population failed
         const validProductOffers = productOffers.filter(offer => offer.reference);
         
-        // Fetch and populate category offers, excluding those with null references
         const categoryOffers = await Offer.find({ 
             type: 'category',
             reference: { $ne: null } 
@@ -36,17 +33,14 @@ const getOffers = async (req, res) => {
             match: { _id: { $ne: null } }
         });
 
-        // Filter out any offers where population failed
         const validCategoryOffers = categoryOffers.filter(offer => offer.reference);
         
-        // Fetch active products with price information
         const products = await Product.find(
             { isBlocked: false }, 
             'productName reqularPrice salePrice'
         );
         const categories = await Category.find({ status: 'Listed' }, 'name');
 
-        // Clean up any orphaned offers (offers with null references)
         const orphanedOffers = [
             ...productOffers.filter(offer => !offer.reference),
             ...categoryOffers.filter(offer => !offer.reference)
@@ -56,6 +50,7 @@ const getOffers = async (req, res) => {
             await Offer.deleteMany({
                 _id: { $in: orphanedOffers.map(offer => offer._id) }
             });
+            console.log(`Cleaned up ${orphanedOffers.length} orphaned offers`);
         }
 
         res.render('admin/offers', {
@@ -72,7 +67,7 @@ const getOffers = async (req, res) => {
     }
 };
 
-// Add this new function to check for existing offers
+// Check for existing offers
 const checkExistingOffer = async (req, res) => {
     try {
         const { type, referenceId, excludeOfferId } = req.query;
@@ -83,7 +78,6 @@ const checkExistingOffer = async (req, res) => {
             status: { $in: ['active', 'pending'] }
         };
 
-        // If excludeOfferId is provided, exclude that offer from the check
         if (excludeOfferId) {
             query._id = { $ne: excludeOfferId };
         }
@@ -100,12 +94,11 @@ const checkExistingOffer = async (req, res) => {
     }
 };
 
-// Update the createOffer function with additional validations
+// Create new offer
 const createOffer = async (req, res) => {
     try {
         const { type, referenceId, discount, validFrom, validUntil } = req.body;
         
-        // Basic validation
         if (!type || !referenceId || !discount || !validFrom || !validUntil) {
             return res.status(400).json({
                 success: false,
@@ -113,7 +106,6 @@ const createOffer = async (req, res) => {
             });
         }
 
-        // Validate discount percentage
         const discountValue = parseFloat(discount);
         if (isNaN(discountValue) || discountValue < 0 || discountValue > 90) {
             return res.status(400).json({
@@ -122,7 +114,6 @@ const createOffer = async (req, res) => {
             });
         }
 
-        // Validate dates
         const fromDate = new Date(validFrom);
         const untilDate = new Date(validUntil);
         const today = new Date();
@@ -138,11 +129,10 @@ const createOffer = async (req, res) => {
         if (untilDate < fromDate) {
             return res.status(400).json({
                 success: false,
-                message: 'Valid Until date must be current or after Valid From date'
+                message: 'Valid Until date must be after Valid From date'
             });
         }
 
-        // Check for existing active offers
         const existingOffer = await Offer.findOne({
             type,
             reference: referenceId,
@@ -156,7 +146,6 @@ const createOffer = async (req, res) => {
             });
         }
 
-        // Create new offer
         const offer = new Offer({
             type,
             discount: discountValue,
@@ -167,7 +156,6 @@ const createOffer = async (req, res) => {
             status: new Date() >= fromDate && new Date() <= untilDate ? 'active' : 'pending'
         });
 
-        // Apply offer based on type
         if (type === 'product') {
             const product = await Product.findById(referenceId);
             if (!product) {
@@ -177,7 +165,6 @@ const createOffer = async (req, res) => {
                 });
             }
 
-            // Calculate new price and validate
             const discountedPrice = calculateDiscountedPrice(product.reqularPrice, discountValue);
             if (discountedPrice <= 0) {
                 return res.status(400).json({
@@ -186,20 +173,13 @@ const createOffer = async (req, res) => {
                 });
             }
 
-            // Store the current sale price before applying the offer
             offer.previousPrice = product.salePrice;
-            
-            // Save the offer first
             await offer.save();
 
-            // Update product with offer details regardless of status
             product.productOffer = discountValue;
-            
-            // Only update sale price if offer is active
             if (offer.status === 'active') {
                 product.salePrice = discountedPrice;
             }
-            
             await product.save();
 
         } else if (type === 'category') {
@@ -211,10 +191,7 @@ const createOffer = async (req, res) => {
                 });
             }
 
-            // Get all products in the category
             const products = await Product.find({ category: referenceId });
-            
-            // Validate that no product will have zero or negative price
             const invalidProducts = products.filter(product => {
                 const discountedPrice = calculateDiscountedPrice(product.reqularPrice, discountValue);
                 return discountedPrice <= 0;
@@ -227,25 +204,19 @@ const createOffer = async (req, res) => {
                 });
             }
 
-            // Store previous prices for all products in category
             offer.previousPrices = products.map(product => ({
                 productId: product._id,
                 price: product.salePrice
             }));
 
-            // Save the offer with previous prices
             await offer.save();
 
-            // Update category with offer percentage regardless of status
             category.offer = discountValue;
             await category.save();
 
-            // Apply category offer to all products if offer is active
             if (offer.status === 'active') {
                 for (const product of products) {
                     const discountedPrice = calculateDiscountedPrice(product.reqularPrice, discountValue);
-                    
-                    // Get the current product offer if any
                     const productOffer = await Offer.findOne({
                         type: 'product',
                         reference: product._id,
@@ -253,17 +224,12 @@ const createOffer = async (req, res) => {
                     });
 
                     let bestPrice = product.salePrice;
-
-                    // Check product-specific offer
                     if (productOffer) {
                         const productDiscountedPrice = calculateDiscountedPrice(product.reqularPrice, productOffer.discount);
                         bestPrice = Math.min(bestPrice, productDiscountedPrice);
                     }
-
-                    // Compare with category offer price
                     bestPrice = Math.min(bestPrice, discountedPrice);
                     
-                    // Update the product's sale price
                     product.salePrice = bestPrice;
                     await product.save();
                 }
@@ -277,16 +243,6 @@ const createOffer = async (req, res) => {
         });
     } catch (error) {
         console.error('Error in createOffer:', error);
-        
-        // If offer was created but product/category updates failed, delete the offer
-        if (error.offer) {
-            try {
-                await Offer.findByIdAndDelete(error.offer._id);
-            } catch (deleteError) {
-                console.error('Error deleting failed offer:', deleteError);
-            }
-        }
-        
         return res.status(500).json({
             success: false,
             message: error.message || 'Failed to create offer'
@@ -294,13 +250,12 @@ const createOffer = async (req, res) => {
     }
 };
 
-// Update the updateOffer function with similar validations
+// Update existing offer
 const updateOffer = async (req, res) => {
     try {
         const { offerId } = req.params;
         const { discount, validFrom, validUntil } = req.body;
 
-        // Find the offer first
         const offer = await Offer.findById(offerId);
         if (!offer) {
             return res.status(404).json({ 
@@ -309,7 +264,6 @@ const updateOffer = async (req, res) => {
             });
         }
 
-        // Validate discount percentage
         const discountValue = parseFloat(discount);
         if (isNaN(discountValue) || discountValue < 0 || discountValue > 90) {
             return res.status(400).json({
@@ -318,7 +272,6 @@ const updateOffer = async (req, res) => {
             });
         }
 
-        // Validate dates
         const fromDate = new Date(validFrom);
         const untilDate = new Date(validUntil);
         const today = new Date();
@@ -334,11 +287,10 @@ const updateOffer = async (req, res) => {
         if (untilDate < fromDate) {
             return res.status(400).json({
                 success: false,
-                message: 'Valid Until date must be current or after Valid From date'
+                message: 'Valid Until date must be after Valid From date'
             });
         }
 
-        // Validate prices before updating
         if (offer.type === 'product') {
             const product = await Product.findById(offer.reference);
             if (!product) {
@@ -356,7 +308,6 @@ const updateOffer = async (req, res) => {
                 });
             }
 
-            // Update offer details
             offer.discount = discountValue;
             offer.validFrom = fromDate;
             offer.validUntil = untilDate;
@@ -364,10 +315,11 @@ const updateOffer = async (req, res) => {
 
             await offer.save();
 
-            // Update product with offer details
             product.productOffer = discountValue;
             if (offer.status === 'active') {
                 product.salePrice = discountedPrice;
+            } else {
+                product.salePrice = offer.previousPrice || product.reqularPrice;
             }
             await product.save();
 
@@ -381,8 +333,6 @@ const updateOffer = async (req, res) => {
             }
 
             const products = await Product.find({ category: offer.reference });
-            
-            // Validate that no product will have zero or negative price
             const invalidProducts = products.filter(product => {
                 const discountedPrice = calculateDiscountedPrice(product.reqularPrice, discountValue);
                 return discountedPrice <= 0;
@@ -395,13 +345,11 @@ const updateOffer = async (req, res) => {
                 });
             }
 
-            // Update offer details
             offer.discount = discountValue;
             offer.validFrom = fromDate;
             offer.validUntil = untilDate;
             offer.status = new Date() >= fromDate && new Date() <= untilDate ? 'active' : 'pending';
 
-            // Store new previous prices
             offer.previousPrices = products.map(product => ({
                 productId: product._id,
                 price: product.salePrice
@@ -409,16 +357,12 @@ const updateOffer = async (req, res) => {
 
             await offer.save();
 
-            // Update category
             category.offer = discountValue;
             await category.save();
 
-            // Update product prices if offer is active
             if (offer.status === 'active') {
                 for (const product of products) {
                     const discountedPrice = calculateDiscountedPrice(product.reqularPrice, discountValue);
-                    
-                    // Get the current product offer if any
                     const productOffer = await Offer.findOne({
                         type: 'product',
                         reference: product._id,
@@ -426,17 +370,12 @@ const updateOffer = async (req, res) => {
                     });
 
                     let bestPrice = product.salePrice;
-
-                    // Check product-specific offer
                     if (productOffer) {
                         const productDiscountedPrice = calculateDiscountedPrice(product.reqularPrice, productOffer.discount);
                         bestPrice = Math.min(bestPrice, productDiscountedPrice);
                     }
-
-                    // Compare with category offer price
                     bestPrice = Math.min(bestPrice, discountedPrice);
                     
-                    // Update the product's sale price
                     product.salePrice = bestPrice;
                     await product.save();
                 }
@@ -451,7 +390,7 @@ const updateOffer = async (req, res) => {
         console.error('Error in updateOffer:', error);
         return res.status(500).json({ 
             success: false, 
-            message: 'Failed to update offer' 
+            message: error.message || 'Failed to update offer' 
         });
     }
 };
@@ -460,22 +399,24 @@ const updateOffer = async (req, res) => {
 const deleteOffer = async (req, res) => {
     try {
         const { offerId } = req.params;
+        console.log(`Starting deletion of offer ${offerId}`);
+
         const offer = await Offer.findById(offerId);
-        
         if (!offer) {
+            console.warn(`Offer ${offerId} not found`);
             return res.status(404).json({ 
                 success: false, 
                 message: 'Offer not found' 
             });
         }
 
+        console.log(`Found offer ${offerId} of type ${offer.type} with reference ${offer.reference}`);
+
         if (offer.type === 'product') {
             const product = await Product.findById(offer.reference);
             if (product) {
-                // Reset product offer percentage
+                console.log(`Processing product ${product._id}`);
                 product.productOffer = 0;
-                
-                // Get all active offers for this product
                 const activeOffers = await Offer.find({
                     reference: product._id,
                     type: 'product',
@@ -483,94 +424,114 @@ const deleteOffer = async (req, res) => {
                     _id: { $ne: offerId }
                 });
 
-                // Get active category offer if any
                 const category = await Category.findById(product.category);
                 const categoryOffer = category && category.offer ? parseFloat(category.offer) : 0;
 
-                if (activeOffers.length > 0 || categoryOffer > 0) {
-                    // Start with the previous price before this offer
-                    let bestPrice = offer.previousPrice;
-                    
-                    // Check product-specific offers
-                    activeOffers.forEach(activeOffer => {
-                        const discountedPrice = calculateDiscountedPrice(product.reqularPrice, activeOffer.discount);
-                        // Only use this price if it's better than our current best price
-                        if (discountedPrice < bestPrice) {
-                            bestPrice = discountedPrice;
-                        }
-                    });
-
-                    // Check category offer
-                    if (categoryOffer > 0) {
-                        const categoryDiscountedPrice = calculateDiscountedPrice(product.reqularPrice, categoryOffer);
-                        // Only use category price if it's better than our current best price
-                        if (categoryDiscountedPrice < bestPrice) {
-                            bestPrice = categoryDiscountedPrice;
-                        }
-                    }
-
-                    product.salePrice = bestPrice;
-                } else {
-                    // No other offers exist, restore to the previous sale price
-                    product.salePrice = offer.previousPrice;
+                let bestPrice = offer.previousPrice || product.reqularPrice || product.salePrice;
+                if (!bestPrice) {
+                    console.warn(`No valid price found for product ${product._id}, defaulting to 0`);
+                    bestPrice = 0;
                 }
-                
+
+                activeOffers.forEach(activeOffer => {
+                    try {
+                        const discountedPrice = calculateDiscountedPrice(product.reqularPrice || bestPrice, activeOffer.discount);
+                        bestPrice = Math.min(bestPrice, discountedPrice);
+                    } catch (e) {
+                        console.error(`Error calculating discount for product ${product._id}:`, e);
+                    }
+                });
+
+                if (categoryOffer > 0) {
+                    const categoryDiscountedPrice = calculateDiscountedPrice(product.reqularPrice || bestPrice, categoryOffer);
+                    bestPrice = Math.min(bestPrice, categoryDiscountedPrice);
+                }
+
+                product.salePrice = bestPrice;
                 await product.save();
+                console.log(`Updated product ${product._id} with salePrice ${bestPrice}`);
+            } else {
+                console.warn(`Product not found for offer ${offerId}`);
             }
         } else if (offer.type === 'category') {
+            console.log(`Processing category offer ${offerId}`);
             const category = await Category.findById(offer.reference);
             if (category) {
-                // Remove the category offer
-                category.offer = '';
+                console.log(`Found category ${category._id}`);
+                category.offer = 0;
                 await category.save();
+                console.log(`Cleared offer from category ${category._id}`);
 
-                // Reset all products in the category
                 const products = await Product.find({ category: offer.reference });
+                console.log(`Found ${products.length} products for category ${category._id}`);
+
                 for (const product of products) {
-                    // Get all active product-specific offers
+                    console.log(`Processing product ${product._id}`);
                     const activeProductOffers = await Offer.find({
                         reference: product._id,
                         type: 'product',
                         status: 'active'
                     });
 
-                    // Find the previous price for this product
-                    const previousPriceData = offer.previousPrices?.find(p => p.productId.equals(product._id));
-                    const previousPrice = previousPriceData ? previousPriceData.price : product.reqularPrice;
+                    const previousPriceData = Array.isArray(offer.previousPrices)
+                        ? offer.previousPrices.find(p => {
+                            try {
+                                return p.productId && p.productId.equals(product._id);
+                            } catch (e) {
+                                console.error(`Invalid productId in previousPrices for product ${product._id}:`, e);
+                                return false;
+                            }
+                        })
+                        : null;
+
+                    const previousPrice = previousPriceData 
+                        ? previousPriceData.price 
+                        : (product.salePrice || product.reqularPrice || 0);
+
+                    if (!product.reqularPrice || isNaN(product.reqularPrice)) {
+                        console.warn(`Invalid regular price for product ${product._id}, using fallback: ${previousPrice}`);
+                    }
 
                     if (activeProductOffers.length > 0) {
-                        // Start with the previous price
                         let bestPrice = previousPrice;
-                        
-                        // Check each active product offer
                         activeProductOffers.forEach(productOffer => {
-                            const discountedPrice = calculateDiscountedPrice(product.reqularPrice, productOffer.discount);
-                            // Only use this price if it's better than our current best price
-                            if (discountedPrice < bestPrice) {
-                                bestPrice = discountedPrice;
+                            try {
+                                const discountedPrice = calculateDiscountedPrice(
+                                    product.reqularPrice || previousPrice,
+                                    productOffer.discount
+                                );
+                                bestPrice = Math.min(bestPrice, discountedPrice);
+                            } catch (e) {
+                                console.error(`Error calculating discount for product ${product._id}:`, e);
                             }
                         });
-
                         product.salePrice = bestPrice;
                     } else {
-                        // No other offers exist, restore to the previous price
                         product.salePrice = previousPrice;
                     }
+
                     await product.save();
+                    console.log(`Updated product ${product._id} with salePrice ${product.salePrice}`);
                 }
+            } else {
+                console.warn(`Category not found for offer ${offerId}, proceeding with offer deletion`);
             }
+        } else {
+            console.warn(`Unknown offer type ${offer.type} for offer ${offerId}`);
         }
 
         await Offer.findByIdAndDelete(offerId);
+        console.log(`Successfully deleted offer ${offerId}`);
+
         return res.status(200).json({ 
             success: true, 
             message: 'Offer deleted successfully' 
         });
     } catch (error) {
-        console.error('Error in deleteOffer:', error);
+        console.error(`Error in deleteOffer for offer ${req.params.offerId}:`, error);
         return res.status(500).json({ 
             success: false, 
-            message: 'Failed to delete offer' 
+            message: `Failed to delete offer: ${error.message}` 
         });
     }
 };
@@ -580,16 +541,13 @@ const updateOfferStatuses = async () => {
     const currentDate = new Date();
     
     try {
-        // Find offers that need status updates
         const offers = await Offer.find({
             $or: [
-                // Find pending offers that should be active
                 {
                     status: 'pending',
                     validFrom: { $lte: currentDate },
                     validUntil: { $gte: currentDate }
                 },
-                // Find active offers that should be expired
                 {
                     status: 'active',
                     validUntil: { $lt: currentDate }
@@ -600,7 +558,6 @@ const updateOfferStatuses = async () => {
         for (const offer of offers) {
             const oldStatus = offer.status;
             
-            // Determine new status
             if (currentDate < offer.validFrom) {
                 offer.status = 'pending';
             } else if (currentDate > offer.validUntil) {
@@ -609,7 +566,6 @@ const updateOfferStatuses = async () => {
                 offer.status = 'active';
             }
 
-            // If status changed, update prices
             if (oldStatus !== offer.status) {
                 await offer.save();
 
@@ -620,7 +576,7 @@ const updateOfferStatuses = async () => {
                             const discountedPrice = calculateDiscountedPrice(product.reqularPrice, offer.discount);
                             product.salePrice = discountedPrice;
                         } else {
-                            product.salePrice = offer.previousPrice;
+                            product.salePrice = offer.previousPrice || product.reqularPrice;
                         }
                         await product.save();
                     }
@@ -630,14 +586,14 @@ const updateOfferStatuses = async () => {
                         const products = await Product.find({ category: offer.reference });
                         
                         for (const product of products) {
-                            const previousPrice = offer.previousPrices.find(p => 
+                            const previousPrice = offer.previousPrices?.find(p => 
                                 p.productId.toString() === product._id.toString()
-                            )?.price;
+                            )?.price || product.reqularPrice;
 
                             if (offer.status === 'active') {
                                 const discountedPrice = calculateDiscountedPrice(product.reqularPrice, offer.discount);
                                 product.salePrice = discountedPrice;
-                            } else if (previousPrice) {
+                            } else {
                                 product.salePrice = previousPrice;
                             }
                             
@@ -688,8 +644,3 @@ module.exports = {
     getCategories,
     checkExistingOffer
 };
-
-
-
-
-

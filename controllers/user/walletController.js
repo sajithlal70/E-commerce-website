@@ -1,6 +1,6 @@
 const Wallet = require('../../models/walletSchema');
 const Transaction = require('../../models/transactionSchema');
-const Category =require('../../models/categorySchema')
+const Category = require('../../models/categorySchema');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Cart = require('../../models/cartSchema');
@@ -24,9 +24,9 @@ const getWalletPage = async (req, res) => {
     try {
         const userId = req.session.user._id;
 
-        const page = parseInt(req.query.page) || 1 ;
+        const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
-        const skip = (page-1) * limit;  
+        const skip = (page - 1) * limit;  
         
         // Get wallet with transactions
         let wallet = await Wallet.findOne({ userId })
@@ -48,7 +48,7 @@ const getWalletPage = async (req, res) => {
             await wallet.save();
         }
 
-        const totalTransactions = await Transaction.countDocuments({userId});
+        const totalTransactions = await Transaction.countDocuments({ userId });
         const totalPages = Math.ceil(totalTransactions / limit);
 
         // Get all transactions using Transaction model and format them
@@ -73,13 +73,13 @@ const getWalletPage = async (req, res) => {
         res.render('wallet-page', {
             wallet,
             transactions: formattedTransactions,
-            pagination:{
-                currentPage:page,
+            pagination: {
+                currentPage: page,
                 totalPages,
                 hasNextPage: page < totalPages,
                 hasPrevPage: page > 1,
-                nextPage : page + 1,
-                prevPage : page - 1,
+                nextPage: page + 1,
+                prevPage: page - 1,
                 totalTransactions,
                 limit
             },
@@ -189,6 +189,7 @@ const processRefund = async (userId, amount, orderId, reason) => {
         if (!wallet) {
             wallet = await Wallet.create({
                 userId,
+                walletId: generateWalletId(),
                 balance: 0
             });
         }
@@ -198,20 +199,21 @@ const processRefund = async (userId, amount, orderId, reason) => {
         // Create transaction with all required fields
         const transaction = await Transaction.create({
             walletId: wallet._id,
-            userId: userId,  // Make sure this is an ObjectId
+            userId: userId,
             type: 'credit',
-            amount: parseFloat(amount),  // Ensure amount is a number
+            amount: parseFloat(amount),
             description: `Refund for order #${orderId}: ${reason}`,
             transactionType: 'refund',
             balance: newBalance,
-            reference: `REF${Date.now()}${Math.random().toString(36).substr(2, 4)}`,
+            reference: generateTransactionReference(),
             status: 'completed',
             orderId: orderId,
-            paymentMethod: 'wallet'  // Default to wallet for refunds
+            paymentMethod: 'wallet'
         });
 
         // Update wallet balance
         wallet.balance = newBalance;
+        wallet.transactions.push(transaction._id);
         await wallet.save();
 
         return transaction;
@@ -337,7 +339,6 @@ const processWalletPayment = async (req, res) => {
             });
 
         } catch (error) {
-            // If payment fails, delete the order and throw error
             await Order.findByIdAndDelete(order._id);
             throw error;
         }
@@ -351,11 +352,6 @@ const processWalletPayment = async (req, res) => {
     }
 };
 
-// Helper function to create order
-const createOrder = async (userId, cart, addressId, paymentMethod, amount, couponCode) => {
-    // ... existing order creation logic ...
-};
-
 module.exports = {
     getWalletPage,
     addMoney,
@@ -363,4 +359,4 @@ module.exports = {
     getTransactions,
     processRefund,
     processWalletPayment
-};  
+};
