@@ -16,8 +16,6 @@ const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
-console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID);
-console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET);
 
 const SHIPPING_COST = 50;
 const paymentController = {
@@ -262,15 +260,6 @@ const paymentController = {
             const mongoOrderId = req.query.mongoOrderId;
             const razorpayOrderId = req.query.razorpayOrderId;
             const failureReason = req.query.failureReason || 'Payment session expired';
-
-            console.log('Order failure page params:', {
-                sessionOrderId: req.session.currentOrderId,
-                queryOrderId: orderId,
-                mongoOrderId,
-                razorpayOrderId,
-                failureReason
-            });
-
             let order = null;
             if (mongoOrderId) {
                 order = await Order.findById(mongoOrderId);
@@ -290,7 +279,6 @@ const paymentController = {
                 title: 'Payment Failed'
             });
         } catch (error) {
-            console.error('Error rendering order failure page:', error);
             res.render('user/order-failure', {
                 categories: [],
                 user: req.session.user,
@@ -310,7 +298,6 @@ const paymentController = {
             const failureReason = req.body.failureReason || req.query.failureReason || 'Payment session expired';
 
             if (!orderId) {
-                console.error('No orderId available for payment failure handling');
                 return res.render('user/order-failure', {
                     orderId: 'Not Available',
                     mongoOrderId: null,
@@ -337,12 +324,6 @@ const paymentController = {
             };
 
             await order.save();
-            console.log('Updated failed order:', {
-                orderId: order._id,
-                orderStatus: order.orderStatus,
-                paymentStatus: order.paymentStatus,
-                actionsAllowed: order.actionsAllowed
-            });
 
             // Clear the session order ID
             delete req.session.currentOrderId;
@@ -358,7 +339,6 @@ const paymentController = {
             });
 
         } catch (error) {
-            console.error('Payment failure handler error:', error);
             res.render('user/order-failure', {
                 categories: await Category.find(),
                 user: req.session.user,
@@ -374,23 +354,11 @@ const paymentController = {
         try {
             const { orderId } = req.params;
             const userId = req.session.user._id;
-            
-            console.log('Abort Order Request:', {
-                orderId,
-                userId,
-                sessionUser: req.session.user
-            });
 
             // Find the order and verify it belongs to the current user
             const order = await Order.findOne({
                 _id: orderId,
                 user: userId
-            });
-
-            console.log('Found Order:', {
-                orderExists: !!order,
-                orderStatus: order?.orderStatus,
-                actionsAllowed: order?.actionsAllowed
             });
 
             if (!order) {
@@ -407,7 +375,6 @@ const paymentController = {
             
             // Save the updated order
             const savedOrder = await order.save();
-            console.log('Order cancelled successfully:', savedOrder);
 
             // Restore inventory if needed
             for (const item of order.items) {
@@ -428,7 +395,6 @@ const paymentController = {
             });
 
         } catch (error) {
-            console.error('Error in abortOrder:', error);
             res.status(500).json({
                 success: false,
                 message: error.message || 'Failed to cancel order. Please try again.'

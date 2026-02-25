@@ -41,15 +41,6 @@ const calculateItemRefund = (item, orderSubtotal, orderDiscount) => {
       refund = itemSubtotal; // Fallback to undiscounted price
     }
 
-    console.log('Refund calculated:', {
-      itemId: item._id,
-      itemSubtotal,
-      orderSubtotal,
-      orderDiscount,
-      refund,
-      itemDiscount
-    });
-
     return {
       refund: Number(refund.toFixed(2)),
       itemDiscount: Number(itemDiscount.toFixed(2))
@@ -295,7 +286,6 @@ const confirmOrder = async (req, res) => {
             appliedCoupon: couponDetails
         });
     } catch (error) {
-        console.error('Order confirmation error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to place order',
@@ -544,7 +534,6 @@ const cancelOrder = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Cancel order error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to cancel order'
@@ -557,8 +546,6 @@ const returnOrder = async (req, res) => {
       const { id } = req.params;
       const { reason = 'Not specified', comments = '' } = req.body;
       const userId = req.session.user?._id;
-  
-      console.log('Processing return request:', { orderId: id, userId, reason, comments });
   
       if (!userId) {
         return res.status(401).json({ success: false, message: 'Unauthorized: Please log in' });
@@ -574,19 +561,6 @@ const returnOrder = async (req, res) => {
       if (!order) {
         return res.status(404).json({ success: false, message: 'Order not found' });
       }
-  
-      console.log('Order details:', {
-        orderId: id,
-        orderStatus: order.orderStatus,
-        itemCount: order.items.length,
-        items: order.items.map(item => ({
-          id: item._id,
-          product: item.product?._id,
-          price: item.price,
-          quantity: item.quantity,
-          status: item.status
-        }))
-      });
   
       if (order.orderStatus !== 'Delivered') {
         return res.status(400).json({
@@ -640,8 +614,6 @@ const returnOrder = async (req, res) => {
           };
         }
       });
-  
-      console.log('Saving order with return details');
       await order.save();
   
       res.json({
@@ -650,12 +622,6 @@ const returnOrder = async (req, res) => {
         potentialRefundAmount
       });
     } catch (error) {
-      console.error('Return order error:', {
-        message: error.message,
-        stack: error.stack,
-        orderId: req.params.id,
-        userId: req.session.user?._id
-      });
       res.status(500).json({
         success: false,
         message: 'Failed to submit return request',
@@ -705,7 +671,6 @@ const getOrderStatus = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching order status:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to fetch order status'
@@ -891,7 +856,6 @@ const cancelOrderItem = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Cancel order item error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to cancel order item'

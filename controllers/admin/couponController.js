@@ -19,7 +19,6 @@ const getCouponPage = async (req, res) => {
             totalCoupons: totalCoupons
         });
     } catch (error) {
-        console.error('Error rendering coupon page:', error);
         res.status(500).json({
             status: 'error',
             title: 'Error Loading Page',
@@ -116,7 +115,6 @@ const createCoupon = async (req, res) => {
             data: newCoupon
         });
     } catch (error) {
-        console.error('Coupon creation error:', error);
         res.status(500).json({
             status: 'error',
             title: 'Creation Failed',
@@ -163,7 +161,6 @@ const validateCoupon = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Coupon validation error:', error);
         res.status(500).json({
             status: 'error',
             message: 'Failed to validate coupon. Please try again.'
@@ -224,7 +221,6 @@ const applyCoupon = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Coupon application error:', error);
         res.status(500).json({
             status: 'error',
             message: 'Failed to apply coupon. Please try again.'
@@ -251,7 +247,6 @@ const deleteCoupon = async (req, res) => {
             message: 'Coupon has been successfully deleted'
         });
     } catch (error) {
-        console.error('Coupon deletion error:', error);
         res.status(500).json({
             status: 'error',
             title: 'Deletion Failed',
@@ -357,7 +352,6 @@ const editCoupon = async (req, res) => {
             data: updatedCoupon
         });
     } catch (error) {
-        console.error('Coupon update error:', error);
         res.status(500).json({
             status: 'error',
             title: 'Update Failed',
@@ -384,7 +378,6 @@ const getCouponById = async (req, res) => {
             data: coupon
         });
     } catch (error) {
-        console.error('Error fetching coupon:', error);
         res.status(500).json({
             status: 'error',
             title: 'Error',

@@ -151,7 +151,7 @@ app.listen(port, (err) => {
         console.error('Error starting server:', err);
         return;
     }
-    console.log(`SERVER RUNNING ON PORT http://localhost:${port}`);
+    console.log(`SERVER RUNNING ON PORT ${port}`);
 });
 
 module.exports = app;
